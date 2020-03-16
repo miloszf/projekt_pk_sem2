@@ -1,0 +1,15 @@
+#ifndef MY_ERROR
+#define MY_ERROR
+
+typedef int Error;
+
+#define ERROR_NONE						0x0000
+#define ERROR_VT_INIT_FAILED			0x0001
+#define ERROR_GET_SCREEN_BUFFER_FAILED	0x0002
+#define ERROR_CONSOLE_INPUT_READ_FAILED	0x0004
+#define ERROR_MEMORY_ALLOCATION_FAILED	0x0008
+#define ERROR_NULL_POINTER_EXCEPTION	0x0010
+
+void print_error(Error *err);
+
+#endif
