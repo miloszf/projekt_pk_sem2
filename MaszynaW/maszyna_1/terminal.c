@@ -2,12 +2,14 @@
 #include <stdio.h>
 #include <conio.h>
 
+//#include "event_flags.h"
 #include "terminal.h"
+
 
 #define ESC "\x1b"
 #define CSI "\x1b["
 
-#define IN_RECORDS_NUMBER 16
+#define IN_RECORDS_ARRAY_SIZE 16ULL
 
 bool EnableVTMode(HANDLE *out_handle, HANDLE* in_handle)
 {
@@ -49,7 +51,7 @@ bool EnableVTMode(HANDLE *out_handle, HANDLE* in_handle)
     return true;
 }
 
-Error terminal_init(struct Terminal *term)
+Error terminal_init(struct Terminal *term, struct Eventflags*ev_flags)
 {
     if (!EnableVTMode(&term->output_handle, &term->input_handle))
         return ERROR_VT_INIT_FAILED;
@@ -57,18 +59,11 @@ Error terminal_init(struct Terminal *term)
     CONSOLE_SCREEN_BUFFER_INFO screen_buffer_info;
 
     if (!GetConsoleScreenBufferInfo(term->output_handle, &screen_buffer_info))
-       return ERROR_GET_SCREEN_BUFFER_FAILED;  
+       return ERROR_GET_SCREEN_BUFFER_FAILED;
 
-    //term->window_size.X = term->screen_buffer_info.srWindow.Right - term->screen_buffer_info.srWindow.Left + 1;
-    //term->window_size.Y = term->screen_buffer_info.srWindow.Bottom - term->screen_buffer_info.srWindow.Top + 1;
-
-    term->events = malloc(sizeof(struct Event));
-    if (!term->events)
-        return ERROR_MEMORY_ALLOCATION_FAILED;
-
-    term->events->flag = WINDOW_RESIZED;
-    term->events->value.window_size.x = screen_buffer_info.srWindow.Right - screen_buffer_info.srWindow.Left + 1;
-    term->events->value.window_size.y = screen_buffer_info.srWindow.Bottom - screen_buffer_info.srWindow.Top + 1;
+    ev_flags->window_size.x = screen_buffer_info.srWindow.Right - screen_buffer_info.srWindow.Left + 1;
+    ev_flags->window_size.y = screen_buffer_info.srWindow.Bottom - screen_buffer_info.srWindow.Top + 1;
+    ev_flags->window_resize = true;
 
     // Enter the alternate buffer
     printf(CSI "?1049h");
@@ -82,74 +77,55 @@ void terminal_close(struct Terminal* term)
     printf(CSI "?1049l");
 }
 
-Error terminal_update(struct Terminal* term)
+Error terminal_update(struct Terminal* term, struct Eventflags* ev_flags)
 {
-    /*if (!GetConsoleScreenBufferInfo(term->output_handle, &term->screen_buffer_info))
-        return ERROR_GET_SCREEN_BUFFER_FAILED;
-
-    term->window_size.X = term->screen_buffer_info.srWindow.Right - term->screen_buffer_info.srWindow.Left + 1;
-    term->window_size.Y = term->screen_buffer_info.srWindow.Bottom - term->screen_buffer_info.srWindow.Top + 1;*/
-
-    if (!term)
+    if (!(term && ev_flags))
         return ERROR_NULL_POINTER_EXCEPTION;
 
-    INPUT_RECORD input_record[IN_RECORDS_NUMBER];
+    INPUT_RECORD input_record[IN_RECORDS_ARRAY_SIZE];
     DWORD events_read;
 
-    if (!PeekConsoleInput(term->input_handle, &input_record, 1, &events_read))
+    if (!PeekConsoleInput(term->input_handle, input_record, 1, &events_read))
         return ERROR_CONSOLE_INPUT_READ_FAILED;
 
     while (events_read)
     {
-        if (!ReadConsoleInput(term->input_handle, &input_record, IN_RECORDS_NUMBER, &events_read))
-            return ERROR_CONSOLE_INPUT_READ_FAILED;
+        if (!ReadConsoleInput(term->input_handle, input_record, IN_RECORDS_ARRAY_SIZE, &events_read))
+            return ERROR_CONSOLE_INPUT_READ_FAILED;       
 
-        struct Event *new_events = realloc(term->events, sizeof(struct Event) * (term->events_number + IN_RECORDS_NUMBER));
-
-        if (!new_events)
-            return ERROR_MEMORY_ALLOCATION_FAILED;
-        term->events = new_events;
-        term->events_number += events_read;
-
-        while (events_read)
+        for (unsigned long ev_num = 0; ev_num < events_read; ev_num++)
         {
-            struct Event new_event;
-
-            switch (input_record[events_read - 1].EventType)
+            switch (input_record[ev_num].EventType)
             {
             case KEY_EVENT:
-                if (!input_record[events_read - 1].Event.KeyEvent.bKeyDown)
+            {
+                struct Keys* key;
+                if (input_record[ev_num].Event.KeyEvent.bKeyDown)
+                    key = &ev_flags->pressed;
+                else
+                    key = &ev_flags->released;
+
+                switch (input_record[ev_num].Event.KeyEvent.wVirtualKeyCode)
                 {
-                    new_event.flag = KEY_PRESSED;
-                    WORD key;
-                    switch (input_record[events_read - 1].Event.KeyEvent.wVirtualKeyCode)
-                    {
-                    case VK_ESCAPE:
-                        key = KEY_ESC;
-                        break;
-                    case VK_F1:
-                        key = KEY_F1;
-                        break;
-                    default:
-                        key = 0;
-                        break;
-                    }
-                    new_event.value.key = key;
+                case VK_ESCAPE:
+                    key->esc = true;
+                    break;
+                case VK_F1:
+                    key->f1 = true;
+                    break;
                 }
                 break;
-
+            } 
             case WINDOW_BUFFER_SIZE_EVENT:
-                new_event.flag = WINDOW_RESIZED;
-                COORD new_size = input_record[events_read - 1].Event.WindowBufferSizeEvent.dwSize;
-                new_event.value.window_size.x = input_record[events_read - 1].Event.WindowBufferSizeEvent.dwSize.X;
-                new_event.value.window_size.y = input_record[events_read - 1].Event.WindowBufferSizeEvent.dwSize.Y;
+                ev_flags->window_resize = true;
+                ev_flags->window_size.x = input_record[ev_num].Event.WindowBufferSizeEvent.dwSize.X;
+                ev_flags->window_size.y = input_record[ev_num].Event.WindowBufferSizeEvent.dwSize.Y;
                 break;
             }
-
-            term->events[term->events_number - events_read - 1] = new_event;
-            events_read--;
         }
-
+       
+        if (events_read < IN_RECORDS_ARRAY_SIZE)
+            events_read = 0;
     }
 
     //while (events_read)

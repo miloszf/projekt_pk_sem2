@@ -1,17 +1,20 @@
-#ifndef EVENT_FLAGS
-#define EVENT_FLAGS
+#ifndef EVENT_FLAGS_H
+#define EVENT_FLAGS_H
 
 #include <stdbool.h>
 #include "settings.h"
 
-struct EventFlags
+struct Eventflags
 {
 	bool window_resize;
 	struct Point window_size;
-	bool esc_pressed;
-	bool esc_released;
-	bool f1_pressed;
-	bool f1_released;
+	struct Keys
+	{
+		bool esc;
+		bool f1;
+	} pressed, released;
 };
+
+
 
 #endif

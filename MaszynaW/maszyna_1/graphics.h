@@ -1,6 +1,9 @@
-#ifndef GRAPHICS
-#define GRAPHICS
+#ifndef GRAPHICS_H
+#define GRAPHICS_H
 
-void draw(int x, int y);
+#include "settings.h"
+
+void draw(struct Point* size);
+void draw_rect(struct Point* size, const struct RectCharSet* char_set);
 
 #endif

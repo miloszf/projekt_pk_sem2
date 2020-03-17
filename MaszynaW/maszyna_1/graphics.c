@@ -6,15 +6,15 @@
 #define ESC "\x1b"
 #define CSI "\x1b["
 
-void draw(int x, int y)
+void draw(struct Point* size)
 {
-    for (int row = 0; row < y; row++)
+    for (int row = 0; row < size->y; row++)
     {
         printf("<- linia %2i ", row);
-        for (int ch = 0; ch < x - 13; ch++)
+        for (int ch = 0; ch < size->x - 13; ch++)
             printf("-");
         printf(">");
-        if (row != y - 1)
+        if (row != size->y - 1)
             printf("\n");
     }
     printf(CSI "0;0H");

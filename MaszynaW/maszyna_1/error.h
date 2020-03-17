@@ -1,5 +1,5 @@
-#ifndef MY_ERROR
-#define MY_ERROR
+#ifndef ERROR_H
+#define ERROR_H
 
 typedef int Error;
 
