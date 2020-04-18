@@ -1,0 +1,173 @@
+[Opcje]
+Po³¹czenie=1
+Inkrementacja=1
+Logiczne=0
+Arytmetyczne=1
+Stos=1
+RejestrX=0
+RejestrY=0
+Przerwania=1
+Wejœcie=1
+Znaczniki=1
+Adres=6
+Kod=4
+[Rozkazy]
+Liczba=16
+Nazwa1=stp
+Nazwa2=dod
+Nazwa3=ode
+Nazwa4=pob
+Nazwa5=³ad
+Nazwa6=sob
+Nazwa7=som
+Nazwa8=soz
+Nazwa9=wpr
+Nazwa10=wyp
+Nazwa11=dns
+Nazwa12=pwr
+Nazwa13=pzs
+Nazwa14=mas
+Nazwa15=msk
+Nazwa16=czm
+[stp]
+Linie=5
+Linia1=// zakoñczenie programu
+Linia2=ROZKAZ STP;
+Linia3=Argumenty 0;
+Linia4=czyt wys wei il;
+Linia5=stop;
+[dod]
+Linie=10
+Linia1=ROZKAZ DOD;
+Linia2=czyt wys wei il;
+Linia3=wyad wea eni
+Linia4=JE¯ELI INT TO @przerw GDY NIE @norm;
+Linia5=@norm czyt wys weja dod weak wyl wea KONIEC;
+Linia6=@przerw czyt wys weja dod weak dws;
+Linia7=wyls wes wyws wea;
+Linia8=pisz wyap wel wea rint;
+Linia9=
+Linia10=
+[ode]
+Linie=10
+Linia1=ROZKAZ ODE;
+Linia2=czyt wys wei il;
+Linia3=wyad wea eni
+Linia4=JE¯ELI INT TO @przerw GDY NIE @norm;
+Linia5=@norm czyt wys weja ode weak wyl wea KONIEC;
+Linia6=@przerw czyt wys weja ode weak dws;
+Linia7=wyls wes wyws wea;
+Linia8=pisz wyap wel wea rint;
+Linia9=
+Linia10=
+[pob]
+Linie=10
+Linia1=ROZKAZ POB;
+Linia2=czyt wys wei il;
+Linia3=wyad wea eni
+Linia4=JE¯ELI INT TO @przerw GDY NIE @norm;
+Linia5=@norm czyt wys weja przep weak wyl wea KONIEC;
+Linia6=@przerw czyt wys weja przep weak dws;
+Linia7=wyls wes wyws wea;
+Linia8=pisz wyap wel wea rint;
+Linia9=
+Linia10=
+[³ad]
+Linie=10
+Linia1=// (Ak)->(Ad)
+Linia2=ROZKAZ £AD;
+Linia3=czyt wys wei il;
+Linia4=wyad wea wyak wes eni
+Linia5=JE¯ELI INT TO @przerw GDY NIE @norm;
+Linia6=@norm pisz wyl wea KONIEC;
+Linia7=@przerw pisz dws;
+Linia8=wyls wes wyws wea;
+Linia9=pisz wyap wea wel rint;
+Linia10=
+[sob]
+Linie=5
+Linia1=// skok bezwarunkowy
+Linia2=ROZKAZ SOB;
+Linia3=Argumenty 1;
+Linia4=czyt wys wei il;
+Linia5=wyad wea wel;
+[som]
+Linie=6
+Linia1=// skok gdy (AK) < 0
+Linia2=ROZKAZ SOM;
+Linia3=czyt wys wei il;
+Linia4=JE¯ELI Z TO @ujemne GDY NIE @dodatnie;
+Linia5=@ujemne wyad wea wel KONIEC;
+Linia6=@dodatnie wyl wea;
+[soz]
+Linie=6
+Linia1=// skok gdy (AK) = 0
+Linia2=ROZKAZ SOZ;
+Linia3=czyt wys wei il;
+Linia4=JE¯ELI zak TO @zero GDY NIE @niezero;
+Linia5=@zero wyad wea wel KONIEC;
+Linia6=@niezero wyl wea;
+[wpr]
+Linie=7
+Linia1=// wczytanie znaku z UZ o numerze podanym jako argument rozkazu
+Linia2=ROZKAZ WPR;
+Linia3=czyt wys wei il;
+Linia4=start wyak weja ode weak;
+Linia5=@czekaj wyg weja ode weak JE¯ELI Z to @dalej GDY NIE @czekaj;
+Linia6=@dalej wyrb weja przep weak wyl wea;
+Linia7=
+[wyp]
+Linie=8
+Linia1=// wypisanie znaku znajduj¹cego siê w akumulatorze na UZ o numerze podanym jako argument rozkazu
+Linia2=ROZKAZ WYP;
+Linia3=czyt wys wei il;
+Linia4=wyak weja ode weak wes werb start;
+Linia5=@czekaj wyg weja ode weak JE¯ELI Z to @dalej GDY NIE @czekaj;
+Linia6=@dalej wys weja przep weak wyl wea;
+Linia7=
+Linia8=
+[dns]
+Linie=6
+Linia1=rozkaz dns;
+Linia2=argumenty 0;
+Linia3=czyt wys wei il;
+Linia4=dws;
+Linia5=wyws wea wyak wes;
+Linia6=pisz wyl wea;
+[pwr]
+Linie=5
+Linia1=rozkaz pwr;
+Linia2=argumenty 0;
+Linia3=czyt wys wei il;
+Linia4=wyws wea iws;
+Linia5=czyt wys as wea wel;
+[pzs]
+Linie=5
+Linia1=rozkaz pzs;
+Linia2=argumenty 0;
+Linia3=czyt wys wei il;
+Linia4=wyws wea iws;
+Linia5=czyt wys weja przep weak wyl wea;
+[mas]
+Linie=5
+Linia1=// Rozkaz maskowania adresowanie natychmiastowe
+Linia2=ROZKAZ MAS;
+Linia3=czyt wys wei il;
+Linia4=wyad werm;
+Linia5=wyl wea;
+[msk]
+Linie=6
+Linia1=// Rozkaz maskowania adresowanie bezpoœrednie
+Linia2=ROZKAZ MSK;
+Linia3=czyt wys wei il;
+Linia4=wyad wea;
+Linia5=czyt wys sa werm;
+Linia6=wyl wea;
+[czm]
+Linie=6
+Linia1=// Odczyt rejestru maski
+Linia2=ROZKAZ CZM;
+Linia3=czyt wys wei il;
+Linia4=wyad wea;
+Linia5=wyrm sa wes;
+Linia6=pisz wyl wea;

@@ -1,0 +1,8 @@
+Linia1=ROZKAZ DOD;	
+Linia2=czyt wys wei il;
+Linia3=wyad wea eni		;	
+Linia4=JEŻELI INT TO @przerw GDY NIE @norm;
+Linia5=@norm czyt wys weja dod weak wyl wea KONIEC;
+Linia6=@przerw czyt wys weja dod weak dws;
+Linia7=wyls wes wyws wea;
+Linia8=pisz wyap wel wea rint;
