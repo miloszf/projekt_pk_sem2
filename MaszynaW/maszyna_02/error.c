@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdarg.h>
+#include <string.h>
+#include <stdio.h>
 
 #include "error.h"
 
@@ -8,8 +10,10 @@
 
 struct StructError {
 	Error err;
-	const char* msg;
+	char* msg;
 };
+
+void error_exit(void);
 
 struct StructError* get_error()
 {
@@ -19,8 +23,8 @@ struct StructError* get_error()
 	else
 	{
 		s_error = malloc(sizeof(struct StructError));
-		if (!s_error)
-			assert(!"B³¹d obs³ugi b³êdów!");
+		if (!s_error || atexit(&error_exit))
+			exit(EXIT_VALUE);
 		else
 			*s_error = (struct StructError){ 0, NULL };
 
@@ -33,42 +37,74 @@ Error error()
 	return get_error()->err;
 }
 
-void set_error(Error error, const char* message)
+void error_set(Error error)
+{
+	get_error()->err = error;
+}
+
+void error_set_msg(Error error, const char* message)
 {
 	struct StructError* s_err = get_error();
+	if (s_err->msg)
+		free(s_err->msg);
+	s_err->msg = _strdup(message);
+	if (!s_err->msg)
+		exit(EXIT_VALUE);
 	s_err->err = error;
-	s_err->msg = message;
+}
+
+void critical_error_set(const char* message)
+{
+	struct StructError* s_err = get_error();
+	if (s_err->msg)
+		free(s_err->msg);
+	s_err->msg = _strdup(message);
+	exit(EXIT_VALUE);
+}
+
+const char* error_get_msg()
+{
+	return get_error()->msg;
 }
 
 void* malloc_s(size_t size)
 {
-	//struct StructError* s_err = get_error();
 	void* value_ptr = malloc(size);
 	if (!value_ptr)
-		exit(EXIT_VALUE);
+		critical_error_set("B³¹d alokacji pamiêci w funkcji malloc.");
 	return value_ptr;
 }
 
 void* calloc_s(size_t count, size_t size)
 {
-	//struct StructError* s_err = get_error();
 	void* value_ptr = calloc(count, size);
 	if (!value_ptr)
-		exit(EXIT_VALUE);
+		critical_error_set("B³¹d alokacji pamiêci w funkcji calloc.");
 	return value_ptr;
 }
 
 void* realloc_s(void* ptr, size_t new_size)
 {
-	//struct StructError* s_err = get_error();
 	void* value_ptr = realloc(ptr, new_size);
 	if (!value_ptr)
-		exit(EXIT_VALUE);
+		critical_error_set("B³¹d alokacji pamiêci w funkcji realloc.");
 	return value_ptr;
 }
 
-void check_for_NULL(void* ptr)
+void check_for_NULL(const void* ptr)
 {
 	if (!ptr)
-		exit(EXIT_VALUE);
+		critical_error_set("Wy³uskanie wskaŸnika NULL.");
+}
+
+void error_exit(void)
+{
+	struct StructError* s_err = get_error();
+	if (s_err->err)
+		if (s_err->msg)
+			printf("%s\n", s_err->msg);
+		else
+			printf("Wyst¹pi³ b³¹d!\n");
+	free(s_err->msg);
+	free(s_err);
 }

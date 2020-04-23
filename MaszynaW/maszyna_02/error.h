@@ -5,6 +5,14 @@
 // - koñczy pracê programu w razie wykrycia b³êdu
 // - komunikat?
 
+#define NO_ERROR 0
+#define ERROR -1
+#define ERROR_TERMINAL_FAILURE	0x0001
+#define ERROR_EVENTS_FAILURE	0x0002
+#define ERROR_WINDOW_FAILURE	0x0004
+#define ERROR_RENDER_FAILURE	0x0008
+#define ERROR_SIGNAL_FAILURE	0x0010
+
 typedef int Error;
 // b³êdy krytyczne, wyst¹pienie oznacza natychmiastowe zamkniêcie programu
 // - b³¹d alokacji pamiêci
@@ -21,10 +29,13 @@ typedef int Error;
 //   - nierozpoznana wartoœæ w rejestrze instrukcji
 
 Error error();
-void set_error(Error error, const char* message);
+void error_set(Error error);
+void error_set_msg(Error error, const char* message);
+void critical_error_set(const char* message);
+const char* error_get_msg();
 void* malloc_s(size_t size);
 void* calloc_s(size_t count, size_t size);
 void* realloc_s(void* ptr, size_t new_size);
-void check_for_NULL(void* ptr);
+void check_for_NULL(const void* ptr);
 
 #endif

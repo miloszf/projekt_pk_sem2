@@ -1,23 +1,45 @@
-// "Biblioteka graficzna"
-// Struktura Drawable przechowuj¹ca dane do póŸniejszego
-// narysowania danego elementu. Posiada wartoœci:
-// po³o¿enie, wektor par - wartoœæ i funkcjê
+#ifndef GRAPHICS_H
+#define GRAPHICS_H
 
-// Funkcja zwracaj¹ca uchwyt do nowego bufora graficznego
-// argumenty: rozmiar bufora
+#include <stdbool.h>
+#include "settings.h"
 
-// Funkcja dodaj¹ca do bufora strukturê graficznie reprezentuj¹c¹ rejestr
-// argumenty: uchwyt bufora, offset, rozmiar, tekst - nazwa rejestu, wskaŸnik na wartoœæ
+struct Window;
+struct Canvas;
+struct Drawable;
 
-// Funkcja dodaj¹ca do bufora strukturê graficznie reprezentuj¹c¹ magistralê
-// argumenty: uchwyt bufora, offset, rozmiar, wskaŸnik na wartoœæ
+typedef enum { TO_REG_TYPE, TO_COMB_TYPE, TO_BUS_TYPE } DrawableSignalType;
 
-// Funkcja dodaj¹ca do bufora strukturê graficznie reprezentuj¹c¹ sygna³
-// argumenty: uchwyt bufora, offset grota strza³ki, orientacja strza³ki (góra/dó³), po³o¿enie tekstu, 
-//   d³ugoœæ strza³ki, d³ugoœæ pola tekstowego, znacznik sygna³u, tekst - nazwa sygna³u, wskaŸnik na wartoœæ
+struct DrawableInitSignal
+{
+	struct Canvas* canvas;
+	struct
+	{
+		Point head;
+		Point tail;
+	} arrow;
 
-// Funkcja dodaj¹ca do bufora strukturê graficznie reprezentuj¹c¹ przycisk/znacznik (dla przerwañ)
-// argumenty: uchwyt bufora, offset, rozmiar, wskaŸnik na wartoœæ, tekst
+	struct
+	{
+		Point head;
+		Point tail;
+		DrawableSignalType type;
+	} tag;
+};
 
-// Struktura przechowuj¹ca informacje o danym wycinku ekranu:
-// offset, rozmiar, wektor "rysowalnych" obiektów
+struct Window* window_init();
+struct Canvas* window_new_canvas(struct Window* window, Point offset, Point size);
+void window_draw(struct Window* window);
+void window_delete(struct Window* window);
+
+//void add_rectangle(struct Canvas* canvas, Point position, Point size);
+struct Drawable* drawable_new_reg(struct Canvas* canvas, Point position, Point size, const char* name);
+struct Drawable* drawable_new_comb(struct Canvas* canvas, Point position, Point size);
+struct Drawable* drawable_new_bus(struct Canvas* canvas, Point position, Point size);
+
+struct Drawable* drawable_new_signal(struct DrawableInitSignal* init);
+
+void drawable_set_visibility(bool is_visible);
+void drawable_set_value(var value);
+
+#endif

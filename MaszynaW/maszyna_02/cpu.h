@@ -7,7 +7,8 @@ struct CPU;
 // Nowa jednostka jest ju¿ wstêpnie zainicjalizowana, tj. utworzone s¹ bloki, sygna³y,
 // odpowiednie struktury i po³¹czenia
 // argumenty: [?], bufor znaków z klawiatury do odczytania, bufor znaków do zapisania
-// zwraca: 
+// zwraca: wskaŸnik na nowê jednostkê
+struct CPU* cpu_init();
 
 // Funkcja wczytuj¹ca i kompiluj¹ca listê rozkazów i ustawieñ
 // argumenty: nazwa pliku z rozkazami
@@ -28,3 +29,6 @@ struct CPU;
 // argumenty: -
 
 // Funkcja rysuj¹ca aktualny stan maszyny
+
+
+void cpu_delete(struct CPU* cpu);

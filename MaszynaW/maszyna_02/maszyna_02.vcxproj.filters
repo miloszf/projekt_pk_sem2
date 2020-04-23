@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Pliki nagłówkowe\graphics">
+      <UniqueIdentifier>{88651673-5ccf-4cd5-9d09-ce3306a53075}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki źródłowe\graphics">
+      <UniqueIdentifier>{e9edb497-4ea9-4b0c-a8ef-3fe948bb3128}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="error.h">
@@ -33,9 +39,6 @@
     <ClInclude Include="map.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
-    <ClInclude Include="graphics.h">
-      <Filter>Pliki nagłówkowe</Filter>
-    </ClInclude>
     <ClInclude Include="files.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
@@ -53,6 +56,21 @@
     </ClInclude>
     <ClInclude Include="event.h">
       <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="drawable.h">
+      <Filter>Pliki nagłówkowe\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics.h">
+      <Filter>Pliki nagłówkowe\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="canvas.h">
+      <Filter>Pliki nagłówkowe\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="window.h">
+      <Filter>Pliki nagłówkowe\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="primitive.h">
+      <Filter>Pliki nagłówkowe\graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -74,9 +92,6 @@
     <ClCompile Include="map.c">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="graphics.c">
-      <Filter>Pliki źródłowe</Filter>
-    </ClCompile>
     <ClCompile Include="files.c">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
@@ -92,8 +107,20 @@
     <ClCompile Include="terminal.c">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="event.c">
-      <Filter>Pliki źródłowe</Filter>
+    <ClCompile Include="window.c">
+      <Filter>Pliki źródłowe\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="primitive.c">
+      <Filter>Pliki źródłowe\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="canvas.c">
+      <Filter>Pliki źródłowe\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="drawable.c">
+      <Filter>Pliki źródłowe\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="graphics.c">
+      <Filter>Pliki źródłowe\graphics</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

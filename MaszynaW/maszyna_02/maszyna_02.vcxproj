@@ -138,34 +138,41 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="canvas.c" />
     <ClCompile Include="cpu.c" />
+    <ClCompile Include="drawable.c" />
     <ClCompile Include="error.c" />
-    <ClCompile Include="event.c" />
     <ClCompile Include="files.c" />
     <ClCompile Include="graphics.c" />
     <ClCompile Include="instruction.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="map.c" />
+    <ClCompile Include="primitive.c" />
     <ClCompile Include="signal.c" />
     <ClCompile Include="simulator.c" />
     <ClCompile Include="terminal.c" />
     <ClCompile Include="unit.c" />
     <ClCompile Include="vector.c" />
+    <ClCompile Include="window.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="canvas.h" />
     <ClInclude Include="cpu.h" />
     <ClInclude Include="error.h" />
     <ClInclude Include="event.h" />
     <ClInclude Include="files.h" />
     <ClInclude Include="graphics.h" />
+    <ClInclude Include="drawable.h" />
     <ClInclude Include="instruction.h" />
     <ClInclude Include="map.h" />
+    <ClInclude Include="primitive.h" />
     <ClInclude Include="settings.h" />
     <ClInclude Include="signal.h" />
     <ClInclude Include="simulator.h" />
     <ClInclude Include="terminal.h" />
     <ClInclude Include="unit.h" />
     <ClInclude Include="vector.h" />
+    <ClInclude Include="window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -22,7 +22,7 @@ struct Vector* vector_init(size_t element_size)
 	return vect_ptr;
 }
 
-void vector_push(struct Vector* vect, void* value_ptr)
+void* vector_push(struct Vector* vect, void* value_ptr)
 {
 	check_for_NULL(vect);
 	check_for_NULL(value_ptr);
@@ -36,7 +36,23 @@ void vector_push(struct Vector* vect, void* value_ptr)
 	void* dest = (char*)vect->array + (vect->el_size * vect->el_number);
 	memcpy(dest, value_ptr, vect->el_size);
 	vect->el_number++;
+	return dest;
 }
+
+//void* vector_pop(struct Vector* vect)
+//{
+//	check_for_NULL(vect);
+//	if (vect->el_number)
+//	{
+//		vect->el_number--;
+//		void* return_ptr = malloc_s(vect->el_size);
+//		void* value_ptr = (char*)vect->array + (vect->el_size * vect->el_number);
+//		memcpy(return_ptr, value_ptr, vect->el_size);
+//		return return_ptr;
+//	}
+//	else
+//		return NULL;
+//}
 
 void* vector_pop(struct Vector* vect)
 {
@@ -50,14 +66,17 @@ void* vector_pop(struct Vector* vect)
 		return NULL;
 }
 
-void vector_write(struct Vector* vect, size_t index, void* value_ptr)
+void* vector_write(struct Vector* vect, size_t index, void* value_ptr)
 {
 	check_for_NULL(vect);
 	if (index < vect->el_number)
 	{
 		void* dest = (char*)vect->array + (vect->el_size * index);
 		memcpy(dest, value_ptr, vect->el_size);
+		return dest;
 	}
+	else
+		return NULL;
 }
 
 void* vector_read(struct Vector* vect, size_t index)
@@ -72,13 +91,11 @@ size_t vector_size(struct Vector* vect)
 	return vect->el_number;
 }
 
-void vector_delete(struct Vector** vect)
+void vector_delete(struct Vector* vect)
 {
-	check_for_NULL(vect);
-	if (*vect)
+	if (vect)
 	{
-		free((*vect)->array);
-		free(*vect);
-		vect = NULL;
+		free(vect->array);
+		free(vect);
 	}
 }
