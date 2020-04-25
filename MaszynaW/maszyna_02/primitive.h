@@ -11,6 +11,7 @@ typedef enum {
 	SINGLE_LINE = 1,
 	DOUBLE_LINE = 2,
 } LineType;
+
 typedef unsigned int Color;
 
 struct Text

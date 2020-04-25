@@ -17,6 +17,6 @@ struct Canvas* canvas_init(Point position, Point size);
 void canvas_draw(struct Canvas* canvas, struct RenderInfo r_info);
 void canvas_delete(struct Canvas* canvas);
 
-struct Drawable* canvas_new_drawable(struct Canvas* canvas);
+struct Drawable* canvas_new_drawable(struct Canvas* canvas, Point position);
 
 #endif

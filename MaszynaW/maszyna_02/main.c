@@ -27,9 +27,16 @@ int main()
 		
 		struct Window* window = window_init();
 		struct Canvas* canvas = window_new_canvas(window, (Point) {20, 10 }, (Point) { 80, 20 });
+		struct Drawable* new_reg = drawable_new_reg(canvas, (Point) { 5, 2 }, (Point) { 10, 3 }, "AK" );
+		drawable_set_visibility(new_reg, true);
+		var reg_value = 0;
+		struct Drawable* new_bus = drawable_new_bus(canvas, (Point) { 8, 8 }, (Point) { 0, 20 });
+		drawable_set_visibility(new_bus, true);
+		struct Drawable* new_comb = drawable_new_comb(canvas, (Point) { 5, 4 }, (Point) { 20, 3 });
+		drawable_set_visibility(new_comb, true);
 		//add_rectangle(canvas, (Point) { 5, 2 }, (Point) { 10, 3 });
 
-		struct CPU* cpu = cpu_init();
+		//struct CPU* cpu = cpu_init();
 
 		bool exit = false;
 		while (!exit && !error)
@@ -42,6 +49,17 @@ int main()
 				{
 					if (event_ptr->key_event.key == 27)
 						exit = true;
+					else if (event_ptr->key_event.key == 'r' && event_ptr->key_event.key_down == true)
+					{
+						reg_value++;
+						drawable_set_value(new_reg, &reg_value);
+					}
+					else if (event_ptr->key_event.key == 'b')
+					{
+						var bus_value = event_ptr->key_event.key_down ? 0 : EMPTY;
+						drawable_set_value(new_bus, &bus_value);
+					}
+
 					//else if (event_ptr->key_event.key_down)
 					//{
 					//	for (unsigned int i = 0; i < event_ptr->key_event.repeat_count; i++)
@@ -56,7 +74,7 @@ int main()
 			window_draw(window);
 			terminal_display(term, window);
 		}
-		cpu_delete(cpu);
+		//cpu_delete(cpu);
 		window_delete(window);
 	}
 	

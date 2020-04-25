@@ -66,14 +66,14 @@ void signal_show(struct Signal* signal)
 {
 	check_for_NULL(signal);
 	if (signal->drawable)
-		drawable_set_visibility(true);
+		drawable_set_visibility(signal->drawable, true);
 }
 
 void signal_hide(struct Signal* signal)
 {
 	check_for_NULL(signal);
 	if (signal->drawable)
-		drawable_set_visibility(false);
+		drawable_set_visibility(signal->drawable, false);
 }
 
 

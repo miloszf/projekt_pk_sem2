@@ -140,6 +140,7 @@
   <ItemGroup>
     <ClCompile Include="canvas.c" />
     <ClCompile Include="cpu.c" />
+    <ClCompile Include="cpu_auxiliary_structs.c" />
     <ClCompile Include="drawable.c" />
     <ClCompile Include="error.c" />
     <ClCompile Include="files.c" />
@@ -158,6 +159,7 @@
   <ItemGroup>
     <ClInclude Include="canvas.h" />
     <ClInclude Include="cpu.h" />
+    <ClInclude Include="cpu_auxiliary_structs.h" />
     <ClInclude Include="error.h" />
     <ClInclude Include="event.h" />
     <ClInclude Include="files.h" />

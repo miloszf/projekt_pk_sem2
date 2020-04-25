@@ -13,15 +13,16 @@
 struct Drawable
 {
 	Point position;
-	Point size;
 	struct Vector* primitive_vect;
 	bool is_visible;
+	void* value_ptr;
+	void(*set_value)(struct Drawable*, void*);
 };
 
-struct Drawable* drawable_init(Point position, Point size);
+struct Drawable* drawable_init(Point position);
 void drawable_draw(struct Drawable* drawable, struct RenderInfo r_info);
+void drawable_set_visibility(struct Drawable* drawable, bool is_visible);
+void drawable_set_value(struct Drawable* drawable, void* value_ptr);
 void drawable_delete(struct Drawable* drawable);
-
-void drawable_new_test(struct Canvas* canvas, Point position, Point size);
 
 #endif
