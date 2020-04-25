@@ -28,7 +28,7 @@ struct CPUSetup
 	{
 		struct {
 			struct CPUPreference addr_length;
-			struct CPUPreference code_length;
+			struct CPUPreference word_length;
 			struct CPUPreference bus_link;
 			struct CPUPreference alu_inc;
 			struct CPUPreference alu_logic;

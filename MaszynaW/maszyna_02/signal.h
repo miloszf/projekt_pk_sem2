@@ -8,14 +8,14 @@
 struct Signal;
 
 typedef enum { SIGNAL_FROM_TO, SIGNAL_ALU } SignalType;
-
+//#define MAX_STRING_LENGTH 16
 
 struct SignalInit
 {
 	SignalType type;
 	const char* name;
 	var(*fun)(void*);
-	struct DrawableInitSignal* drawable_init;
+	struct DrawableSignalInit* drawable_init;
 	union
 	{
 		struct SignalInitFromTo
@@ -31,14 +31,13 @@ struct SignalInit
 			struct Unit* value_from;
 		} alu;
 
-
-
 		struct Unit** unit_array;
 	} value;
 };
 
 // Funkcja tworz¹ca nowy sygna³ z podanych elementów, zwraca wskaŸnik.
 // argumenty: wartoœci sk³adowe struktury
+struct Signal* signal_new(struct SignalInit* signal_init);
 
 // Funkcja wykonywuj¹ca rozkaz, zwraca okreœlon¹ wartoœæ w przypadku niepowodzenia
 // wykonania przypisania.

@@ -61,7 +61,7 @@ void primitive_draw(struct Primitive* primitive, struct RenderInfo r_info)
 		Point coord = { r_info.offset.x, r_info.offset.y };
 		if (primitive->type == TEXT_PRIMITIVE)
 		{
-			for (unsigned int i = 0; i < strlen(primitive->text.string) && in_rect(coord, r_info.buffer_size); i++)
+			for (unsigned int i = 0; i < wcslen(primitive->text.string) && in_rect(coord, r_info.buffer_size); i++)
 			{
 				pixel.u_char = primitive->text.string[i];
 				int buff_coord = coord.x + r_info.buffer_size.x * coord.y;

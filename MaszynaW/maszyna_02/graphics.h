@@ -10,7 +10,7 @@ struct Drawable;
 
 typedef enum { TO_REG_TYPE, TO_COMB_TYPE, TO_BUS_TYPE } DrawableSignalType;
 
-struct DrawableInitSignal
+struct DrawableSignalInit
 {
 	struct Canvas* canvas;
 	struct
@@ -39,6 +39,6 @@ struct Drawable* drawable_new_reg(struct Canvas* canvas, Point position, Point s
 struct Drawable* drawable_new_comb(struct Canvas* canvas, Point position, Point size);
 struct Drawable* drawable_new_bus(struct Canvas* canvas, Point position, Point size);
 
-struct Drawable* drawable_new_signal(struct DrawableInitSignal* init);
+struct Drawable* drawable_new_signal(struct DrawableSignalInit* init);
 
 #endif

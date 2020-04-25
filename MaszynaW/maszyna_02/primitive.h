@@ -16,7 +16,7 @@ typedef unsigned int Color;
 
 struct Text
 {
-	const char* string;
+	const wchar* string;
 };
 
 struct Line
