@@ -7,11 +7,14 @@
 
 #define NO_ERROR 0
 #define ERROR -1
-#define ERROR_TERMINAL_FAILURE	0x0001
-#define ERROR_EVENTS_FAILURE	0x0002
-#define ERROR_WINDOW_FAILURE	0x0004
-#define ERROR_RENDER_FAILURE	0x0008
-#define ERROR_SIGNAL_FAILURE	0x0010
+#define ERROR_TERMINAL_FAILURE		0x0001
+#define ERROR_EVENTS_FAILURE		0x0002
+#define ERROR_WINDOW_FAILURE		0x0004
+#define ERROR_RENDER_FAILURE		0x0008
+#define ERROR_SIGNAL_FAILURE		0x0010
+#define ERROR_NO_INSTR_FILE			0x0020
+#define ERROR_INVALID_INSTR_FILE	0x0040
+
 
 typedef int Error;
 // b³êdy krytyczne, wyst¹pienie oznacza natychmiastowe zamkniêcie programu
@@ -28,7 +31,7 @@ typedef int Error;
 // - b³¹d podczas wykonywania instrukcji/programu:
 //   - nierozpoznana wartoœæ w rejestrze instrukcji
 
-Error error();
+Error error_get();
 void error_set(Error error);
 void error_set_msg(Error error, const char* message);
 void critical_error_set(const char* message);

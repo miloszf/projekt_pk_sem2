@@ -10,6 +10,8 @@
 #include "unit.h"
 #include "signal.h"
 #include "graphics.h"
+#include "map.h"
+#include "file.h"
 
 #define REG_WIDTH 15
 #define REG_HEIGTH 3
@@ -275,11 +277,7 @@ void cpu_init_alu(struct CPU* cpu, const Point offset, struct Canvas* canvas)
 		};
 		cpu->components.alu.sig_iak = signal_new(&signal_init);
 	}
-
-
 }
-
-
 
 struct CPU* cpu_init()
 {
@@ -299,14 +297,33 @@ struct CPU* cpu_init()
 			cpu_preference_init("rejestrx"),
 			cpu_preference_init("rejestry"),
 			cpu_preference_init("przerwania"),
-			cpu_preference_init("wyjscie"),
+			cpu_preference_init("wejscie"),
 			cpu_preference_init("znaczniki")},
 		.basic = {
 			.unit_vect = vector_init(sizeof(struct Unit*)),
 			.signal_vect = vector_init(sizeof(struct Signal*))}
 	};
 
-	struct CPUComponents components;
+	struct FileHandler* files_handler = file_handler_init();
+
+	struct Map* setup_map = map_init(sizeof(&setup.preference.list->value));
+	size_t setup_size = sizeof(setup.preference.list) / sizeof(*setup.preference.list);
+	for (unsigned i = 0; i < setup_size; i++)
+	{
+		const char* key = setup.preference.list[i].name;
+		void* value_ptr = &setup.preference.list[i].value;
+		map_push(setup_map, key, &value_ptr);
+	}
+
+	if (file_import_setup("MaszynaW.lst", files_handler, setup_map))
+	{
+		//lista
+	}
+
+	map_delete(setup_map);
+	file_handler_delete(files_handler);
+
+	//struct CPUComponents components;
 
 	/* inicjalizacja unitów */ 
 	// ...

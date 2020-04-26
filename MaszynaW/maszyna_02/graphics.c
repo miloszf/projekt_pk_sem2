@@ -25,6 +25,11 @@
 #define MAX_STRING_LENGTH 16
 #define MAX_REG_NAME_LENGTH 2
 
+#define SIGNAL_PRIMITIVE_ARRAY_SIZE 2
+
+#define WINDOWS_WCHAR_SPECIFIER L"S"
+#define DEFAULT_WCHAR_SPECIFIER L"s"
+
 void add_rectangle(struct Drawable* drawable, Point position, Point size)
 {
 	check_for_NULL(drawable);
@@ -47,20 +52,6 @@ void add_rectangle(struct Drawable* drawable, Point position, Point size)
 	vector_push(drawable->primitive_vect, &new_line);
 }
 
-void add_arrow(struct Canvas* canvas, Point from, Point to)
-{
-	check_for_NULL(canvas);
-	if (from.x != to.x && from.y != to.y)
-		error_set(ERROR_RENDER_FAILURE);
-	else
-	{
-		//struct Drawable* new_drawable = canvas_new_drawable(canvas);
-		//new_drawable
-	}
-	
-
-}
-
 struct ValueReg
 {
 	char name[MAX_STRING_LENGTH + 1];
@@ -69,19 +60,17 @@ struct ValueReg
 
 void value_set_reg(struct Drawable* drawable, void* value_ptr)
 {
-	//check_for_NULL(drawable);
-	//check_for_NULL(value_ptr);
-	//var value = *(var*)value_ptr;
-	//struct ValueReg* value_struct = drawable->value_ptr;
-	////int chars_written = swprintf_s(value_struct->text, sizeof(value_struct->text) / sizeof(*value_struct->text), L"%s:%u", value_struct->name, value);
-	//size_t size = sizeof(value_struct->text) / sizeof(*value_struct->text);
-	//wchar w_name[MAX_STRING_LENGTH + 1];
-	//size_t
-	//if (mbstowcs_s())
-	//	critical_error_set("b³¹d konwercji do wchar");
-	//int chars_written = swprintf_s(value_struct->text, size, L"%s:%u", value_struct->name, value);
-	//if (chars_written < 0)
-	//	error_set(ERROR);
+	check_for_NULL(drawable);
+	check_for_NULL(value_ptr);
+	var value = *(var*)value_ptr;
+	struct ValueReg* value_struct = drawable->value_ptr;
+	size_t wbuffer_size = sizeof(value_struct->text) / sizeof(*value_struct->text);
+	// WARNING!
+	// currently used format modifier is Windows-specific
+	// for other compilers switch to format L"%s:%u"!
+	int chars_written = swprintf_s(value_struct->text, wbuffer_size, L"%" WINDOWS_WCHAR_SPECIFIER L":%u", value_struct->name, value);
+	if (chars_written < 0)
+		error_set(ERROR);
 }
 
 struct Drawable* drawable_new_reg(struct Canvas* canvas, Point position, Point size, const char* name)
@@ -182,52 +171,126 @@ struct Drawable* drawable_new_bus(struct Canvas* canvas, Point position, Point s
 
 struct ValueSignal
 {
-	char name[MAX_STRING_LENGTH + 1];
-	struct Vector* prim_vect;
+	wchar arrow[2];
+	wchar tag[MAX_STRING_LENGTH + 1];
+	struct Primitive* primitive_ptr_array[SIGNAL_PRIMITIVE_ARRAY_SIZE];
 };
 
-struct Drawable* drawable_new_signal(struct DrawableSignalInit* init)
+void value_set_signal(struct Drawable* drawable, void* value_ptr)
 {
-	//check_for_NULL(init);
-	//check_for_NULL(init->canvas);
+	check_for_NULL(drawable);
+	check_for_NULL(value_ptr);
+	var value = *(var*)value_ptr;
+	struct ValueSignal* value_signal = drawable->value_ptr;
+	Color color = (value == EMPTY) ? COLOR_DEFAULT : COLOR_ACTIVE;
+	for (int i = 0; i < SIGNAL_PRIMITIVE_ARRAY_SIZE; i++)
+		if (value_signal->primitive_ptr_array[i])
+			value_signal->primitive_ptr_array[i]->color = color;
+}
 
-	//struct Drawable* new_drawable;
-	//if ((init->arrow.head.x == init->arrow.tail.x) && 
-	//	(init->tag.head.y == init->tag.tail.y))
-	//{
-		//new_drawable = canvas_new_drawable(init->canvas, (Point) { 0, 0 });
-		//if (init->arrow.head.y != init->arrow.tail.y)
-		//{
-		//	struct Primitive new_line = {
-		//		.type = LINE_PRIMITIVE,
-		//		.position = (init->arrow.head.y >= init->arrow.tail.y) ? init->arrow.head : init->arrow.tail,
-		//		.orientation = VERTICAL,
-		//		.color = COLOR_DEFAULT,
-		//		.line = (struct Line){.line_type = SINGLE_LINE, .length = abs(init->arrow.head.y - init->arrow.tail.y) + 1}
-		//	};
-		//	vector_push(new_drawable->primitive_vect, &new_line);
-		//	// Unicode for upwards arrow and downwards arrow
-		//	wchar arrow_char = (init->arrow.head.y >= init->arrow.tail.y) ? 0x2191 : 0x2193;
-		//	
+struct Drawable* drawable_new_signal(struct DrawableSignalInit* init, const char* name)
+{
+	check_for_NULL(init);
+	check_for_NULL(init->canvas);
 
-		//	struct Primitive new_arrow = {
-		//		.type = TEXT_PRIMITIVE,
-		//		.position = (Point) {init->arrow.head.x, init->tag.tail.y},
-		//		.orientation = HORIZONTAL,
-		//		.color = COLOR_DEFAULT,
-		//		.text = (struct Text){ new_value->text }
-		//	};
-		//}
+	struct Drawable* new_drawable;
+	if ((init->arrow.head.x == init->arrow.tail.x) && 
+		(init->tag.head.y == init->tag.tail.y))
+	{
+		new_drawable = canvas_new_drawable(init->canvas, (Point) { 0, 0 });
+		struct ValueSignal* new_value = malloc_s(sizeof(struct ValueSignal));
+		for (int i = 0; i < SIGNAL_PRIMITIVE_ARRAY_SIZE; i++)
+			new_value->primitive_ptr_array[i] = NULL;
+		int primitive_array_index = 0;
+		new_drawable->value_ptr = new_value;
 
+		if (init->arrow.head.y != init->arrow.tail.y)
+		{
+			struct Primitive new_line = {
+				.type = LINE_PRIMITIVE,
+				.position = (init->arrow.head.y < init->arrow.tail.y) ? init->arrow.head : init->arrow.tail,
+				.orientation = VERTICAL,
+				.color = COLOR_DEFAULT,
+				.line = (struct Line){.line_type = SINGLE_LINE, .length = abs(init->arrow.head.y - init->arrow.tail.y) + 1}
+			};
+			vector_push(new_drawable->primitive_vect, &new_line);
 
+			// Unicode for upwards arrow and downwards arrow
+			wchar arrow_char = (init->arrow.head.y >= init->arrow.tail.y) ? 0x2191 : 0x2193;
+			new_value->arrow[0] = arrow_char;
+			new_value->arrow[1] = '\0';
+			struct Primitive new_arrow = {
+				.type = TEXT_PRIMITIVE,
+				.position = (Point) {init->arrow.head.x, init->tag.tail.y},
+				.orientation = HORIZONTAL,
+				.color = COLOR_DEFAULT,
+				.text = (struct Text){ new_value->arrow }
+			};
+			//vector_push(new_drawable->primitive_vect, &new_arrow);
+			new_value->primitive_ptr_array[primitive_array_index++] = vector_push(new_drawable->primitive_vect, &new_arrow);
+		}
 
+		enum {LEFT, RIGHT} tag_orientation = (init->tag.head.x > init->tag.tail.x) ? LEFT : RIGHT;
+		size_t name_len = strlen(name);
+		size_t tag_field_len = abs(init->tag.head.x - init->tag.tail.x) + 1;
+		// name_len + '>'
+		if ((name_len + 1) <= MAX_STRING_LENGTH && (name_len + 1) <= tag_field_len)
+		{
+			wmemset(new_value->tag, 0x2501, tag_field_len);
+			new_value->tag[tag_field_len] = '\0';
 
+			wchar tag_pointer_char;
+			switch (init->tag.type)
+			{
+			case TO_REG_TYPE:
+				tag_pointer_char = (tag_orientation == LEFT) ? 0x25BA : 0x25C4;
+				break;
+			case TO_COMB_TYPE:
+			case TO_BUS_TYPE:
+				tag_pointer_char = 0x253F;
+				break;
+			default:
+				critical_error_set(ERROR);
+				tag_pointer_char = '\0';
+			}
 
-		//new_drawable->set_value = &value_set_bus;
-	//}
-	//else
-	//	new_drawable = NULL;
+			size_t wbuffer_size = sizeof(new_value->tag) / sizeof(*new_value->tag);
+			size_t offset;
+			if (tag_orientation == LEFT)
+			{
+				offset = 0;
+				new_value->tag[tag_field_len - 1] = tag_pointer_char;
+			}	
+			else
+			{
+				offset = tag_field_len - name_len;
+				new_value->tag[0] = tag_pointer_char;
+			}
+			//int chars_written = swprintf_s(new_value->tag + offset, wbuffer_size - offset, L"%" WINDOWS_WCHAR_SPECIFIER, name);
+			//if (chars_written < 0)
+				//error_set(ERROR);
+			for (size_t i = 0; i < name_len; i++)
+				new_value->tag[offset + i] = (wchar)(name[i]);
 
-	//return new_drawable;
+			Point position;
+			position.x = (tag_orientation == LEFT) ? init->tag.tail.x : init->tag.head.x;
+			position.y = init->tag.head.y;
+			struct Primitive new_tag = {
+				.type = TEXT_PRIMITIVE,
+				.position = position,
+				.orientation = HORIZONTAL,
+				.color = COLOR_DEFAULT,
+				.text = (struct Text){ new_value->tag }
+			};
+			//vector_push(new_drawable->primitive_vect, &new_tag);
+			new_value->primitive_ptr_array[primitive_array_index++] = vector_push(new_drawable->primitive_vect, &new_tag);
+		}
+
+		new_drawable->set_value = &value_set_signal;
+	}
+	else
+		new_drawable = NULL;
+
+	return new_drawable;
 	return NULL;
 }

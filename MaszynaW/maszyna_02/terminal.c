@@ -71,7 +71,7 @@ void terminal_exit(void)
 	if (!error)
 	{
 		//if (!SetConsoleMode(out_handle, orginal_setup.out_mode))
-			//error = ERROR;
+			//error_get = ERROR;
 
 		if (!SetConsoleMode(in_handle, orginal_setup.in_mode))
 			error = ERROR;
@@ -111,9 +111,9 @@ struct Terminal* terminal_init(const char* window_name)
 		{
 			//COORD max_window_size = GetLargestConsoleWindowSize(term->out_handle);
 			//if (!max_window_size.X || !max_window_size.Y)
-			//	error = ERROR;
+			//	error_get = ERROR;
 			//else if (!SetConsoleScreenBufferSize(term->out_handle, max_window_size))
-			//	error = ERROR;
+			//	error_get = ERROR;
 			//else 
 				if (!SetConsoleActiveScreenBuffer(term->out_handle))
 				error = ERROR;
@@ -123,17 +123,17 @@ struct Terminal* terminal_init(const char* window_name)
 		
 	}
 
-	//if (!error)
+	//if (!error_get)
 	//{
 	//	if (!GetConsoleMode(term->orginal_output_handle, &orginal_setup.out_mode))
-	//		error = ERROR;
+	//		error_get = ERROR;
 	//	else
 	//	{
 	//		DWORD console_mode =
 	//			orginal_setup.out_mode |
 	//			ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 	//		if (!SetConsoleMode(term->orginal_output_handle, console_mode))
-	//			error = ERROR;
+	//			error_get = ERROR;
 	//	}
 	//}
 	

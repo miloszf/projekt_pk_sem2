@@ -32,7 +32,7 @@ struct StructError* get_error()
 	}
 }
 
-Error error()
+Error error_get()
 {
 	return get_error()->err;
 }

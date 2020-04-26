@@ -42,11 +42,15 @@ void* map_read_from_key(struct Map* map, const char* key)
 	void* value = NULL;
 	size_t map_size = vector_size(map->keys_vect);
 	for (size_t i = 0; i < map_size; i++)
-		if (!strcmp(key, vector_read(map->keys_vect, i)))
+	{
+		const char** key_ptr = vector_read(map->keys_vect, i);
+		check_for_NULL(key_ptr);
+		if (!strcmp(key, *key_ptr))
 		{
 			value = vector_read(map->values_vect, i);
 			break;
 		}
+	}
 
 	return value;
 }

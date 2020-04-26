@@ -6,8 +6,6 @@
 #include "vector.h"
 #include "terminal.h"
 #include "event.h"
-//#include "window.h"
-//#include "canvas.h"
 #include "graphics.h"
 #include "cpu.h"
 
@@ -19,7 +17,7 @@ int main()
 {
 	setlocale(LC_ALL, "Polish_Poland.1250");
 	struct Terminal* term = terminal_init(NULL);
-	if (error())
+	if (error_get())
 		printf("B³¹d!");
 	else
 	{
@@ -30,13 +28,24 @@ int main()
 		struct Drawable* new_reg = drawable_new_reg(canvas, (Point) { 5, 2 }, (Point) { 10, 3 }, "AK" );
 		drawable_set_visibility(new_reg, true);
 		var reg_value = 0;
-		struct Drawable* new_bus = drawable_new_bus(canvas, (Point) { 8, 8 }, (Point) { 0, 20 });
+		struct Drawable* new_bus = drawable_new_bus(canvas, (Point) { 4, 8 }, (Point) { 0, 20 });
 		drawable_set_visibility(new_bus, true);
 		struct Drawable* new_comb = drawable_new_comb(canvas, (Point) { 5, 4 }, (Point) { 20, 3 });
 		drawable_set_visibility(new_comb, true);
+
+		struct DrawableSignalInit drawable_signal_init = (struct DrawableSignalInit){
+			.canvas = canvas,
+			.arrow.head = (Point){14, 6},
+			.arrow.tail = (Point){14, 10},
+			.tag.type = TO_BUS_TYPE,
+			.tag.head = (Point){15, 7},
+			.tag.tail = (Point){24, 7},
+		};
+		struct Drawable* new_sig = drawable_new_signal(&drawable_signal_init, "weja");
+		drawable_set_visibility(new_sig, true);
 		//add_rectangle(canvas, (Point) { 5, 2 }, (Point) { 10, 3 });
 
-		//struct CPU* cpu = cpu_init();
+		struct CPU* cpu = cpu_init();
 
 		bool exit = false;
 		while (!exit && !error)
@@ -58,6 +67,11 @@ int main()
 					{
 						var bus_value = event_ptr->key_event.key_down ? 0 : EMPTY;
 						drawable_set_value(new_bus, &bus_value);
+					}
+					else if (event_ptr->key_event.key == 's')
+					{
+						var sig_value = event_ptr->key_event.key_down ? 0 : EMPTY;
+						drawable_set_value(new_sig, &sig_value);
 					}
 
 					//else if (event_ptr->key_event.key_down)

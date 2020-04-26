@@ -31,13 +31,14 @@ struct Signal* signal_new(struct SignalInit* signal_init)
 		break;
 	default:
 		critical_error_set("invalid signal type");
+		arguments_size = 0;
 	}
 	void* new_arguments = malloc_s(arguments_size);
 	size_t name_len = strlen(signal_init->name) + 1;
 	char* new_name = malloc_s(name_len);
 	if (strcpy_s(new_name, name_len, signal_init->name))
 		critical_error_set("strcpy_s failed");
-	struct Drawable* new_drawable = drawable_new_signal(signal_init->drawable_init);
+	struct Drawable* new_drawable = drawable_new_signal(signal_init->drawable_init, signal_init->name);
 
 	struct Signal* new_signal = malloc_s(sizeof(struct Signal));
 	*new_signal = (struct Signal){ signal_init->type, new_name, signal_init->fun, new_arguments, new_drawable };

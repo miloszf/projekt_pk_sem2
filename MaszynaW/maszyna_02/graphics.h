@@ -39,6 +39,6 @@ struct Drawable* drawable_new_reg(struct Canvas* canvas, Point position, Point s
 struct Drawable* drawable_new_comb(struct Canvas* canvas, Point position, Point size);
 struct Drawable* drawable_new_bus(struct Canvas* canvas, Point position, Point size);
 
-struct Drawable* drawable_new_signal(struct DrawableSignalInit* init);
+struct Drawable* drawable_new_signal(struct DrawableSignalInit* init, const char* name);
 
 #endif
