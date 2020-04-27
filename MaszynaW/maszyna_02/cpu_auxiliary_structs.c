@@ -6,6 +6,8 @@
 #include "error.h"
 #include "settings.h"
 #include "vector.h"
+#include "unit.h"
+#include "signal.h"
 
 struct CPUPreference cpu_preference_init(const char* name)
 {
@@ -21,13 +23,19 @@ struct CPUPreference cpu_preference_init(const char* name)
 	return (struct CPUPreference) { new_name, 0, unit_vect, signal_vect };
 }
 
-void cpu_preference_delete(struct CPUPreference* setup)
+void cpu_preference_delete(struct CPUPreference* pref)
 {
-	if (setup)
+	if (pref)
 	{
-		free((char*)setup->name);
-		vector_delete(setup->unit_vect);
-		vector_delete(setup->signal_vect);
+		free((char*)pref->name);
+		struct Unit** unit_ptr;
+		while (unit_ptr = vector_pop(pref->unit_vect))
+			unit_delete(*unit_ptr);
+		vector_delete(pref->unit_vect);
+		struct Signal** signal_ptr;
+		while (signal_ptr = vector_pop(pref->signal_vect))
+			signal_delete(*signal_ptr);
+		vector_delete(pref->signal_vect);
 	}
 }
 
@@ -36,8 +44,10 @@ void cpu_preference_delete(struct CPUPreference* setup)
 void cpu_setup_delete(struct CPUSetup* setup)
 {
 	if (setup)
+	{
 		for (int i = 0; i < CPU_SETUP_SIZE; i++)
-			cpu_preference_delete(setup->preference.list + i);
+			cpu_preference_delete(setup->list + i);
+	}
 }
 
 // -----

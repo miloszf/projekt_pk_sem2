@@ -14,15 +14,16 @@ struct CPUPreference
 struct CPUPreference cpu_preference_init(const char* name);
 void cpu_preference_delete(struct CPUPreference* setup);
 
-#define CPU_SETUP_SIZE 12
+//#define CPU_SETUP_SIZE (sizeof(struct CPUSetup) / sizeof(struct CPUPreference))
+#define CPU_SETUP_SIZE 13
 
 struct CPUSetup
 {
-	struct
-	{
-		struct Vector* unit_vect;
-		struct Vector* signal_vect;
-	} basic;
+	//struct
+	//{
+	//	struct Vector* unit_vect;
+	//	struct Vector* signal_vect;
+	//} basic;
 
 	union
 	{
@@ -39,9 +40,10 @@ struct CPUSetup
 			struct CPUPreference interrupts;
 			struct CPUPreference io;
 			struct CPUPreference tags;
+			struct CPUPreference basic;
 		} all;
 		struct CPUPreference list[CPU_SETUP_SIZE];
-	} preference;
+	};// preference;
 };
 
 void cpu_setup_delete(struct CPUSetup* setup);
@@ -59,7 +61,7 @@ struct CPUComponents
 {
 	struct
 	{
-		struct Unit* reg_AK;
+		struct Unit* reg_ak;
 		struct Unit* comb_weja;
 		struct Unit* comb_weak;
 		struct Signal* sig_weja;

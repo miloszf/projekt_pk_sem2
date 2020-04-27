@@ -8,7 +8,7 @@ struct CPU;
 // odpowiednie struktury i po³¹czenia
 // argumenty: [?], bufor znaków z klawiatury do odczytania, bufor znaków do zapisania
 // zwraca: wskaŸnik na nowê jednostkê
-struct CPU* cpu_init();
+struct CPU* cpu_init(struct Canvas* canvas);
 
 // Funkcja wczytuj¹ca i kompiluj¹ca listê rozkazów i ustawieñ
 // argumenty: nazwa pliku z rozkazami

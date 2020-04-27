@@ -216,7 +216,7 @@ struct Drawable* drawable_new_signal(struct DrawableSignalInit* init, const char
 			vector_push(new_drawable->primitive_vect, &new_line);
 
 			// Unicode for upwards arrow and downwards arrow
-			wchar arrow_char = (init->arrow.head.y >= init->arrow.tail.y) ? 0x2191 : 0x2193;
+			wchar arrow_char = (init->arrow.head.y >= init->arrow.tail.y) ? 0x2193 : 0x2191;
 			new_value->arrow[0] = arrow_char;
 			new_value->arrow[1] = '\0';
 			struct Primitive new_arrow = {

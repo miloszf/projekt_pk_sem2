@@ -24,8 +24,8 @@ int main()
 		Error error = NO_ERROR;
 		
 		struct Window* window = window_init();
-		struct Canvas* canvas = window_new_canvas(window, (Point) {20, 10 }, (Point) { 80, 20 });
-		struct Drawable* new_reg = drawable_new_reg(canvas, (Point) { 5, 2 }, (Point) { 10, 3 }, "AK" );
+		struct Canvas* canvas = window_new_canvas(window, (Point) {0, 0 }, (Point) { 70, 31 });
+		/*struct Drawable* new_reg = drawable_new_reg(canvas, (Point) { 5, 2 }, (Point) { 10, 3 }, "AK" );
 		drawable_set_visibility(new_reg, true);
 		var reg_value = 0;
 		struct Drawable* new_bus = drawable_new_bus(canvas, (Point) { 4, 8 }, (Point) { 0, 20 });
@@ -42,10 +42,10 @@ int main()
 			.tag.tail = (Point){24, 7},
 		};
 		struct Drawable* new_sig = drawable_new_signal(&drawable_signal_init, "weja");
-		drawable_set_visibility(new_sig, true);
+		drawable_set_visibility(new_sig, true);*/
 		//add_rectangle(canvas, (Point) { 5, 2 }, (Point) { 10, 3 });
 
-		struct CPU* cpu = cpu_init();
+		struct CPU* cpu = cpu_init(canvas);
 
 		bool exit = false;
 		while (!exit && !error)
@@ -58,7 +58,7 @@ int main()
 				{
 					if (event_ptr->key_event.key == 27)
 						exit = true;
-					else if (event_ptr->key_event.key == 'r' && event_ptr->key_event.key_down == true)
+					/*else if (event_ptr->key_event.key == 'r' && event_ptr->key_event.key_down == true)
 					{
 						reg_value++;
 						drawable_set_value(new_reg, &reg_value);
@@ -72,7 +72,7 @@ int main()
 					{
 						var sig_value = event_ptr->key_event.key_down ? 0 : EMPTY;
 						drawable_set_value(new_sig, &sig_value);
-					}
+					}*/
 
 					//else if (event_ptr->key_event.key_down)
 					//{
@@ -88,7 +88,7 @@ int main()
 			window_draw(window);
 			terminal_display(term, window);
 		}
-		//cpu_delete(cpu);
+		cpu_delete(cpu);
 		window_delete(window);
 	}
 	

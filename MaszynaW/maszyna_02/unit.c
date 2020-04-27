@@ -103,7 +103,7 @@ void unit_draw(struct Unit* unit)
 {
 	check_for_NULL(unit);
 	if (unit->drawable)
-		drawable_set_value(unit->drawable, unit->value);
+		drawable_set_value(unit->drawable, &unit->value);
 }
 
 void unit_show(struct Unit* unit)
@@ -118,6 +118,13 @@ void unit_hide(struct Unit* unit)
 	check_for_NULL(unit);
 	if (unit->drawable)
 		drawable_set_visibility(unit->drawable, false);
+}
+
+void unit_set_visibility(struct Unit* unit, bool visibility)
+{
+	check_for_NULL(unit);
+	if (unit->drawable)
+		drawable_set_visibility(unit->drawable, visibility);
 }
 
 void unit_delete(struct Unit* unit)

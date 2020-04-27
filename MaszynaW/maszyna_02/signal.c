@@ -77,6 +77,13 @@ void signal_hide(struct Signal* signal)
 		drawable_set_visibility(signal->drawable, false);
 }
 
+void signal_set_visibility(struct Signal* signal, bool visibility)
+{
+	check_for_NULL(signal);
+	if (signal->drawable)
+		drawable_set_visibility(signal->drawable, visibility);
+}
+
 
 void signal_delete(struct Signal* signal)
 {

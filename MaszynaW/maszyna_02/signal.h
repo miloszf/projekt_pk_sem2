@@ -1,7 +1,9 @@
 #ifndef SIGNAL_H
 #define SIGNAL_H
 
-#include "unit.h"
+#include <stdbool.h>
+#include "settings.h"
+//#include "unit.h"
 // Struktura reprezentuj¹ca wewnêtrzne sygna³y maszynyW.
 // Sk³ada siê z nazwy sygna³u, wskaŸnika do wykonywanej funkcji i wskaŸnika
 // do struktury przechowuj¹cej dane dla funkcji.
@@ -45,5 +47,10 @@ struct Signal* signal_new(struct SignalInit* signal_init);
 
 // Funkcja zwracaj¹ca nazwê sygna³u
 // argumenty: wskaŸnik do struktury
+
+
+void signal_delete(struct Signal* signal);
+
+void signal_set_visibility(struct Signal* signal, bool visibility);
 
 #endif
