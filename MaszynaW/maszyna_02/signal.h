@@ -52,5 +52,6 @@ struct Signal* signal_new(struct SignalInit* signal_init);
 void signal_delete(struct Signal* signal);
 
 void signal_set_visibility(struct Signal* signal, bool visibility);
+const char* signal_get_name(struct Signal* signal);
 
 #endif

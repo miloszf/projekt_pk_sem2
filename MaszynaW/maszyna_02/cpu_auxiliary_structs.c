@@ -41,6 +41,31 @@ void cpu_preference_delete(struct CPUPreference* pref)
 
 // -----
 
+struct CPUSetup cpu_setup_init()
+{
+	struct CPUSetup setup = {
+		.list = {
+			cpu_preference_init("adres"),
+			cpu_preference_init("kod"),
+			cpu_preference_init("polaczenie"),
+			cpu_preference_init("inkrementacja"),
+			cpu_preference_init("logiczne"),
+			cpu_preference_init("arytmetyczne"),
+			cpu_preference_init("stos"),
+			cpu_preference_init("rejestrx"),
+			cpu_preference_init("rejestry"),
+			cpu_preference_init("przerwania"),
+			cpu_preference_init("wejscie"),
+			cpu_preference_init("znaczniki"),
+			cpu_preference_init(""),
+		}
+	};
+	setup.all.addr_length.value = 5;
+	setup.all.code_length.value = 3;
+	setup.all.basic.value = 1;
+	return setup;
+}
+
 void cpu_setup_delete(struct CPUSetup* setup)
 {
 	if (setup)
@@ -58,7 +83,7 @@ struct CPUTag cpu_tag_init(const char* name)
 	char* new_name = _strdup(name);
 	if (!new_name)
 		critical_error_set("strdup failed\n");
-	return (struct CPUTag) { new_name };
+	return (struct CPUTag) { new_name, false };
 }
 
 void cpu_tag_delete(struct CPUTag* tag)

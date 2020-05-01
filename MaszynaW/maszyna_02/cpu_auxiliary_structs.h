@@ -16,6 +16,7 @@ void cpu_preference_delete(struct CPUPreference* setup);
 
 //#define CPU_SETUP_SIZE (sizeof(struct CPUSetup) / sizeof(struct CPUPreference))
 #define CPU_SETUP_SIZE 13
+#define CPU_TAGS_NUMBER 4
 
 struct CPUSetup
 {
@@ -29,7 +30,7 @@ struct CPUSetup
 	{
 		struct {
 			struct CPUPreference addr_length;
-			struct CPUPreference word_length;
+			struct CPUPreference code_length;
 			struct CPUPreference bus_link;
 			struct CPUPreference alu_inc;
 			struct CPUPreference alu_logic;
@@ -46,6 +47,7 @@ struct CPUSetup
 	};// preference;
 };
 
+struct CPUSetup cpu_setup_init();
 void cpu_setup_delete(struct CPUSetup* setup);
 
 struct CPUTag
@@ -145,12 +147,18 @@ struct CPUComponents
 		struct Signal* sig_wyap;
 	} intr;
 
-	struct {
-		struct CPUTag tag_int;
-		struct CPUTag tag_v;
-		struct CPUTag tag_z;
-		struct CPUTag tag_zak;
-	} tags;
+	union 
+	{
+		struct 
+		{
+			struct CPUTag tag_int;
+			struct CPUTag tag_v;
+			struct CPUTag tag_z;
+			struct CPUTag tag_zak;
+		} all;
+		struct CPUTag list[CPU_TAGS_NUMBER];
+	}tags;
+	
 };
 
 struct CPUMemory

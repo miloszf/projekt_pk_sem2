@@ -6,7 +6,12 @@
 
 #include "error.h"
 
+#include <stdbool.h>
+bool debug_deleted = false;
+
 #define EXIT_VALUE -1
+
+
 
 struct StructError {
 	Error err;
@@ -27,7 +32,7 @@ struct StructError* get_error()
 			exit(EXIT_VALUE);
 		else
 			*s_error = (struct StructError){ 0, NULL };
-
+		// DEBUG
 		return s_error;
 	}
 }
@@ -99,12 +104,24 @@ void check_for_NULL(const void* ptr)
 
 void error_exit(void)
 {
+	//DEBUG
+	if (!debug_deleted)
+	{
+		struct StructError* s_err = get_error();
+		if (s_err->err)
+			if (s_err->msg)
+				printf("%s\n", s_err->msg);
+			else
+				printf("Wyst¹pi³ b³¹d!\n");
+		free(s_err->msg);
+		free(s_err);
+	}
+
+}
+
+void debug_error_delete()
+{
+	debug_deleted = true;
 	struct StructError* s_err = get_error();
-	if (s_err->err)
-		if (s_err->msg)
-			printf("%s\n", s_err->msg);
-		else
-			printf("Wyst¹pi³ b³¹d!\n");
-	free(s_err->msg);
 	free(s_err);
 }

@@ -84,6 +84,12 @@ void signal_set_visibility(struct Signal* signal, bool visibility)
 		drawable_set_visibility(signal->drawable, visibility);
 }
 
+const char* signal_get_name(struct Signal* signal) 
+{
+	check_for_NULL(signal);
+	return signal->name;
+}
+
 
 void signal_delete(struct Signal* signal)
 {

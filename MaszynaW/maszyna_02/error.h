@@ -14,6 +14,8 @@
 #define ERROR_SIGNAL_FAILURE		0x0010
 #define ERROR_NO_INSTR_FILE			0x0020
 #define ERROR_INVALID_INSTR_FILE	0x0040
+#define ERROR_STRING_HANDLING		0x0080
+#define ERROR_INSTR_COMPILATION		0x0100
 
 
 typedef int Error;
@@ -40,5 +42,7 @@ void* malloc_s(size_t size);
 void* calloc_s(size_t count, size_t size);
 void* realloc_s(void* ptr, size_t new_size);
 void check_for_NULL(const void* ptr);
+
+void debug_error_delete();
 
 #endif

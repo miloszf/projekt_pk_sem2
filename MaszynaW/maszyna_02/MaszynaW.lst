@@ -13,14 +13,14 @@ Adres=6
 Kod=4
 [Rozkazy]
 Liczba=8
+Nazwa7=som
+Nazwa8=soz
 Nazwa1=stp
 Nazwa2=dod
 Nazwa3=ode
 Nazwa4=pob
 Nazwa5=³ad
 Nazwa6=sob
-Nazwa7=som
-Nazwa8=soz
 [stp]
 Linie=5
 Linia1=// zakoñczenie programu

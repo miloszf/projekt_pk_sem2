@@ -39,21 +39,6 @@ void* vector_push(struct Vector* vect, void* value_ptr)
 	return dest;
 }
 
-//void* vector_pop(struct Vector* vect)
-//{
-//	check_for_NULL(vect);
-//	if (vect->el_number)
-//	{
-//		vect->el_number--;
-//		void* return_ptr = malloc_s(vect->el_size);
-//		void* value_ptr = (char*)vect->array + (vect->el_size * vect->el_number);
-//		memcpy(return_ptr, value_ptr, vect->el_size);
-//		return return_ptr;
-//	}
-//	else
-//		return NULL;
-//}
-
 void* vector_pop(struct Vector* vect)
 {
 	check_for_NULL(vect);
@@ -89,6 +74,16 @@ size_t vector_size(struct Vector* vect)
 {
 	check_for_NULL(vect);
 	return vect->el_number;
+}
+
+void* vector_unwrap(struct Vector* vect, size_t* size)
+{
+	check_for_NULL(vect);
+	if (size)
+		*size = vect->el_number;
+	void* temp = vect->array;
+	free(vect);
+	return temp;
 }
 
 void vector_delete(struct Vector* vect)

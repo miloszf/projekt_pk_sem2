@@ -17,7 +17,7 @@ bool file_import_setup(const char* file_name, struct FileHandler* files_handler,
 // Funkcja kompiluj¹ca listê rozkazów, zwraca 0 w przypadku niepowodzenia
 // zwraca wektor wczytanych instrukcji
 // argumenty: nazwa pliku, mapa sygna³ów, mapa znaczników
-bool file_compile_instructions(const char* file_name, struct Map* signal_map, struct Map* tag_map, struct Vector* instr_vect);
+struct Vector* file_compile_instructions(struct FileHandler* handler, struct Map* signal_map, struct Map* tag_map);
 
 // Funkcja kompiluj¹ca program, wype³nia pamiêæ maszyny, zwraca 0 w przypadku niepowodzenia
 // wczytuje do program do podanej pamiêci 

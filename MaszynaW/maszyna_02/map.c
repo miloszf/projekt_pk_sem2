@@ -64,5 +64,6 @@ void map_delete(struct Map* map)
 			free(*key_ptr);
 		vector_delete(map->keys_vect);
 		vector_delete(map->values_vect);
+		free(map);
 	}
 }

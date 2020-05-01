@@ -9,11 +9,12 @@
 
 int main()
 {
-	wchar_t w_str[20];
-	char str[] = "weja";
-	int a = 101;
-	int chars_read = swprintf(w_str, (sizeof(w_str) / sizeof(*w_str)), L"%s:%u", str, a);
-	wprintf(L"%ls", w_str);
+	char expected_tokens[][10] = {
+		"czyt", "wys", "wei", "il"
+	};
 	
+	printf("%c", (expected_tokens[0])[0]);
+	(expected_tokens[0])[0] = 'z';
+	printf("%c", (expected_tokens[0])[0]);
 	return 0;
 }

@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+// DEBUG
+#include <stdio.h>
 
 #include "cpu.h"
 #include "vector.h"
@@ -12,12 +14,18 @@
 #include "graphics.h"
 #include "map.h"
 #include "file.h"
+#include "instruction.h"
 
 #define REG_WIDTH 15
 #define REG_HEIGTH 3
 #define REG_SIZE (Point){REG_WIDTH, REG_HEIGTH}
 
 #define POINT(x,y) (Point){x, y}
+
+inline Point p_add(Point a, Point b)
+{
+	return POINT((a.x + b.x), (a.y + b.y));
+}
 
 struct CPU
 {
@@ -28,15 +36,11 @@ struct CPU
 	{
 		struct Vector* units;
 		struct Vector* signals;
-		struct Vector* tags;
+		struct Vector* instructions;
+		//struct Vector* tags;
 	} vector;
+
 };
-
-inline Point p_add(Point a, Point b)
-{
-	return POINT((a.x + b.x), (a.y + b.y));
-}
-
 
 void cpu_init_alu(struct CPU* cpu, const Point offset, struct Canvas* canvas)
 {
@@ -51,7 +55,7 @@ void cpu_init_alu(struct CPU* cpu, const Point offset, struct Canvas* canvas)
 		.position = p_add(offset, POINT(6, 1)),
 		.size = REG_SIZE,
 		.canvas = canvas,
-		.word_length = &cpu->setup.all.word_length.value
+		.word_length = &cpu->setup.all.code_length.value
 	};
 	cpu->components.alu.reg_ak = unit_new_reg(&new_unit, "AK");
 	// COMB_WEJA
@@ -59,7 +63,7 @@ void cpu_init_alu(struct CPU* cpu, const Point offset, struct Canvas* canvas)
 		.position = p_add(offset, POINT(6, 3)),
 		.size = POINT(REG_WIDTH, 8),
 		.canvas = canvas,
-		.word_length = &cpu->setup.all.word_length.value
+		.word_length = &cpu->setup.all.code_length.value
 	};
 	cpu->components.alu.comb_weja = unit_new_comb(&new_unit);
 	// COMB_WEAK
@@ -67,7 +71,7 @@ void cpu_init_alu(struct CPU* cpu, const Point offset, struct Canvas* canvas)
 		.position = p_zero,
 		.size = p_zero,
 		.canvas = NULL,
-		.word_length = &cpu->setup.all.word_length.value
+		.word_length = &cpu->setup.all.code_length.value
 	};
 	cpu->components.alu.comb_weak = unit_new_comb(&new_unit);
 
@@ -399,7 +403,7 @@ void cpu_init_mem(struct CPU* cpu, const Point offset, struct Canvas* canvas)
 		.position = p_add(offset, POINT(0, 13)),
 		.size = POINT(18, REG_HEIGTH),
 		.canvas = canvas,
-		.word_length = &cpu->setup.all.word_length.value
+		.word_length = &cpu->setup.all.code_length.value
 	};
 	cpu->components.mem.reg_s = unit_new_reg(&new_unit, "S");
 
@@ -528,7 +532,7 @@ void cpu_init_addr(struct CPU* cpu, const Point offset, struct Canvas* canvas)
 		.position = p_add(offset, POINT(0, 17)),
 		.size = POINT(68, 0),
 		.canvas = canvas,
-		.word_length = &cpu->setup.all.word_length.value
+		.word_length = &cpu->setup.all.code_length.value
 	};
 	cpu->components.addr.bus_s = unit_new_bus(&new_unit);
 	// BUS_AS
@@ -536,7 +540,7 @@ void cpu_init_addr(struct CPU* cpu, const Point offset, struct Canvas* canvas)
 		.position = p_add(offset, POINT(18, 0)),
 		.size = POINT(0, 18),
 		.canvas = canvas,
-		.word_length = &cpu->setup.all.word_length.value
+		.word_length = &cpu->setup.all.code_length.value
 	};
 	cpu->components.addr.bus_as = unit_new_bus(&new_unit);
 	// REG_L
@@ -552,7 +556,7 @@ void cpu_init_addr(struct CPU* cpu, const Point offset, struct Canvas* canvas)
 		.position = p_add(offset, POINT(3, 13)),
 		.size = REG_SIZE,
 		.canvas = canvas,
-		.word_length = &cpu->setup.all.word_length.value
+		.word_length = &cpu->setup.all.code_length.value
 	};
 	cpu->components.addr.reg_i = unit_new_reg(&new_unit, "I");
 
@@ -649,6 +653,24 @@ void cpu_init_addr(struct CPU* cpu, const Point offset, struct Canvas* canvas)
 		.value.from_to.to = cpu->components.addr.bus_a
 	};
 	cpu->components.addr.sig_wyad = signal_new(&signal_init);
+	// SIG_STOP
+	drawable_signal_init = (struct DrawableSignalInit){
+		.canvas = canvas,
+		.arrow.head = p_zero,
+		.arrow.tail = p_zero,
+		.tag.type = TO_COMB_TYPE,
+		.tag.head = p_add(offset, POINT(4, 10)),
+		.tag.tail = p_add(offset, POINT(8, 10)),
+	};
+	signal_init = (struct SignalInit){
+		.type = SIGNAL_FROM_TO,
+		.name = "stop",
+		.fun = NULL,
+		.drawable_init = &drawable_signal_init,
+		.value.from_to.from = cpu->components.addr.reg_i,
+		.value.from_to.to = cpu->components.addr.bus_a
+	};
+	cpu->components.addr.sig_stop = signal_new(&signal_init);
 	// SIG_IL
 	drawable_signal_init = (struct DrawableSignalInit){
 		.canvas = canvas,
@@ -699,6 +721,7 @@ void cpu_init_addr(struct CPU* cpu, const Point offset, struct Canvas* canvas)
 	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.addr.sig_wei);
 	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.addr.sig_wyls);
 	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.addr.sig_wyad);
+	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.addr.sig_stop);
 	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.addr.sig_il);
 	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.addr.sig_as);
 }
@@ -716,7 +739,7 @@ void cpu_init_xy(struct CPU* cpu, Point offset, struct Canvas* canvas)
 		.position = p_add(offset, POINT(1, 2)),
 		.size = REG_SIZE,
 		.canvas = canvas,
-		.word_length = &cpu->setup.all.word_length.value
+		.word_length = &cpu->setup.all.code_length.value
 	};
 	cpu->components.xy.reg_x = unit_new_reg(&new_unit, "X");
 
@@ -766,7 +789,7 @@ void cpu_init_xy(struct CPU* cpu, Point offset, struct Canvas* canvas)
 		.position = p_add(offset, POINT(1, 2)),
 		.size = REG_SIZE,
 		.canvas = canvas,
-		.word_length = &cpu->setup.all.word_length.value
+		.word_length = &cpu->setup.all.code_length.value
 	};
 	cpu->components.xy.reg_y = unit_new_reg(&new_unit, "Y");
 
@@ -934,7 +957,7 @@ void cpu_init_io(struct CPU* cpu, Point offset, struct Canvas* canvas)
 		.position = p_add(offset, POINT(1, 2)),
 		.size = REG_SIZE,
 		.canvas = canvas,
-		.word_length = &cpu->setup.all.word_length.value
+		.word_length = &cpu->setup.all.code_length.value
 	};
 	cpu->components.io.reg_rb = unit_new_reg(&new_unit, "RB");
 
@@ -984,7 +1007,7 @@ void cpu_init_io(struct CPU* cpu, Point offset, struct Canvas* canvas)
 		.position = p_add(offset, POINT(1, 2)),
 		.size = REG_SIZE,
 		.canvas = canvas,
-		.word_length = &cpu->setup.all.word_length.value
+		.word_length = &cpu->setup.all.code_length.value
 	};
 	cpu->components.io.reg_g = unit_new_reg(&new_unit, "G");
 
@@ -1034,31 +1057,6 @@ void cpu_init_io(struct CPU* cpu, Point offset, struct Canvas* canvas)
 	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.io.sig_werb);
 	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.io.sig_wyg);
 	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.io.sig_wyrb);
-}
-
-void set_visibility(struct CPUSetup* setup)
-{
-	check_for_NULL(setup);
-	for (int i = 0; i < CPU_SETUP_SIZE; i++)
-	{
-		//bool visibility = setup->list[i].value;
-		// DEBUG
-		bool visibility = true;
-		int unit_vect_size = vector_size(setup->list[i].unit_vect);
-		for (int index = 0; index < unit_vect_size; index++)
-		{
-			struct Unit** unit_ptr = vector_read(setup->list[i].unit_vect, index);
-			check_for_NULL(unit_ptr);
-			unit_set_visibility(*unit_ptr, visibility);
-		}
-		int signal_vect_size = vector_size(setup->list[i].signal_vect);
-		for (int index = 0; index < signal_vect_size; index++)
-		{
-			struct Signal** signal_ptr = vector_read(setup->list[i].signal_vect, index);
-			check_for_NULL(signal_ptr);
-			signal_set_visibility(*signal_ptr, visibility);
-		}
-	}
 }
 
 void cpu_init_intr(struct CPU* cpu, const Point offset, struct Canvas* canvas)
@@ -1213,31 +1211,97 @@ void cpu_init_intr(struct CPU* cpu, const Point offset, struct Canvas* canvas)
 	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.intr.sig_wyap);
 }
 
+bool cpu_import_instructions(struct CPU* cpu)
+{
+	check_for_NULL(cpu);
+
+	Error error = NO_ERROR;
+	struct FileHandler* files_handler = file_handler_init();
+
+	struct Map* setup_map = map_init(sizeof(&cpu->setup.list->value));
+	size_t setup_size = sizeof(cpu->setup.list) / sizeof(*cpu->setup.list);
+	for (unsigned i = 0; i < setup_size; i++)
+	{
+		const char* key = cpu->setup.list[i].name;
+		void* value_ptr = &cpu->setup.list[i].value;
+		map_push(setup_map, key, &value_ptr);
+	}
+	
+	if (file_import_setup("MaszynaW.lst", files_handler, setup_map))
+	{
+		if (cpu->vector.units)
+			vector_delete(cpu->vector.units);
+		if (cpu->vector.signals)
+			vector_delete(cpu->vector.signals);
+
+		cpu->vector.units = vector_init(sizeof(struct Unit*));
+		cpu->vector.signals = vector_init(sizeof(struct Signal*));
+		struct Map* signal_map = map_init(sizeof(struct Signal*));
+
+		for (int i = 0; i < CPU_SETUP_SIZE; i++)
+		{
+			bool is_set = cpu->setup.list[i].value;
+			int unit_vect_size = vector_size(cpu->setup.list[i].unit_vect);
+			for (int index = 0; index < unit_vect_size; index++)
+			{
+				struct Unit** unit_ptr = vector_read(cpu->setup.list[i].unit_vect, index);
+				check_for_NULL(unit_ptr);
+				unit_set_visibility(*unit_ptr, is_set);
+				vector_push(cpu->vector.units, unit_ptr);
+			}
+			int signal_vect_size = vector_size(cpu->setup.list[i].signal_vect);
+			for (int index = 0; index < signal_vect_size; index++)
+			{
+				struct Signal** signal_ptr = vector_read(cpu->setup.list[i].signal_vect, index);
+				check_for_NULL(signal_ptr);
+				signal_set_visibility(*signal_ptr, is_set);
+				vector_push(cpu->vector.signals, signal_ptr);
+				if (is_set)
+				{
+					const char* key = signal_get_name(*signal_ptr);
+					map_push(signal_map, key, signal_ptr);
+				}
+			}
+		}
+
+		struct Map* tag_map = map_init(sizeof(bool*));
+		for (int i = 0; i < CPU_TAGS_NUMBER; i++)
+		{
+			const char* key = cpu->components.tags.list[i].name;
+			void* value_ptr = &cpu->components.tags.list[i].value;
+			map_push(tag_map, key, &value_ptr);
+		}
+
+		//struct Vector* instr_vect = file_compile_instructions(files_handler, signal_map, tag_map);
+		cpu->vector.instructions = file_compile_instructions(files_handler, signal_map, tag_map);
+		if (!cpu->vector.instructions)
+			error = ERROR;
+
+		map_delete(signal_map);
+		map_delete(tag_map);
+	}
+	else
+		error = ERROR;
+
+	map_delete(setup_map);
+	file_handler_delete(files_handler);
+	return error;
+}
+
+void cpu_import_program(struct CPU* cpu)
+{
+
+}
+
 struct CPU* cpu_init(struct Canvas* canvas)
 {
 	check_for_NULL(canvas);
 
 	struct CPU* cpu = malloc_s(sizeof(struct CPU));
-
-	//struct CPUPreference setup[] = {
-	struct CPUSetup setup = { 
-		.list = {
-			cpu_preference_init("adres"),
-			cpu_preference_init("kod"),
-			cpu_preference_init("polaczenie"),
-			cpu_preference_init("inkrementacja"),
-			cpu_preference_init("logiczne"),
-			cpu_preference_init("arytmetyczne"),
-			cpu_preference_init("stos"),
-			cpu_preference_init("rejestrx"),
-			cpu_preference_init("rejestry"),
-			cpu_preference_init("przerwania"),
-			cpu_preference_init("wejscie"),
-			cpu_preference_init("znaczniki"),
-			cpu_preference_init(""),
-		}
-	};
-	cpu->setup = setup;
+	cpu->setup = cpu_setup_init();
+	cpu->vector.units = NULL;
+	cpu->vector.signals = NULL;
+	cpu->vector.instructions = NULL;
 
 	cpu_init_alu(cpu, POINT(20, 13), canvas);
 	cpu_init_mem(cpu, POINT(47, 8), canvas);
@@ -1247,43 +1311,13 @@ struct CPU* cpu_init(struct Canvas* canvas)
 	cpu_init_io(cpu, POINT(37, 25), canvas);
 	cpu_init_intr(cpu, POINT(1, 0), canvas);
 
+	cpu->components.tags.all.tag_int = cpu_tag_init("int");
+	cpu->components.tags.all.tag_zak = cpu_tag_init("zak");
+	cpu->components.tags.all.tag_z = cpu_tag_init("z");
+	cpu->components.tags.all.tag_v = cpu_tag_init("v");
 
-	set_visibility(&setup);
-
-	//struct FileHandler* files_handler = file_handler_init();
-
-	//struct Map* setup_map = map_init(sizeof(&setup.preference.list->value));
-	//size_t setup_size = sizeof(setup.preference.list) / sizeof(*setup.preference.list);
-	//for (unsigned i = 0; i < setup_size; i++)
-	//{
-	//	const char* key = setup.preference.list[i].name;
-	//	void* value_ptr = &setup.preference.list[i].value;
-	//	map_push(setup_map, key, &value_ptr);
-	//}
-
-	//if (file_import_setup("MaszynaW.lst", files_handler, setup_map))
-	//{
-	//	//lista
-	//}
-
-	//map_delete(setup_map);
-	//file_handler_delete(files_handler);
-
-	//struct CPUComponents components;
-
-	/* inicjalizacja unitów */ 
-	// ...
-
-	/* inicjalizacja sygna³ów */
-	// ...
-
-	/* za³adowanie ustawieñ z pliku */
-	// ...
-
-	/* inicjalizacja cpu zgodnie z ustawieniami 
-	   utworzenie wektora obs³ugiwanych */
-	// ...
-
+	// dodaæ obs³ugê b³êdów
+	cpu_import_instructions(cpu);
 
 	return cpu;
 }
@@ -1293,7 +1327,20 @@ void cpu_delete(struct CPU* cpu)
 {
 	if (cpu)
 	{
+		// delete setup 
 		cpu_setup_delete(&cpu->setup);
+		// delete tags
+		for (int i = 0; i < CPU_TAGS_NUMBER; i++)
+			cpu_tag_delete(&cpu->components.tags.list[i]);
+		// delete instructions
+		struct Instruction** instr_ptr;
+		while (instr_ptr = vector_pop(cpu->vector.instructions))
+			instruction_delete(*instr_ptr);
+		vector_delete(cpu->vector.instructions);
+		cpu->vector.instructions = NULL;
+		// delete rest
+		vector_delete(cpu->vector.signals);
+		vector_delete(cpu->vector.units);
 		free(cpu);
 	}
 }

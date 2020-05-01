@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 
+#define MAX_ARGS_NUM 16
+
 // Takt:
 // Struktura reprezentuj¹ca pojedyñczy takt wykonywany przez maszynêW.
 // Posiada tablicê sygna³ów, wskaŸnik na warunek, wskaŸniki na nastêpny takt
@@ -11,9 +13,12 @@ struct Tick
 {
 	struct Vector* signal_vect;
 	bool* condition;
-	struct Tick* if_true;
-	struct Tick* if_false;
+	struct Tick* next_if_true;
+	struct Tick* next;
 };
+
+struct Tick* tick_init();
+void tick_delete(struct Tick* tick);
 
 // Instruckja:
 // Struktura reprezentuj¹ca pojedyñczy rozkaz wykonywany przez maszynêW.
@@ -22,8 +27,12 @@ struct Instruction
 {
 	const char* name;
 	unsigned char arguments;
-	struct Vector* tick_vect;
+	//struct Vector* tick_vect;
+	struct Tick* first_tick;
 };
+
+struct Instruction* instruction_init(const char* name);
+void instruction_delete(struct Instruction* instruction);
 
 // UWAGA: wskaŸnik na NULL jest traktowany jako wskaŸnik na czyt wys wei il
 // (pierwszy takt ka¿dego rozkazu)
