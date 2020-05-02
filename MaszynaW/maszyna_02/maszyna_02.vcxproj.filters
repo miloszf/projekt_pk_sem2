@@ -19,12 +19,15 @@
     <Filter Include="Pliki źródłowe\graphics">
       <UniqueIdentifier>{e9edb497-4ea9-4b0c-a8ef-3fe948bb3128}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Pliki źródłowe\cpu">
+      <UniqueIdentifier>{02935bb6-cdc7-43ce-a5a5-0f2eedd64326}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Pliki nagłówkowe\cpu">
+      <UniqueIdentifier>{3336e209-287a-46e7-9b6d-9bdd060eba17}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="error.h">
-      <Filter>Pliki nagłówkowe</Filter>
-    </ClInclude>
-    <ClInclude Include="cpu.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
     <ClInclude Include="unit.h">
@@ -69,18 +72,30 @@
     <ClInclude Include="primitive.h">
       <Filter>Pliki nagłówkowe\graphics</Filter>
     </ClInclude>
-    <ClInclude Include="cpu_auxiliary_structs.h">
-      <Filter>Pliki nagłówkowe</Filter>
-    </ClInclude>
     <ClInclude Include="file.h">
       <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="cpu.h">
+      <Filter>Pliki nagłówkowe\cpu</Filter>
+    </ClInclude>
+    <ClInclude Include="cpu_auxiliary_structs.h">
+      <Filter>Pliki nagłówkowe\cpu</Filter>
+    </ClInclude>
+    <ClInclude Include="cpu_structs.h">
+      <Filter>Pliki nagłówkowe\cpu</Filter>
+    </ClInclude>
+    <ClInclude Include="cpu_setup.h">
+      <Filter>Pliki nagłówkowe\cpu</Filter>
+    </ClInclude>
+    <ClInclude Include="cpu_components.h">
+      <Filter>Pliki nagłówkowe\cpu</Filter>
+    </ClInclude>
+    <ClInclude Include="cpu_functions.h">
+      <Filter>Pliki nagłówkowe\cpu</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="error.c">
-      <Filter>Pliki źródłowe</Filter>
-    </ClCompile>
-    <ClCompile Include="cpu.c">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
     <ClCompile Include="unit.c">
@@ -122,11 +137,23 @@
     <ClCompile Include="graphics.c">
       <Filter>Pliki źródłowe\graphics</Filter>
     </ClCompile>
-    <ClCompile Include="cpu_auxiliary_structs.c">
-      <Filter>Pliki źródłowe</Filter>
-    </ClCompile>
     <ClCompile Include="file.c">
       <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="cpu.c">
+      <Filter>Pliki źródłowe\cpu</Filter>
+    </ClCompile>
+    <ClCompile Include="cpu_auxiliary_structs.c">
+      <Filter>Pliki źródłowe\cpu</Filter>
+    </ClCompile>
+    <ClCompile Include="cpu_setup.c">
+      <Filter>Pliki źródłowe\cpu</Filter>
+    </ClCompile>
+    <ClCompile Include="cpu_components.c">
+      <Filter>Pliki źródłowe\cpu</Filter>
+    </ClCompile>
+    <ClCompile Include="cpu_functions.c">
+      <Filter>Pliki źródłowe\cpu</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

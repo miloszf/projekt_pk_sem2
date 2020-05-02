@@ -141,6 +141,9 @@
     <ClCompile Include="canvas.c" />
     <ClCompile Include="cpu.c" />
     <ClCompile Include="cpu_auxiliary_structs.c" />
+    <ClCompile Include="cpu_components.c" />
+    <ClCompile Include="cpu_functions.c" />
+    <ClCompile Include="cpu_setup.c" />
     <ClCompile Include="drawable.c" />
     <ClCompile Include="error.c" />
     <ClCompile Include="file.c" />
@@ -160,6 +163,10 @@
     <ClInclude Include="canvas.h" />
     <ClInclude Include="cpu.h" />
     <ClInclude Include="cpu_auxiliary_structs.h" />
+    <ClInclude Include="cpu_components.h" />
+    <ClInclude Include="cpu_functions.h" />
+    <ClInclude Include="cpu_setup.h" />
+    <ClInclude Include="cpu_structs.h" />
     <ClInclude Include="error.h" />
     <ClInclude Include="event.h" />
     <ClInclude Include="file.h" />

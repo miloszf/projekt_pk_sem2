@@ -180,9 +180,9 @@ void value_set_signal(struct Drawable* drawable, void* value_ptr)
 {
 	check_for_NULL(drawable);
 	check_for_NULL(value_ptr);
-	var value = *(var*)value_ptr;
+	bool value = *(bool*)value_ptr;
 	struct ValueSignal* value_signal = drawable->value_ptr;
-	Color color = (value == EMPTY) ? COLOR_DEFAULT : COLOR_ACTIVE;
+	Color color = value ? COLOR_ACTIVE : COLOR_DEFAULT;
 	for (int i = 0; i < SIGNAL_PRIMITIVE_ARRAY_SIZE; i++)
 		if (value_signal->primitive_ptr_array[i])
 			value_signal->primitive_ptr_array[i]->color = color;
@@ -250,7 +250,7 @@ struct Drawable* drawable_new_signal(struct DrawableSignalInit* init, const char
 				tag_pointer_char = 0x253F;
 				break;
 			default:
-				critical_error_set(ERROR);
+				critical_error_set("");
 				tag_pointer_char = '\0';
 			}
 

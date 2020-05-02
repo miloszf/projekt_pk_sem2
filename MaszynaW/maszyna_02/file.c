@@ -707,7 +707,7 @@ struct Vector* file_compile_instructions(struct FileHandler* handler, struct Map
 					bool found = false;
 					// DEBUG
 					printf("Takt nr %u: '", tick_index);
-					for (int i = 0; i < vector_size(tick->signal_vect); i++)
+					for (unsigned i = 0; i < vector_size(tick->signal_vect); i++)
 					{
 						struct Signal** sig_ptr = vector_read(tick->signal_vect, i);
 						printf("%s,", signal_get_name(*sig_ptr));

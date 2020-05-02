@@ -25,6 +25,8 @@ void* vector_read(struct Vector* vect, size_t index);
 size_t vector_size(struct Vector* vect);
 // Funkcja usuwaj¹ca wektor, zwraca tablicê elementów i ich liczbê
 void* vector_unwrap(struct Vector* vect, size_t* size);
+// Funkcja zwaracaj¹ca kopiê podanego wektora
+struct Vector* vector_copy(struct Vector* vect);
 
 // Funkcja czyszcz¹ca wektor z elementów i zapisanych ustawieñ.
 void vector_delete(struct Vector* vect);

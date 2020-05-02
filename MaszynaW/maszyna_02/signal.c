@@ -11,71 +11,128 @@ struct Signal
 {
 	SignalType type;
 	const char* name;
-	var (*execute)(void*);
-	void* arguments;
+	void* init_struct;
 	struct Drawable* drawable;
+	bool is_set;
 };
 
 struct Signal* signal_new(struct SignalInit* signal_init)
 {
 	check_for_NULL(signal_init);
 	
-	size_t arguments_size;
+	size_t init_struct_size;
 	switch (signal_init->type)
 	{
 	case SIGNAL_FROM_TO:
-		arguments_size = sizeof(struct SignalInitFromTo);
+		init_struct_size = sizeof(struct SignalInitFromTo);
 		break;
 	case SIGNAL_ALU:
-		arguments_size = sizeof(struct SignalInitALU);
+		init_struct_size = sizeof(struct SignalInitALU);
+		break;
+	case SIGNAL_OTHER:
+		init_struct_size = sizeof(struct SignalInitOther);
 		break;
 	default:
 		critical_error_set("invalid signal type");
-		arguments_size = 0;
+		init_struct_size = 0;
 	}
-	void* new_arguments = malloc_s(arguments_size);
-	size_t name_len = strlen(signal_init->name) + 1;
-	char* new_name = malloc_s(name_len);
-	if (strcpy_s(new_name, name_len, signal_init->name))
-		critical_error_set("strcpy_s failed");
-	struct Drawable* new_drawable = drawable_new_signal(signal_init->drawable_init, signal_init->name);
+	void* new_init_struct = malloc_s(init_struct_size);
+	if (memcpy_s(new_init_struct, init_struct_size, signal_init->value.dummy, init_struct_size))
+		critical_error_set("...");
+	char* new_name = _strdup(signal_init->name);
+	if (!new_name)
+		critical_error_set("strdup failed\n");
+	struct Drawable* new_drawable = drawable_new_signal(signal_init->drawable_init, new_name);
 
 	struct Signal* new_signal = malloc_s(sizeof(struct Signal));
-	*new_signal = (struct Signal){ signal_init->type, new_name, signal_init->fun, new_arguments, new_drawable };
+	*new_signal = (struct Signal){ signal_init->type, new_name, new_init_struct, new_drawable, false };
 	return new_signal;
 }
 
 var signal_set(struct Signal* signal)
 {
 	check_for_NULL(signal);
-	return signal->execute(signal->arguments);
+	var return_value = 0;
+	switch (signal->type)
+	{
+	case SIGNAL_FROM_TO:
+	{
+		struct SignalInitFromTo* init_struct = signal->init_struct;
+		check_for_NULL(init_struct);
+		var value = unit_read(init_struct->from);
+		if (value == EMPTY)
+			return_value = EMPTY;
+		else
+		{
+			value = init_struct->function(value, *init_struct->mask_ptr);
+			/*if (unit_set(init_struct->to, value))
+				signal->is_set = true;
+			else*/
+			if (!unit_set(init_struct->to, value))
+				return_value = OUTPUT_ALREADY_SET;
+		}
+	}
+	break;
+	case SIGNAL_ALU:
+	{
+		struct SignalInitALU* init_struct = signal->init_struct;
+		check_for_NULL(init_struct);
+		var value_a = unit_read(init_struct->from);
+		var value_b = unit_read(init_struct->value_from);
+		if (value_a == EMPTY || value_b == EMPTY)
+			return_value = EMPTY;
+		else
+		{
+			value_a = init_struct->function(value_a, value_b, *init_struct->mask_ptr);
+			//if (unit_set(init_struct->to, value_a))
+				//signal->is_set = true;
+			//else
+			if (!unit_set(init_struct->to, value_a))
+				return_value = OUTPUT_ALREADY_SET;
+		}
+	}
+	break;
+	case SIGNAL_OTHER:
+	{
+		struct SignalInitOther* init_struct = signal->init_struct;
+		return_value = init_struct->function(init_struct->value_ptr);
+	}
+	break;
+	default:
+		critical_error_set("");
+	}
+
+	if (!return_value)
+		signal->is_set = true;
+	return return_value;
 }
 
 void signal_reset(struct Signal* signal)
 {
-
+	check_for_NULL(signal);
+	signal->is_set = false;
 }
 
-//void signal_draw(struct Signal* signal)
+void signal_draw(struct Signal* signal)
+{
+	check_for_NULL(signal);
+	if (signal->drawable)
+		drawable_set_value(signal->drawable, &signal->is_set);
+}
+
+//void signal_show(struct signal* signal)
 //{
-//	check_for_NULL(signal);
+//	check_for_null(signal);
 //	if (signal->drawable)
-//		drawable_set_value(signal->value);
+//		drawable_set_visibility(signal->drawable, true);
 //}
-
-void signal_show(struct Signal* signal)
-{
-	check_for_NULL(signal);
-	if (signal->drawable)
-		drawable_set_visibility(signal->drawable, true);
-}
-
-void signal_hide(struct Signal* signal)
-{
-	check_for_NULL(signal);
-	if (signal->drawable)
-		drawable_set_visibility(signal->drawable, false);
-}
+//
+//void signal_hide(struct signal* signal)
+//{
+//	check_for_null(signal);
+//	if (signal->drawable)
+//		drawable_set_visibility(signal->drawable, false);
+//}
 
 void signal_set_visibility(struct Signal* signal, bool visibility)
 {
@@ -96,7 +153,12 @@ void signal_delete(struct Signal* signal)
 	if (signal)
 	{
 		free((char*)signal->name);
-		free(signal->arguments);
+		if (signal->type == SIGNAL_OTHER)
+		{
+			struct SignalInitOther* temp = signal->init_struct;
+			free(temp->value_ptr);
+		}
+		free(signal->init_struct);
 		free(signal);
 	}
 }

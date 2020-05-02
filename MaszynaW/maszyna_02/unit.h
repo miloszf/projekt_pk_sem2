@@ -35,6 +35,9 @@ struct Unit* unit_new_bus(struct UnitInit* init);
 // Funkcja zapisuj¹ca wartoœæ, zwraca 0 w przypadku niepowodzenia zapisu.
 // argumenty: wartoœæ do zapisania
 var unit_set(struct Unit* unit, var value);
+// Funkcja bezpoœrednio zapisuj¹ca wartoœæ
+// argumenty: wartoœæ do zapisania
+var unit_immediate_set(struct Unit* unit, var value);
 // Funkcja zapisuj¹ca wartoœæ dla rejestrów, dla pozosta³ych nic nie robi
 // argumenty: -
 void unit_latch(struct Unit* unit);

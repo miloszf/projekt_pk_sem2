@@ -16,7 +16,10 @@
 #define ERROR_INVALID_INSTR_FILE	0x0040
 #define ERROR_STRING_HANDLING		0x0080
 #define ERROR_INSTR_COMPILATION		0x0100
-
+#define ERROR_UNIT_ALREADY_SET		0x0200		
+#define ERROR_INSTR_ADDR_OUT_OF_RANGE	0x0400		
+#define ERROR_CPU_STOPPED			0x0800
+#define ERROR_EMPTY_UNIT			0x1000
 
 typedef int Error;
 // b³êdy krytyczne, wyst¹pienie oznacza natychmiastowe zamkniêcie programu
