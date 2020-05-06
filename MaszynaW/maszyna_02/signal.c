@@ -37,7 +37,7 @@ struct Signal* signal_new(struct SignalInit* signal_init)
 		init_struct_size = 0;
 	}
 	void* new_init_struct = malloc_s(init_struct_size);
-	if (memcpy_s(new_init_struct, init_struct_size, signal_init->value.dummy, init_struct_size))
+	if (memcpy_s(new_init_struct, init_struct_size, &signal_init->value, init_struct_size))
 		critical_error_set("...");
 	char* new_name = _strdup(signal_init->name);
 	if (!new_name)
@@ -152,12 +152,12 @@ void signal_delete(struct Signal* signal)
 {
 	if (signal)
 	{
-		free((char*)signal->name);
 		if (signal->type == SIGNAL_OTHER)
 		{
 			struct SignalInitOther* temp = signal->init_struct;
 			free(temp->value_ptr);
 		}
+		free((char*)signal->name);
 		free(signal->init_struct);
 		free(signal);
 	}

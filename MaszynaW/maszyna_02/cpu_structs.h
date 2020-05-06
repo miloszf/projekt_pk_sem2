@@ -38,10 +38,12 @@ struct CPUSetup
 	};// preference;
 };
 
+typedef enum { TAG_Z, TAG_ZAK, TAG_V, TAG_INT } CPUTagType;
 struct CPUTag
 {
 	const char* name;
 	bool value;
+	CPUTagType type;
 };
 
 struct CPUComponents
@@ -90,7 +92,7 @@ struct CPUComponents
 		struct Signal* sig_wyad;
 		struct Signal* sig_wei;
 		struct Signal* sig_as;
-		//struct Signal* sig_sa;
+		struct Signal* sig_sa;
 		struct Signal* sig_stop;
 	} addr;
 

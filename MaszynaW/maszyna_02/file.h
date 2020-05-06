@@ -22,6 +22,6 @@ struct Vector* file_compile_instructions(struct FileHandler* handler, struct Map
 // Funkcja kompiluj¹ca program, wype³nia pamiêæ maszyny, zwraca 0 w przypadku niepowodzenia
 // wczytuje do program do podanej pamiêci 
 // argumenty: nazwa pliku, mapa rozkazów, d³ugoœæ s³owa maszyny
-bool file_compile_program(const char* file_name, struct Map* instr_map, unsigned char addr_len, unsigned char code_len, var* memory);
+bool file_compile_program(const char* file_name, struct Vector* instr_vect, var addr_len, var code_len, var* memory);
 
 #endif

@@ -1,8 +1,6 @@
 #ifndef INSTRUCTION_H
 #define INSTRUCTION_H
 
-#include <stdbool.h>
-
 #define MAX_ARGS_NUM 16
 
 // Takt:
@@ -12,7 +10,7 @@
 struct Tick
 {
 	struct Vector* signal_vect;
-	bool* condition;
+	void* condition;
 	struct Tick* next_if_true;
 	struct Tick* next;
 };

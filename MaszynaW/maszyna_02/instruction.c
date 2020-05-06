@@ -16,8 +16,10 @@ void tick_delete(struct Tick* tick)
 {
 	if (tick)
 	{
-		tick_delete(tick->next);
-		tick_delete(tick->next_if_true);
+		if (tick != tick->next)
+			tick_delete(tick->next);
+		if (tick != tick->next_if_true)
+			tick_delete(tick->next_if_true);
 		vector_delete(tick->signal_vect);
 		free(tick);
 	}

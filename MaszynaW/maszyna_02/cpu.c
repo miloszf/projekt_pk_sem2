@@ -72,11 +72,11 @@ bool cpu_import_instructions(struct CPU* cpu)
 			}
 		}
 
-		struct Map* tag_map = map_init(sizeof(bool*));
+		struct Map* tag_map = map_init(sizeof(struct CPUTag));
 		for (int i = 0; i < CPU_TAGS_NUMBER; i++)
 		{
 			const char* key = cpu->components.tags.list[i].name;
-			void* value_ptr = &cpu->components.tags.list[i].value;
+			void* value_ptr = cpu->components.tags.list + i;
 			map_push(tag_map, key, &value_ptr);
 		}
 
@@ -111,7 +111,10 @@ bool cpu_import_program(struct CPU* cpu)
 
 	if (cpu->memory)
 		free(cpu->memory);
-	cpu->memory = calloc_s(cpu->setup.all.code_length.value, sizeof(var));
+	unsigned mem_size = 1 << (addr);
+	cpu->memory = calloc_s(1 << (addr), sizeof(var));
+
+	file_compile_program("program.prg", cpu->vector.instructions, addr, word - addr, cpu->memory);
 
 	return true;
 }
@@ -128,18 +131,26 @@ struct CPU* cpu_init(struct Canvas* canvas)
 	cpu->memory = NULL;
 	cpu->runtime = (struct CPURuntime){ NULL, NULL, false };
 
-	cpu_init_alu(cpu, POINT(20, 13), canvas);
-	cpu_init_mem(cpu, POINT(47, 8), canvas);
-	cpu_init_addr(cpu, POINT(1, 8), canvas);
-	cpu_init_xy(cpu, POINT(1, 25), canvas);
-	cpu_init_stack(cpu, POINT(22, 8), canvas);
-	cpu_init_io(cpu, POINT(37, 25), canvas);
-	cpu_init_intr(cpu, POINT(1, 0), canvas);
+	cpu_init_alu_units(cpu, POINT(20, 13), canvas);
+	cpu_init_mem_units(cpu, POINT(47, 8), canvas);
+	cpu_init_addr_units(cpu, POINT(1, 8), canvas);
+	cpu_init_xy_units(cpu, POINT(1, 25), canvas);
+	cpu_init_stack_units(cpu, POINT(22, 8), canvas);
+	cpu_init_io_units(cpu, POINT(37, 25), canvas);
+	cpu_init_intr_units(cpu, POINT(1, 0), canvas);
 
-	cpu->components.tags.all.tag_int = cpu_tag_init("int");
-	cpu->components.tags.all.tag_zak = cpu_tag_init("zak");
-	cpu->components.tags.all.tag_z = cpu_tag_init("z");
-	cpu->components.tags.all.tag_v = cpu_tag_init("v");
+	cpu_init_alu_signals(cpu, POINT(20, 13), canvas);
+	cpu_init_mem_signals(cpu, POINT(47, 8), canvas);
+	cpu_init_addr_signals(cpu, POINT(1, 8), canvas);
+	cpu_init_xy_signals(cpu, POINT(1, 25), canvas);
+	cpu_init_stack_signals(cpu, POINT(22, 8), canvas);
+	cpu_init_io_signals(cpu, POINT(37, 25), canvas);
+	cpu_init_intr_signals(cpu, POINT(1, 0), canvas);
+
+	cpu->components.tags.all.tag_int = cpu_tag_init("int", TAG_INT);
+	cpu->components.tags.all.tag_zak = cpu_tag_init("zak", TAG_ZAK);
+	cpu->components.tags.all.tag_z = cpu_tag_init("z", TAG_Z);
+	cpu->components.tags.all.tag_v = cpu_tag_init("v", TAG_V);
 
 	// dodaæ obs³ugê b³êdów
 	Error error = cpu_import_instructions(cpu) ? NO_ERROR : ERROR;
@@ -210,10 +221,16 @@ void* cpu_tick(struct CPU* cpu)
 
 	if (!error)
 	{
-		if (!cpu->runtime.current_tick->condition || !(*cpu->runtime.current_tick->condition))
-			cpu->runtime.current_tick = cpu->runtime.current_tick->next;
+		if (cpu->runtime.current_tick->condition)
+		{
+			struct CPUTag* tag = cpu->runtime.current_tick->condition;
+			if (cpu_tag_update(tag, cpu))
+				cpu->runtime.current_tick = cpu->runtime.current_tick->next_if_true;
+			else
+				cpu->runtime.current_tick = cpu->runtime.current_tick->next;
+		}
 		else
-			cpu->runtime.current_tick = cpu->runtime.current_tick->next_if_true;
+			cpu->runtime.current_tick = cpu->runtime.current_tick->next;
 	}
 	else
 		error_set(error);

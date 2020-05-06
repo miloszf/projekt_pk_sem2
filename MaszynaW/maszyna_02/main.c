@@ -21,7 +21,7 @@ int main()
 
 	cpu_delete(cpu);
 	window_delete(window);
-	debug_error_delete();
+	//debug_error_delete();
 	_CrtDumpMemoryLeaks();
 	return 0;
 }*/

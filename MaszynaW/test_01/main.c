@@ -9,12 +9,9 @@
 
 int main()
 {
-	char expected_tokens[][10] = {
-		"czyt", "wys", "wei", "il"
-	};
-	
-	printf("%c", (expected_tokens[0])[0]);
-	(expected_tokens[0])[0] = 'z';
-	printf("%c", (expected_tokens[0])[0]);
+	char str[] = "Linia-125=asd\n";
+	char buff[20];
+	int unused;
+	int read = sscanf_s(str, "Linia%d=%[^\n]\n", &unused, buff, 20);
 	return 0;
 }

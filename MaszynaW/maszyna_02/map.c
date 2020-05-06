@@ -24,15 +24,22 @@ struct Map* map_init(size_t element_size)
 	return new_map;
 }
 
-void map_push(struct Map* map, const char* key, void* value_ptr)
+bool map_push(struct Map* map, const char* key, void* value_ptr)
 {
-	check_for_NULL(map);
-	check_for_NULL(key);
+	//check_for_NULL(map);
+	//check_for_NULL(key);
 	check_for_NULL(value_ptr);
 
-	char* new_key = _strdup(key);
-	vector_push(map->keys_vect, &new_key);
-	vector_push(map->values_vect, value_ptr);
+	if (!map_read_from_key(map, key))
+	{
+		char* new_key = _strdup(key);
+		check_for_NULL(new_key);
+		vector_push(map->keys_vect, &new_key);
+		vector_push(map->values_vect, value_ptr);
+		return true;
+	}
+	else
+		return false;
 }
 
 void* map_read_from_key(struct Map* map, const char* key)

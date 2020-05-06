@@ -140,7 +140,6 @@
   <ItemGroup>
     <ClCompile Include="canvas.c" />
     <ClCompile Include="cpu.c" />
-    <ClCompile Include="cpu_auxiliary_structs.c" />
     <ClCompile Include="cpu_components.c" />
     <ClCompile Include="cpu_functions.c" />
     <ClCompile Include="cpu_setup.c" />
@@ -162,7 +161,6 @@
   <ItemGroup>
     <ClInclude Include="canvas.h" />
     <ClInclude Include="cpu.h" />
-    <ClInclude Include="cpu_auxiliary_structs.h" />
     <ClInclude Include="cpu_components.h" />
     <ClInclude Include="cpu_functions.h" />
     <ClInclude Include="cpu_setup.h" />

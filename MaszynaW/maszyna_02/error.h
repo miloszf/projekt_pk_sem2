@@ -20,6 +20,9 @@
 #define ERROR_INSTR_ADDR_OUT_OF_RANGE	0x0400		
 #define ERROR_CPU_STOPPED			0x0800
 #define ERROR_EMPTY_UNIT			0x1000
+#define ERROR_NO_PROGRAM_FILE		0x2000
+#define ERROR_INVALID_PROGRAM_FILE	0x4000
+#define ERROR_MEMORY_TOO_SHORT		0x8000
 
 typedef int Error;
 // b³êdy krytyczne, wyst¹pienie oznacza natychmiastowe zamkniêcie programu

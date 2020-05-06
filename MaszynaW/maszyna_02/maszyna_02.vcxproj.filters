@@ -78,9 +78,6 @@
     <ClInclude Include="cpu.h">
       <Filter>Pliki nagłówkowe\cpu</Filter>
     </ClInclude>
-    <ClInclude Include="cpu_auxiliary_structs.h">
-      <Filter>Pliki nagłówkowe\cpu</Filter>
-    </ClInclude>
     <ClInclude Include="cpu_structs.h">
       <Filter>Pliki nagłówkowe\cpu</Filter>
     </ClInclude>
@@ -141,9 +138,6 @@
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
     <ClCompile Include="cpu.c">
-      <Filter>Pliki źródłowe\cpu</Filter>
-    </ClCompile>
-    <ClCompile Include="cpu_auxiliary_structs.c">
       <Filter>Pliki źródłowe\cpu</Filter>
     </ClCompile>
     <ClCompile Include="cpu_setup.c">
