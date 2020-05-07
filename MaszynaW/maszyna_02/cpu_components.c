@@ -10,63 +10,6 @@
 #include "signal.h"
 #include "graphics.h"
 
-bool cpu_tag_update(struct CPUTag* tag, struct CPU* cpu)
-{
-	check_for_NULL(tag);
-	check_for_NULL(cpu);
-	bool return_value;
-
-	switch (tag->type)
-	{
-	case TAG_Z:
-	{
-		var value = unit_read(cpu->components.alu.reg_ak);
-		if (value != EMPTY)
-			return_value = value & (cpu->word.word_mask >> 1);
-		else
-			return_value = false;
-	}
-	break;
-	case TAG_ZAK:
-	{
-		return_value = unit_read(cpu->components.alu.reg_ak);
-	}
-	break;
-	case TAG_V:
-	{
-		return_value = false;
-	}
-	break;
-	case TAG_INT:
-	{
-		return_value = tag->value;
-	}
-	break;
-	default:
-		critical_error_set("");
-		return_value = false;
-	}
-
-	return return_value;
-}
-
-struct CPUTag cpu_tag_init(const char* name, CPUTagType type)
-{
-	check_for_NULL(name);
-	char* new_name = _strdup(name);
-	if (!new_name)
-		critical_error_set("strdup failed\n");
-	return (struct CPUTag) { new_name, false, type };
-}
-
-void cpu_tag_delete(struct CPUTag* tag)
-{
-	if (tag)
-	{
-		free((char*)tag->name);
-	}
-}
-
 #define REG_WIDTH 15
 #define REG_HEIGTH 3
 #define REG_SIZE (Point){REG_WIDTH, REG_HEIGTH}
@@ -421,9 +364,9 @@ void cpu_init_alu_signals(struct CPU* cpu, const Point offset, struct Canvas* ca
 	vector_push(cpu->setup.all.alu_logic.signal_vect, &cpu->components.alu.sig_lub);
 	vector_push(cpu->setup.all.alu_logic.signal_vect, &cpu->components.alu.sig_i);
 	// |---- ALU_EXT ----|							  
-	vector_push(cpu->setup.all.alu_logic.signal_vect, &cpu->components.alu.sig_mno);
-	vector_push(cpu->setup.all.alu_logic.signal_vect, &cpu->components.alu.sig_dziel);
-	vector_push(cpu->setup.all.alu_logic.signal_vect, &cpu->components.alu.sig_shr);
+	vector_push(cpu->setup.all.alu_ext.signal_vect, &cpu->components.alu.sig_mno);
+	vector_push(cpu->setup.all.alu_ext.signal_vect, &cpu->components.alu.sig_dziel);
+	vector_push(cpu->setup.all.alu_ext.signal_vect, &cpu->components.alu.sig_shr);
 }
 
 void cpu_init_mem_units(struct CPU* cpu, const Point offset, struct Canvas* canvas)
@@ -436,14 +379,14 @@ void cpu_init_mem_units(struct CPU* cpu, const Point offset, struct Canvas* canv
 	// REG_A
 	new_unit = (struct UnitInit){
 		.position = p_add(offset, POINT(0, 2)),
-		.size = POINT(18, REG_HEIGTH),
+		.size = POINT(20, REG_HEIGTH),
 		.canvas = canvas,
 	};
 	cpu->components.mem.reg_a = unit_new_reg(&new_unit, "A");
 	// REG_S
 	new_unit = (struct UnitInit){
 		.position = p_add(offset, POINT(0, 13)),
-		.size = POINT(18, REG_HEIGTH),
+		.size = POINT(20, REG_HEIGTH),
 		.canvas = canvas,
 	};
 	cpu->components.mem.reg_s = unit_new_reg(&new_unit, "S");
@@ -464,11 +407,11 @@ void cpu_init_mem_signals(struct CPU* cpu, const Point offset, struct Canvas* ca
 	// SIG_WEA
 	drawable_signal_init = (struct DrawableSignalInit){
 		.canvas = canvas,
-		.arrow.head = p_add(offset, POINT(9, 2)),
-		.arrow.tail = p_add(offset, POINT(9, 0)),
+		.arrow.head = p_add(offset, POINT(10, 2)),
+		.arrow.tail = p_add(offset, POINT(10, 0)),
 		.tag.type = TO_REG_TYPE,
-		.tag.head = p_add(offset, POINT(10, 1)),
-		.tag.tail = p_add(offset, POINT(14, 1)),
+		.tag.head = p_add(offset, POINT(11, 1)),
+		.tag.tail = p_add(offset, POINT(15, 1)),
 	};
 	signal_init = (struct SignalInit){
 		.type = SIGNAL_FROM_TO,
@@ -483,11 +426,11 @@ void cpu_init_mem_signals(struct CPU* cpu, const Point offset, struct Canvas* ca
 	// SIG_WYS
 	drawable_signal_init = (struct DrawableSignalInit){
 		.canvas = canvas,
-		.arrow.head = p_add(offset, POINT(8, 17)),
-		.arrow.tail = p_add(offset, POINT(8, 15)),
+		.arrow.head = p_add(offset, POINT(9, 17)),
+		.arrow.tail = p_add(offset, POINT(9, 15)),
 		.tag.type = TO_BUS_TYPE,
-		.tag.head = p_add(offset, POINT(7, 16)),
-		.tag.tail = p_add(offset, POINT(3, 16)),
+		.tag.head = p_add(offset, POINT(8, 16)),
+		.tag.tail = p_add(offset, POINT(4, 16)),
 	};
 	signal_init = (struct SignalInit){
 		.type = SIGNAL_FROM_TO,
@@ -502,11 +445,11 @@ void cpu_init_mem_signals(struct CPU* cpu, const Point offset, struct Canvas* ca
 	// SIG_WES
 	drawable_signal_init = (struct DrawableSignalInit){
 		.canvas = canvas,
-		.arrow.head = p_add(offset, POINT(10, 15)),
-		.arrow.tail = p_add(offset, POINT(10, 17)),
+		.arrow.head = p_add(offset, POINT(11, 15)),
+		.arrow.tail = p_add(offset, POINT(11, 17)),
 		.tag.type = TO_REG_TYPE,
-		.tag.head = p_add(offset, POINT(11, 16)),
-		.tag.tail = p_add(offset, POINT(15, 16)),
+		.tag.head = p_add(offset, POINT(12, 16)),
+		.tag.tail = p_add(offset, POINT(16, 16)),
 	};
 	signal_init = (struct SignalInit){
 		.type = SIGNAL_FROM_TO,
@@ -520,14 +463,14 @@ void cpu_init_mem_signals(struct CPU* cpu, const Point offset, struct Canvas* ca
 	cpu->components.mem.sig_wes = signal_new(&signal_init);
 	// SIG_CZYT
 	struct SignalMemory* read_memory_init = malloc_s(sizeof(struct SignalMemory));
-	*read_memory_init = (struct SignalMemory){ .memory = cpu->memory, .reg_a = cpu->components.mem.reg_a, .reg_s = cpu->components.mem.reg_s };
+	*read_memory_init = (struct SignalMemory){ .memory = cpu->memory->memory_array, .reg_a = cpu->components.mem.reg_a, .reg_s = cpu->components.mem.reg_s };
 	drawable_signal_init = (struct DrawableSignalInit){
 		.canvas = canvas,
 		.arrow.head = p_zero,
 		.arrow.tail = p_zero,
 		.tag.type = TO_COMB_TYPE,
-		.tag.head = p_add(offset, POINT(18, 7)),
-		.tag.tail = p_add(offset, POINT(22, 7)),
+		.tag.head = p_add(offset, POINT(20, 7)),
+		.tag.tail = p_add(offset, POINT(24, 7)),
 	};
 	signal_init = (struct SignalInit){
 		.type = SIGNAL_OTHER,
@@ -539,14 +482,14 @@ void cpu_init_mem_signals(struct CPU* cpu, const Point offset, struct Canvas* ca
 	cpu->components.mem.sig_czyt = signal_new(&signal_init);
 	// SIG_PISZ
 	struct SignalMemory* write_memory_init = malloc_s(sizeof(struct SignalMemory));
-	*write_memory_init = (struct SignalMemory){ .memory = cpu->memory, .reg_a = cpu->components.mem.reg_a, .reg_s = cpu->components.mem.reg_s };
+	*write_memory_init = (struct SignalMemory){ .memory = cpu->memory->memory_array, .reg_a = cpu->components.mem.reg_a, .reg_s = cpu->components.mem.reg_s };
 	drawable_signal_init = (struct DrawableSignalInit){
 		.canvas = canvas,
 		.arrow.head = p_zero,
 		.arrow.tail = p_zero,
 		.tag.type = TO_COMB_TYPE,
-		.tag.head = p_add(offset, POINT(18, 10)),
-		.tag.tail = p_add(offset, POINT(22, 10)),
+		.tag.head = p_add(offset, POINT(20, 9)),
+		.tag.tail = p_add(offset, POINT(24, 9)),
 	};
 	signal_init = (struct SignalInit){
 		.type = SIGNAL_OTHER,
@@ -575,14 +518,14 @@ void cpu_init_addr_units(struct CPU* cpu, const Point offset, struct Canvas* can
 	// BUS_A
 	new_unit = (struct UnitInit){
 		.position = offset,
-		.size = POINT(68, 0),
+		.size = POINT(71, 0),
 		.canvas = canvas,
 	};
 	cpu->components.addr.bus_a = unit_new_bus(&new_unit);
 	// BUS_S
 	new_unit = (struct UnitInit){
 		.position = p_add(offset, POINT(0, 17)),
-		.size = POINT(68, 0),
+		.size = POINT(71, 0),
 		.canvas = canvas,
 	};
 	cpu->components.addr.bus_s = unit_new_bus(&new_unit);
@@ -611,7 +554,7 @@ void cpu_init_addr_units(struct CPU* cpu, const Point offset, struct Canvas* can
 	// |---- BASIC ----|
 	vector_push(cpu->setup.all.basic.unit_vect, &cpu->components.addr.bus_a);
 	vector_push(cpu->setup.all.basic.unit_vect, &cpu->components.addr.bus_s);
-	vector_push(cpu->setup.all.basic.unit_vect, &cpu->components.addr.bus_as);
+	vector_push(cpu->setup.all.bus_link.unit_vect, &cpu->components.addr.bus_as);
 	vector_push(cpu->setup.all.basic.unit_vect, &cpu->components.addr.reg_i);
 	vector_push(cpu->setup.all.basic.unit_vect, &cpu->components.addr.reg_l);
 }
@@ -815,12 +758,12 @@ void cpu_init_addr_signals(struct CPU* cpu, const Point offset, struct Canvas* c
 	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.addr.sig_wyl);
 	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.addr.sig_wel);
 	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.addr.sig_wei);
-	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.addr.sig_wyls);
+	vector_push(cpu->setup.all.stack.signal_vect, &cpu->components.addr.sig_wyls);
 	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.addr.sig_wyad);
 	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.addr.sig_stop);
 	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.addr.sig_il);
-	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.addr.sig_as);
-	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.addr.sig_sa);
+	vector_push(cpu->setup.all.bus_link.signal_vect, &cpu->components.addr.sig_as);
+	vector_push(cpu->setup.all.bus_link.signal_vect, &cpu->components.addr.sig_sa);
 }
 
 void cpu_init_xy_units(struct CPU* cpu, Point offset, struct Canvas* canvas)
@@ -848,8 +791,8 @@ void cpu_init_xy_units(struct CPU* cpu, Point offset, struct Canvas* canvas)
 	cpu->components.xy.reg_y = unit_new_reg(&new_unit, "Y");
 
 	// |---- XY ----|
-	vector_push(cpu->setup.all.basic.unit_vect, &cpu->components.xy.reg_x);
-	vector_push(cpu->setup.all.basic.unit_vect, &cpu->components.xy.reg_y);
+	vector_push(cpu->setup.all.reg_x.unit_vect, &cpu->components.xy.reg_x);
+	vector_push(cpu->setup.all.reg_y.unit_vect, &cpu->components.xy.reg_y);
 }
 
 
@@ -941,10 +884,10 @@ void cpu_init_xy_signals(struct CPU* cpu, Point offset, struct Canvas* canvas)
 	cpu->components.xy.sig_wey = signal_new(&signal_init);
 
 	// |---- XY ----|
-	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.xy.sig_wex);
-	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.xy.sig_wey);
-	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.xy.sig_wyx);
-	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.xy.sig_wyy);
+	vector_push(cpu->setup.all.reg_x.signal_vect, &cpu->components.xy.sig_wex);
+	vector_push(cpu->setup.all.reg_y.signal_vect, &cpu->components.xy.sig_wey);
+	vector_push(cpu->setup.all.reg_x.signal_vect, &cpu->components.xy.sig_wyx);
+	vector_push(cpu->setup.all.reg_y.signal_vect, &cpu->components.xy.sig_wyy);
 }
 
 void cpu_init_stack_units(struct CPU* cpu, const Point offset, struct Canvas* canvas)
@@ -963,7 +906,7 @@ void cpu_init_stack_units(struct CPU* cpu, const Point offset, struct Canvas* ca
 	cpu->components.stack.reg_ws = unit_new_reg(&new_unit, "WS");
 
 	// |---- STACK ----|
-	vector_push(cpu->setup.all.basic.unit_vect, &cpu->components.stack.reg_ws);
+	vector_push(cpu->setup.all.stack.unit_vect, &cpu->components.stack.reg_ws);
 }
 
 void cpu_init_stack_signals(struct CPU* cpu, const Point offset, struct Canvas* canvas)
@@ -1052,10 +995,10 @@ void cpu_init_stack_signals(struct CPU* cpu, const Point offset, struct Canvas* 
 	cpu->components.stack.sig_dws = signal_new(&signal_init);
 
 	// |---- STACK ----|
-	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.stack.sig_dws);
-	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.stack.sig_iws);
-	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.stack.sig_wews);
-	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.stack.sig_wyws);
+	vector_push(cpu->setup.all.stack.signal_vect, &cpu->components.stack.sig_dws);
+	vector_push(cpu->setup.all.stack.signal_vect, &cpu->components.stack.sig_iws);
+	vector_push(cpu->setup.all.stack.signal_vect, &cpu->components.stack.sig_wews);
+	vector_push(cpu->setup.all.stack.signal_vect, &cpu->components.stack.sig_wyws);
 }
 
 void cpu_init_io_units(struct CPU* cpu, Point offset, struct Canvas* canvas)
@@ -1083,8 +1026,8 @@ void cpu_init_io_units(struct CPU* cpu, Point offset, struct Canvas* canvas)
 	cpu->components.io.reg_g = unit_new_reg(&new_unit, "G");
 
 	// |---- IO ----|
-	vector_push(cpu->setup.all.basic.unit_vect, &cpu->components.io.reg_rb);
-	vector_push(cpu->setup.all.basic.unit_vect, &cpu->components.io.reg_g);
+	vector_push(cpu->setup.all.io.unit_vect, &cpu->components.io.reg_rb);
+	vector_push(cpu->setup.all.io.unit_vect, &cpu->components.io.reg_g);
 }
 
 void cpu_init_io_signals(struct CPU* cpu, Point offset, struct Canvas* canvas)
@@ -1173,10 +1116,10 @@ void cpu_init_io_signals(struct CPU* cpu, Point offset, struct Canvas* canvas)
 	cpu->components.io.sig_start = signal_new(&signal_init);
 
 	// |---- IO ----|
-	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.io.sig_start);
-	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.io.sig_werb);
-	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.io.sig_wyg);
-	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.io.sig_wyrb);
+	vector_push(cpu->setup.all.io.signal_vect, &cpu->components.io.sig_start);
+	vector_push(cpu->setup.all.io.signal_vect, &cpu->components.io.sig_werb);
+	vector_push(cpu->setup.all.io.signal_vect, &cpu->components.io.sig_wyg);
+	vector_push(cpu->setup.all.io.signal_vect, &cpu->components.io.sig_wyrb);
 }
 
 void cpu_init_intr_units(struct CPU* cpu, const Point offset, struct Canvas* canvas)
@@ -1220,10 +1163,10 @@ void cpu_init_intr_units(struct CPU* cpu, const Point offset, struct Canvas* can
 	cpu->components.intr.reg_ap = unit_new_reg(&new_unit, "AP");
 
 	// |---- INTR ----|
-	vector_push(cpu->setup.all.basic.unit_vect, &cpu->components.intr.reg_ap);
-	vector_push(cpu->setup.all.basic.unit_vect, &cpu->components.intr.reg_rm);
-	vector_push(cpu->setup.all.basic.unit_vect, &cpu->components.intr.reg_rz);
-	vector_push(cpu->setup.all.basic.unit_vect, &cpu->components.intr.reg_rp);
+	vector_push(cpu->setup.all.interrupts.unit_vect, &cpu->components.intr.reg_ap);
+	vector_push(cpu->setup.all.interrupts.unit_vect, &cpu->components.intr.reg_rm);
+	vector_push(cpu->setup.all.interrupts.unit_vect, &cpu->components.intr.reg_rz);
+	vector_push(cpu->setup.all.interrupts.unit_vect, &cpu->components.intr.reg_rp);
 }
 
 void cpu_init_intr_signals(struct CPU* cpu, const Point offset, struct Canvas* canvas)
@@ -1329,9 +1272,9 @@ void cpu_init_intr_signals(struct CPU* cpu, const Point offset, struct Canvas* c
 	cpu->components.intr.sig_eni = signal_new(&signal_init);
 
 	// |---- INTR ----|
-	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.intr.sig_eni);
-	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.intr.sig_rint);
-	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.intr.sig_werm);
-	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.intr.sig_wyrm);
-	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.intr.sig_wyap);
+	vector_push(cpu->setup.all.interrupts.signal_vect, &cpu->components.intr.sig_eni);
+	vector_push(cpu->setup.all.interrupts.signal_vect, &cpu->components.intr.sig_rint);
+	vector_push(cpu->setup.all.interrupts.signal_vect, &cpu->components.intr.sig_werm);
+	vector_push(cpu->setup.all.interrupts.signal_vect, &cpu->components.intr.sig_wyrm);
+	vector_push(cpu->setup.all.interrupts.signal_vect, &cpu->components.intr.sig_wyap);
 }

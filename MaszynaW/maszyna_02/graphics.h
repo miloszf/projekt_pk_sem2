@@ -27,6 +27,17 @@ struct DrawableSignalInit
 	} tag;
 };
 
+struct DrawableMemoryInit
+{
+	struct Canvas* canvas;
+	Point position;
+	// depends on MEMORY_LINE_BUFFER_SIZE & MEMORY_LINES_NUMBER, graphics.c
+	// Point size;
+	const var** memory_ptr;
+	const var* addr_len;
+	struct Vector** instr_names_vect_ptr;
+};
+
 struct Window* window_init();
 struct Canvas* window_new_canvas(struct Window* window, Point offset, Point size);
 void window_draw(struct Window* window);
@@ -40,5 +51,8 @@ struct Drawable* drawable_new_comb(struct Canvas* canvas, Point position, Point 
 struct Drawable* drawable_new_bus(struct Canvas* canvas, Point position, Point size);
 
 struct Drawable* drawable_new_signal(struct DrawableSignalInit* init, const char* name);
+struct Drawable* drawable_new_memory(struct DrawableMemoryInit* init);
+
+struct Drawable* drawable_new_frame(struct Canvas* canvas, Point position, Point size);
 
 #endif

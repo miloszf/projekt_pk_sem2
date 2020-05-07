@@ -45,6 +45,7 @@ bool cpu_import_instructions(struct CPU* cpu)
 		cpu->vector.units = vector_init(sizeof(struct Unit*));
 		cpu->vector.signals = vector_init(sizeof(struct Signal*));
 		struct Map* signal_map = map_init(sizeof(struct Signal*));
+		drawable_set_visibility(cpu->memory->drawable, true);
 
 		for (int i = 0; i < CPU_SETUP_SIZE; i++)
 		{
@@ -99,24 +100,8 @@ bool cpu_import_instructions(struct CPU* cpu)
 bool cpu_import_program(struct CPU* cpu)
 {
 	check_for_NULL(cpu);
-
-	var addr = cpu->setup.all.addr_length.value;
-	var word = addr + cpu->setup.all.code_length.value;
-	var word_mask = (u_var)(-1) >> (sizeof(var) * 8 - word);
-	var addr_mask = (u_var)word_mask >> (cpu->setup.all.code_length.value);
-	var char_mask = 0x7F;
-	var intr_mask = 0x0F;
-	var instr_num = vector_size(cpu->vector.instructions);
-	cpu->word = (struct CPUWord){ word, addr, word_mask, addr_mask, char_mask, instr_num };
-
-	if (cpu->memory)
-		free(cpu->memory);
-	unsigned mem_size = 1 << (addr);
-	cpu->memory = calloc_s(1 << (addr), sizeof(var));
-
-	file_compile_program("program.prg", cpu->vector.instructions, addr, word - addr, cpu->memory);
-
-	return true;
+	var code = cpu->word.word_len - cpu->word.addr_len;
+	return file_compile_program("program.prg", cpu->vector.instructions, cpu->word.addr_len, code, cpu->memory->memory_array);
 }
 
 struct CPU* cpu_init(struct Canvas* canvas)
@@ -128,8 +113,10 @@ struct CPU* cpu_init(struct Canvas* canvas)
 	cpu->vector.units = NULL;
 	cpu->vector.signals = NULL;
 	cpu->vector.instructions = NULL;
-	cpu->memory = NULL;
+	cpu->word = cpu_word_init();
+	cpu->memory = cpu_memory_init(canvas, POINT(47, 12), &cpu->word.addr_len);
 	cpu->runtime = (struct CPURuntime){ NULL, NULL, false };
+	cpu->frame = drawable_new_frame(canvas, POINT(0, 0), POINT(73, 31));
 
 	cpu_init_alu_units(cpu, POINT(20, 13), canvas);
 	cpu_init_mem_units(cpu, POINT(47, 8), canvas);
@@ -153,8 +140,20 @@ struct CPU* cpu_init(struct Canvas* canvas)
 	cpu->components.tags.all.tag_v = cpu_tag_init("v", TAG_V);
 
 	// dodaæ obs³ugê b³êdów
-	Error error = cpu_import_instructions(cpu) ? NO_ERROR : ERROR;
-	cpu_import_program(cpu);
+	//Error error = cpu_import_instructions(cpu) ? NO_ERROR : ERROR;
+	//if (!error)
+	//{
+	//	cpu_word_update(&cpu->word, cpu->setup.all.code_length.value, cpu->setup.all.addr_length.value, cpu->vector.instructions);
+	//	cpu_memory_update(&cpu->memory, cpu->vector.instructions);
+	//	cpu_import_program(cpu);
+	//}
+	if (cpu_import_instructions(cpu))
+	{
+		cpu_word_update(&cpu->word, cpu->setup.all.code_length.value, cpu->setup.all.addr_length.value, cpu->vector.instructions);
+		cpu_memory_update(cpu->memory, cpu->vector.instructions);
+		if (cpu_import_program(cpu))
+			cpu_memory_scroll(cpu->memory, 0);
+	}
 
 	return cpu;
 }
@@ -257,7 +256,8 @@ void cpu_delete(struct CPU* cpu)
 		vector_delete(cpu->vector.signals);
 		vector_delete(cpu->vector.units);
 		// delete memory
-		free(cpu->memory);
+		cpu_memory_delete(cpu->memory);
+		//free(cpu->memory);
 
 		free(cpu);
 	}

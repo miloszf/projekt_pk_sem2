@@ -972,7 +972,7 @@ bool file_compile_program(const char* file_name, struct Vector* instr_vect, var 
 					error = ERROR_INVALID_PROGRAM_FILE;
 				else
 				{
-					//memory[memory_index++] = token_array[token_index++];
+					//memory_ptr[memory_index++] = token_array[token_index++];
 					memory[memory_index] = instr_prop->code;
 					if (!instr_prop->args_num)
 						memory_index++;
@@ -1017,7 +1017,7 @@ bool file_compile_program(const char* file_name, struct Vector* instr_vect, var 
 
 	// DEBUG
 	printf("\nzapisana pamiec: \n");
-	for (unsigned i = 0; i < memory_size; i++)
+	for (int i = 0; i < memory_size; i++)
 		printf("%3u - %i\n", i, memory[i]);
 
 	map_delete(instr_map);
@@ -1028,5 +1028,8 @@ bool file_compile_program(const char* file_name, struct Vector* instr_vect, var 
 	while (line_ptr = vector_pop(lines_vect))
 		free(*line_ptr);
 	vector_delete(lines_vect);
-	return false;
+
+	if (error)
+		error_set(error);
+	return !error;
 }

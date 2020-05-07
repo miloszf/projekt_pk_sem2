@@ -37,7 +37,7 @@ int main()
 		Error error = NO_ERROR;
 		
 		struct Window* window = window_init();
-		struct Canvas* canvas = window_new_canvas(window, (Point) {0, 0 }, (Point) { 70, 31 });
+		struct Canvas* canvas = window_new_canvas(window, (Point) {0, 0 }, (Point) { 73, 31 });
 		struct CPU* cpu = cpu_init(canvas);
 
 		bool exit = false;

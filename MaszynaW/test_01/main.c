@@ -13,5 +13,6 @@ int main()
 	char buff[20];
 	int unused;
 	int read = sscanf_s(str, "Linia%d=%[^\n]\n", &unused, buff, 20);
+	char buffer[8][20];
 	return 0;
 }

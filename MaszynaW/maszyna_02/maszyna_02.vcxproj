@@ -143,6 +143,7 @@
     <ClCompile Include="cpu_components.c" />
     <ClCompile Include="cpu_functions.c" />
     <ClCompile Include="cpu_setup.c" />
+    <ClCompile Include="cpu_structs.c" />
     <ClCompile Include="drawable.c" />
     <ClCompile Include="error.c" />
     <ClCompile Include="file.c" />

@@ -1,0 +1,148 @@
+#include <stdlib.h>
+#include <string.h>
+
+#include "cpu_structs.h"
+#include "error.h"
+#include "vector.h"
+#include "unit.h"
+//#include "signal.h"
+#include "graphics.h"
+#include "instruction.h"
+
+bool cpu_tag_update(struct CPUTag* tag, struct CPU* cpu)
+{
+	check_for_NULL(tag);
+	check_for_NULL(cpu);
+	bool return_value;
+
+	switch (tag->type)
+	{
+	case TAG_Z:
+	{
+		var value = unit_read(cpu->components.alu.reg_ak);
+		if (value != EMPTY)
+			return_value = value & (cpu->word.word_mask >> 1);
+		else
+			return_value = false;
+	}
+	break;
+	case TAG_ZAK:
+	{
+		return_value = unit_read(cpu->components.alu.reg_ak);
+	}
+	break;
+	case TAG_V:
+	{
+		return_value = false;
+	}
+	break;
+	case TAG_INT:
+	{
+		return_value = tag->value;
+	}
+	break;
+	default:
+		critical_error_set("");
+		return_value = false;
+	}
+
+	return return_value;
+}
+
+struct CPUTag cpu_tag_init(const char* name, CPUTagType type)
+{
+	check_for_NULL(name);
+	char* new_name = _strdup(name);
+	if (!new_name)
+		critical_error_set("strdup failed\n");
+	return (struct CPUTag) { new_name, false, type };
+}
+
+void cpu_tag_delete(struct CPUTag* tag)
+{
+	if (tag)
+	{
+		free((char*)tag->name);
+	}
+}
+
+struct CPUMemory* cpu_memory_init(struct Canvas* canvas, const Point position, const var* addr_length)
+{
+	struct Vector* instr_names_vect = vector_init(sizeof(const char*));
+	struct CPUMemory* memory = malloc_s(sizeof(struct CPUMemory));
+	*memory = (struct CPUMemory){ NULL, addr_length, NULL, instr_names_vect };;
+	struct DrawableMemoryInit init =
+	{
+		canvas,
+		position,
+		&memory->memory_array,
+		addr_length,
+		&memory->instr_names_vect
+	};
+	memory->drawable = drawable_new_memory(&init);
+	return memory;
+}
+
+void cpu_memory_update(struct CPUMemory* memory, struct Vector* instr_vect)
+{
+	check_for_NULL(memory);
+	check_for_NULL(memory->addr_len);
+
+	if (memory->memory_array)
+		free(memory->memory_array);
+	unsigned mem_size = 1 << (*(memory->addr_len));
+	memory->memory_array = calloc_s(mem_size, sizeof(var));
+
+	const char** name_ptr;
+	while (name_ptr = vector_pop(memory->instr_names_vect))
+		free((char*)*name_ptr);
+
+	size_t vect_size = vector_size(instr_vect);
+	for (unsigned i = 0; i < vect_size; i++)
+	{
+		struct Instruction** instr_ptr = vector_read(instr_vect, i);
+		check_for_NULL(instr_ptr);
+		check_for_NULL(*instr_ptr);
+		char* name = _strdup((*instr_ptr)->name);
+		vector_push(memory->instr_names_vect, &name);
+	}
+}
+
+void cpu_memory_scroll(struct CPUMemory* memory, var offset)
+{
+	check_for_NULL(memory);
+	drawable_set_value(memory->drawable, &offset);
+}
+
+void cpu_memory_delete(struct CPUMemory* memory)
+{
+	if (memory)
+	{
+		const char** name_ptr;
+		while (name_ptr = vector_pop(memory->instr_names_vect))
+			free((char*)*name_ptr);
+		vector_delete(memory->instr_names_vect);
+		free(memory->memory_array);
+		free(memory);
+	}
+}
+
+struct CPUWord cpu_word_init()
+{	
+	struct CPUWord word = {
+		.char_mask = 0x7F,
+		.intr_mask = 0x0F
+	};
+	cpu_word_update(&word, 3, 5, NULL);
+	return word;
+}
+
+void  cpu_word_update(struct CPUWord* word, var code_length, var address_length, struct Vector* instr_vect)
+{
+	check_for_NULL(word);
+	word->addr_len = address_length;
+	word->word_len = word->addr_len + code_length;
+	word->word_mask = (u_var)(-1) >> (sizeof(var) * 8 - word->word_len);
+	word->addr_mask = (u_var)(word->word_mask) >> (code_length);
+	word->instr_num = instr_vect ? vector_size(instr_vect) : 0;
+}

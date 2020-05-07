@@ -13,33 +13,34 @@
 //#define WCHAR_BUFFER_SIZE 256
 #define EVENTS_BUFFER_SIZE 128
 
-#define ESC "\x1b"
-#define CSI "\x1b["
-
-void inline enter_alternate_buffer()
-{
-	printf(CSI "?1049h");
-}
-
-void inline exit_alternate_buffer()
-{
-	printf(CSI "?1049l");
-}
-
-void inline hide_cursor()
-{
-	printf(CSI "?25l");
-}
-
-void inline show_cursor()
-{
-	printf(CSI "?25h");
-}
+//#define ESC "\x1b"
+//#define CSI "\x1b["
+//
+//void inline enter_alternate_buffer()
+//{
+//	printf(CSI "?1049h");
+//}
+//
+//void inline exit_alternate_buffer()
+//{
+//	printf(CSI "?1049l");
+//}
+//
+//void inline hide_cursor()
+//{
+//	printf(CSI "?25l");
+//}
+//
+//void inline show_cursor()
+//{
+//	printf(CSI "?25h");
+//}
 
 struct Terminal
 {
 	HANDLE out_handle;
 	HANDLE in_handle;
+	COORD window_size;
 };
 
 struct ConsoleSetup
@@ -115,7 +116,7 @@ struct Terminal* terminal_init(const char* window_name)
 			//else if (!SetConsoleScreenBufferSize(term->out_handle, max_window_size))
 			//	error_get = ERROR;
 			//else 
-				if (!SetConsoleActiveScreenBuffer(term->out_handle))
+			if (!SetConsoleActiveScreenBuffer(term->out_handle))
 				error = ERROR;
 			else
 				orginal_setup.new_output_handle = term->out_handle;
@@ -125,15 +126,16 @@ struct Terminal* terminal_init(const char* window_name)
 
 	//if (!error_get)
 	//{
-	//	if (!GetConsoleMode(term->orginal_output_handle, &orginal_setup.out_mode))
-	//		error_get = ERROR;
+	//	if (!GetConsoleMode(term->out_handle, &orginal_setup.out_mode))
+	//		error = ERROR;
 	//	else
 	//	{
 	//		DWORD console_mode =
 	//			orginal_setup.out_mode |
-	//			ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-	//		if (!SetConsoleMode(term->orginal_output_handle, console_mode))
-	//			error_get = ERROR;
+	//			//ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+	//			DISABLE_NEWLINE_AUTO_RETURN;
+	//		if (!SetConsoleMode(term->out_handle, console_mode))
+	//			error = ERROR;
 	//	}
 	//}
 	
@@ -145,7 +147,7 @@ struct Terminal* terminal_init(const char* window_name)
 		{
 			DWORD console_mode =
 				orginal_setup.in_mode |
-				ENABLE_WINDOW_INPUT |
+				//ENABLE_WINDOW_INPUT |
 				ENABLE_MOUSE_INPUT;
 			if (!SetConsoleMode(term->in_handle, console_mode))
 				error = ERROR;
@@ -197,41 +199,64 @@ void terminal_display(struct Terminal* term, struct Window* window)
 
 	Error error = NO_ERROR;
 	CONSOLE_SCREEN_BUFFER_INFO csb_info;
-	COORD size;
+	COORD start = { 0, 0 };
+
 	if (!GetConsoleScreenBufferInfo(term->out_handle, &csb_info))
 		error = ERROR;
-	else
+
+	if (!error && (term->window_size.X != csb_info.dwSize.X || term->window_size.Y != csb_info.dwSize.Y))
 	{
-		//size.X = (csb_info.dwSize.X > window->size.x) ? window->size.x : csb_info.dwSize.X;
-		//size.Y = (csb_info.dwSize.Y > window->size.y) ? window->size.y : csb_info.dwSize.Y;
-		if (csb_info.dwSize.X > window->size.x)
-			size.X = window->size.x;
-		else
-			size.X = csb_info.dwSize.X;
-
-		if (csb_info.dwSize.Y > window->size.y)
-			size.Y = window->size.y;
-		else
-			size.Y = csb_info.dwSize.Y;
-
-		CHAR_INFO* output_buffer = malloc_s(sizeof(CHAR_INFO) * size.X * size.Y);
-		for (int col = 0; col < size.Y; col++)
-			for (int row = 0; row < size.X; row++)
-			{
-				window_line_to_wchar(&window->buffer[row + size.X * col]);
-				output_buffer[row + size.X * col] = pixel_to_char_info(&window->buffer[row + size.X * col]);
-			}	
-
-		COORD start = { 0, 0 };
-		SMALL_RECT write_region = { start.X, start.Y , size.X, size.Y };
-		if (!WriteConsoleOutput(term->out_handle, output_buffer, size, start, &write_region))
+		DWORD term_buff_len = csb_info.dwSize.X * csb_info.dwSize.Y;
+		DWORD unused;
+		if (!FillConsoleOutputAttribute(term->out_handle, 0, term_buff_len, start, &unused))
 			error = ERROR;
+		else
+		{
+			DWORD term_buff_len = csb_info.dwSize.X * csb_info.dwSize.Y;
+			DWORD unused;
+			if (!FillConsoleOutputCharacter(term->out_handle, (TCHAR)(' '), term_buff_len, start, &unused))
+				error = ERROR;
+			else
+			{
+				term->window_size.X = csb_info.dwSize.X;
+				term->window_size.Y = csb_info.dwSize.Y;
+			}
+		}
 
+		if (!error)
+		{
+			CONSOLE_CURSOR_INFO cursor_info;
+			if (!GetConsoleCursorInfo(term->out_handle, &cursor_info))
+				error = ERROR;
+			else
+			{
+				cursor_info.bVisible = false;
+				if (!SetConsoleCursorInfo(term->out_handle, &cursor_info))
+					error = ERROR;
+			}
+		}
+	}
+
+	if (!error)
+	{
+		COORD window_size = { window->size.x , window->size.y };
+		CHAR_INFO* output_buffer = malloc_s(sizeof(CHAR_INFO) * window_size.X * window_size.Y);
+		for (int col = 0; col < window_size.Y; col++)
+			for (int row = 0; row < window_size.X; row++)
+			{
+				window_line_to_wchar(&window->buffer[row + window_size.X * col]);
+				output_buffer[row + window_size.X * col] = pixel_to_char_info(&window->buffer[row + window_size.X * col]);
+			}
+
+		SMALL_RECT write_region = { start.X, start.Y , window_size.X, window_size.Y };
+		if (!WriteConsoleOutput(term->out_handle, output_buffer, window_size, start, &write_region))
+			error = ERROR;
 		free(output_buffer);
 	}
 
 	if (error)
 		error_set(ERROR_RENDER_FAILURE);
+	//Sleep(200);
 }
 
 void terminal_del(struct Terminal* terminal)

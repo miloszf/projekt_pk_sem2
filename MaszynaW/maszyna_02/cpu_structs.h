@@ -151,9 +151,9 @@ struct CPUComponents
 struct CPUMemory
 {
 	var* memory_array;
-	unsigned char addr_length;
-	unsigned char code_length;
+	const var* addr_len;
 	struct Drawable* drawable;
+	struct Vector* instr_names_vect;
 };
 
 struct CPUWord
@@ -179,14 +179,28 @@ struct CPU
 	struct CPUSetup setup;
 	struct CPUComponents components;
 	struct CPUWord word;
-	var* memory;
+	struct CPUMemory* memory;
 	struct
 	{
+		// do usuniêcia?
 		struct Vector* units;
 		struct Vector* signals;
 		struct Vector* instructions;
 	} vector;
 	struct CPURuntime runtime;
+	struct Drawable* frame;
 };
+
+struct CPUTag cpu_tag_init(const char* name, CPUTagType type);
+bool cpu_tag_update(struct CPUTag* tag, struct CPU* cpu);
+void cpu_tag_delete(struct CPUTag* tag);
+
+struct CPUMemory* cpu_memory_init(struct Canvas* canvas, const Point position, const var* addr_length);
+void cpu_memory_update(struct CPUMemory* memory, struct Vector* instr_vect);
+void cpu_memory_scroll(struct CPUMemory* memory, var offset);
+void cpu_memory_delete(struct CPUMemory*);
+
+struct CPUWord cpu_word_init();
+void  cpu_word_update(struct CPUWord* word, var code_length, var address_length, struct Vector* instr_vect);
 
 #endif

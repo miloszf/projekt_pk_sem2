@@ -75,16 +75,16 @@ void window_line_to_wchar(struct Pixel* pixel)
 				struct LineComponents line_components;
 			} line_map[] = {
 				{ .line_components = (struct LineComponents){0, 0, 0, 0}, .u_char = ' '}, 
-				// Pojedyñcze - 1 linia
-				//{ .line_components = (struct LineComponents){1, 0, 0, 0}, .u_char = 0x2500 },
-				{ .line_components = (struct LineComponents){1, 0, 0, 0}, .u_char = 'd' },
-				{ .line_components = (struct LineComponents){0, 0, 1, 0}, .u_char = 'b' },
-				//{ .line_components = (struct LineComponents){0, 0, 1, 0}, .u_char = 0x2500 },
+				// Pojedyncze - 1 linia
+				{ .line_components = (struct LineComponents){1, 0, 0, 0}, .u_char = 0x2500 },
+				//{ .line_components = (struct LineComponents){1, 0, 0, 0}, .u_char = 'd' },
+				//{ .line_components = (struct LineComponents){0, 0, 1, 0}, .u_char = 'b' },
+				{ .line_components = (struct LineComponents){0, 0, 1, 0}, .u_char = 0x2500 },
 				{ .line_components = (struct LineComponents){1, 0, 1, 0}, .u_char = 0x2500 },
-				//{ .line_components = (struct LineComponents){0, 1, 0, 0}, .u_char = 0x2502 },
-				{ .line_components = (struct LineComponents){0, 1, 0, 0}, .u_char = 'i' },
-				//{ .line_components = (struct LineComponents){0, 0, 0, 1}, .u_char = 0x2502 },
-				{ .line_components = (struct LineComponents){0, 0, 0, 1}, .u_char = 'j' },
+				{ .line_components = (struct LineComponents){0, 1, 0, 0}, .u_char = 0x2502 },
+				//{ .line_components = (struct LineComponents){0, 1, 0, 0}, .u_char = 'i' },
+				{ .line_components = (struct LineComponents){0, 0, 0, 1}, .u_char = 0x2502 },
+				//{ .line_components = (struct LineComponents){0, 0, 0, 1}, .u_char = 'j' },
 				{ .line_components = (struct LineComponents){0, 1, 0, 1}, .u_char = 0x2502 },
 				// Pojedyñcze - 2 linie
 				{ .line_components = (struct LineComponents){1, 1, 0, 0}, .u_char = 0x2518 },
@@ -166,8 +166,7 @@ void window_line_to_wchar(struct Pixel* pixel)
 void window_clear_buffer(struct Window* window)
 {
 	check_for_NULL(window);
-	//memset(window->buffer, 0, (window->size.x * window->size.y * sizeof(struct Pixel)));
-	struct Pixel blank_pixel = { .type = TEXT_PRIMITIVE, .u_char = '\0', .color = 0x0010 };
+	struct Pixel blank_pixel = { .type = TEXT_PRIMITIVE, .u_char = '\0', .color = COLOR_BGND_DEFAULT };
 	for (int i = 0; i < (window->size.x * window->size.y); i++)
 		window->buffer[i] = blank_pixel;
 }

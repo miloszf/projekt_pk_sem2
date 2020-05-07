@@ -48,35 +48,31 @@ void primitive_draw(struct Primitive* primitive, struct RenderInfo r_info)
 {
 	check_for_NULL(primitive);
 
+	Error error = NO_ERROR;
 	r_info.offset.x += primitive->position.x;
 	r_info.offset.y += primitive->position.y;
 
-	//if (r_info.offset.x < r_info.buffer_size.x &&
-	//	r_info.offset.y < r_info.buffer_size.y)
 	if (in_rect(r_info.offset, r_info.buffer_size))
 	{
 		struct Pixel pixel;
 		pixel.color = primitive->color;
 		pixel.type = primitive->type;
 		Point coord = { r_info.offset.x, r_info.offset.y };
-		if (primitive->type == TEXT_PRIMITIVE)
+		unsigned length = (primitive->type == TEXT_PRIMITIVE) ? wcslen(primitive->text.string) : primitive->line.length;
+
+		for (unsigned int i = 0; i < length && in_rect(coord, r_info.buffer_size) && !error; i++)
 		{
-			for (unsigned int i = 0; i < wcslen(primitive->text.string) && in_rect(coord, r_info.buffer_size); i++)
+			size_t buff_coord = coord.x + r_info.buffer_size.x * coord.y;
+			if (!(pixel.color & BACKGROUND))
+				pixel.color |= (r_info.buffer[buff_coord]).color & BACKGROUND;
+
+			switch (primitive->type)
 			{
+			case TEXT_PRIMITIVE:
 				pixel.u_char = primitive->text.string[i];
-				int buff_coord = coord.x + r_info.buffer_size.x * coord.y;
-				r_info.buffer[buff_coord] = pixel;
-				if (primitive->orientation == HORIZONTAL)
-					coord.x++;
-				else
-					coord.y++;
-			}
-		}
-		else if (primitive->type == LINE_PRIMITIVE)
-		{
-			for (unsigned int i = 0; i < primitive->line.length && in_rect(coord, r_info.buffer_size); i++)
+				break;
+			case LINE_PRIMITIVE:
 			{
-				size_t buff_coord = coord.x + r_info.buffer_size.x * coord.y;
 				pixel.line = (struct LineChar){ 0 };
 				struct LineChar old_line;
 
@@ -103,15 +99,22 @@ void primitive_draw(struct Primitive* primitive, struct RenderInfo r_info)
 				}
 
 				pixel.line = line_char_overwrite(&old_line, &pixel.line);
-				r_info.buffer[buff_coord] = pixel;
-
-				if (primitive->orientation == HORIZONTAL)
-					coord.x++;
-				else
-					coord.y++;
 			}
+			break;
+			default:
+				error = ERROR_RENDER_FAILURE;
+			}
+
+			r_info.buffer[buff_coord] = pixel;
+			if (primitive->orientation == HORIZONTAL)
+				coord.x++;
+			else
+				coord.y++;
 		}
-		else
-			error_set(ERROR_RENDER_FAILURE);
 	}
+	else
+		error = ERROR_RENDER_FAILURE;
+
+	if (error)
+		error_set(error);
 }
