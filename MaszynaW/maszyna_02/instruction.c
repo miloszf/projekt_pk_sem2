@@ -27,10 +27,11 @@ void tick_delete(struct Tick* tick)
 
 struct Instruction* instruction_init(const char* name)
 {
-	check_for_NULL(name);
+	CHECK_IF_NULL(name);
 	char* new_name = _strdup(name);
 	if (!new_name)
-		critical_error_set("strdup failed\n");
+		//critical_error_set("strdup failed\n");
+		CRASH_LOG(LIBRARY_FUNC_FAILURE);
 	struct Instruction* new_intr = malloc_s(sizeof(struct Instruction));
 	//*new_intr = (struct Instruction){ new_name, 1, vector_init(sizeof(struct Tick*)) };
 	*new_intr = (struct Instruction){ new_name, 1, NULL };

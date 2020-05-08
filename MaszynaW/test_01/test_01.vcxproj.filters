@@ -18,14 +18,11 @@
     <ClCompile Include="main.c">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="file_handling.c">
+    <ClCompile Include="error.c">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="file_handling.h">
-      <Filter>Pliki nagłówkowe</Filter>
-    </ClInclude>
     <ClInclude Include="error.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>

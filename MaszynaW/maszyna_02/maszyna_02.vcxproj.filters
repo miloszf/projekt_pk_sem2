@@ -90,6 +90,9 @@
     <ClInclude Include="cpu_functions.h">
       <Filter>Pliki nagłówkowe\cpu</Filter>
     </ClInclude>
+    <ClInclude Include="console.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="error.c">
@@ -151,6 +154,9 @@
     </ClCompile>
     <ClCompile Include="cpu_structs.c">
       <Filter>Pliki źródłowe\cpu</Filter>
+    </ClCompile>
+    <ClCompile Include="console.c">
+      <Filter>Pliki źródłowe</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

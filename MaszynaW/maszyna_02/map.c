@@ -26,14 +26,14 @@ struct Map* map_init(size_t element_size)
 
 bool map_push(struct Map* map, const char* key, void* value_ptr)
 {
-	//check_for_NULL(map);
-	//check_for_NULL(key);
-	check_for_NULL(value_ptr);
+	//CHECK_IF_NULL(map);
+	//CHECK_IF_NULL(key);
+	CHECK_IF_NULL(value_ptr);
 
 	if (!map_read_from_key(map, key))
 	{
 		char* new_key = _strdup(key);
-		check_for_NULL(new_key);
+		CHECK_IF_NULL(new_key);
 		vector_push(map->keys_vect, &new_key);
 		vector_push(map->values_vect, value_ptr);
 		return true;
@@ -44,14 +44,14 @@ bool map_push(struct Map* map, const char* key, void* value_ptr)
 
 void* map_read_from_key(struct Map* map, const char* key)
 {
-	check_for_NULL(map);
-	check_for_NULL(key);
+	CHECK_IF_NULL(map);
+	CHECK_IF_NULL(key);
 	void* value = NULL;
 	size_t map_size = vector_size(map->keys_vect);
 	for (size_t i = 0; i < map_size; i++)
 	{
 		const char** key_ptr = vector_read(map->keys_vect, i);
-		check_for_NULL(key_ptr);
+		CHECK_IF_NULL(key_ptr);
 		if (!strcmp(key, *key_ptr))
 		{
 			value = vector_read(map->values_vect, i);

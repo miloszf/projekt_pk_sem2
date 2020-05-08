@@ -50,8 +50,8 @@ void file_handler_delete(struct FileHandler* handler)
 
 void put_to_buffer(unsigned char* buffer, int* buffer_size, int chr, int offset)
 {
-	check_for_NULL(buffer);
-	check_for_NULL(buffer_size);
+	CHECK_IF_NULL(buffer);
+	CHECK_IF_NULL(buffer_size);
 
 	if (offset >= *buffer_size)
 	{
@@ -118,7 +118,7 @@ int to_lower_latin(int chr)
 
 void dump_lines(struct Vector* line_vect)
 {
-	check_for_NULL(line_vect);
+	CHECK_IF_NULL(line_vect);
 	
 	unsigned vect_size = vector_size(line_vect);
 	for (unsigned i = 0; i < vect_size; i++)
@@ -131,15 +131,16 @@ void dump_lines(struct Vector* line_vect)
 
 struct Vector* get_instruction_lines(const char* file_name)
 {
-	check_for_NULL(file_name);
+	CHECK_IF_NULL(file_name);
 
-	Error error = NO_ERROR;
+	//Error error = NO_ERROR;
 	struct Vector* lines_vect = NULL;
 
 	//FILE* input_file = fopen(file_name, "r");
 	FILE* input_file;
 	if (fopen_s(&input_file, file_name, "r"))
-		error = ERROR_NO_INSTR_FILE;
+		//error = ERROR_NO_INSTR_FILE;
+		instr_error_set(NO_FILE, file_name);
 	else
 	{
 		lines_vect = vector_init(sizeof(unsigned char*));
@@ -211,15 +212,15 @@ struct Vector* get_instruction_lines(const char* file_name)
 		fclose(input_file);
 	}
 
-	if (error)
-		error_set(error);
+	/*if (error)
+		error_set(error);*/
 
 	return lines_vect;
 }
 
 unsigned int find_header(struct Vector* lines_vect, const char* name)
 {
-	check_for_NULL(lines_vect);
+	CHECK_IF_NULL(lines_vect);
 	int vect_size = vector_size(lines_vect);
 	int line_index = 0;
 	for (; line_index < vect_size; line_index++)
@@ -251,9 +252,9 @@ unsigned int find_header(struct Vector* lines_vect, const char* name)
 
 bool file_import_setup(const char* file_name, struct FileHandler* files_handler, struct Map* pref_map)
 {
-	check_for_NULL(file_name);
-	check_for_NULL(files_handler);
-	check_for_NULL(pref_map);
+	CHECK_IF_NULL(file_name);
+	CHECK_IF_NULL(files_handler);
+	CHECK_IF_NULL(pref_map);
 
 	if (files_handler->instruction_lines_vect)
 	{
@@ -267,27 +268,30 @@ bool file_import_setup(const char* file_name, struct FileHandler* files_handler,
 	else
 		files_handler->instruction_lines_vect = lines_vect;
 
-	Error error = NO_ERROR;
+	//Error error = NO_ERROR;
 	const char settings_str[] = "opcje";
 	int line_index = find_header(lines_vect, settings_str);
 	if (line_index == EOF)
-		error = ERROR_INVALID_INSTR_FILE;
+		//error = ERROR_INVALID_INSTR_FILE;
+		instr_error_set(MISSING_INPUT, settings_str);
 
 	unsigned char** line_ptr;
-	while (!error && (line_ptr = vector_read(lines_vect, line_index)))
+	while (!error() && (line_ptr = vector_read(lines_vect, line_index)))
 	{
 		unsigned char buffer[BUFFER_SIZE + 1];
 		unsigned int value;
 		int read = sscanf_s(*line_ptr, "%"TO_STRING(BUFFER_SIZE)"[^=]=%u\n", buffer, BUFFER_SIZE + 1, &value);
 		if (read == EOF)
-			error = ERROR_INVALID_INSTR_FILE;
+			//error = ERROR_INVALID_INSTR_FILE;
+			instr_error_set(INVALID_INPUT, *line_ptr);
 		else if (read != 2)
 			break;
 		else
 		{
 			unsigned char** value_ptr = map_read_from_key(pref_map, buffer);
 			if (!value_ptr || !(*value_ptr))
-				error = ERROR_INVALID_INSTR_FILE;
+				//error = ERROR_INVALID_INSTR_FILE;
+				instr_error_set(INVALID_INPUT, buffer);
 			else
 			{
 				**value_ptr = value;
@@ -296,41 +300,47 @@ bool file_import_setup(const char* file_name, struct FileHandler* files_handler,
 		}
 	}
 
-	if (error)
-		error_set(error);
+	//if (error)
+		//error_set(error);
 
-	return !error;
+	return !error();
 }
 
 struct Vector* get_instr_names(struct FileHandler* handler)
 {
-	check_for_NULL(handler);
+	CHECK_IF_NULL(handler);
 
 	struct Vector* instr_vect = vector_init(sizeof(struct Instruction*));
-	Error error = NO_ERROR;
+	//Error error = NO_ERROR;
 	const char instr_str[] = "rozkazy";
 
 	unsigned int line_index = find_header(handler->instruction_lines_vect, instr_str);
 	if (line_index == EOF)
-		error = ERROR_INVALID_INSTR_FILE;
+		//error = ERROR_INVALID_INSTR_FILE;
+		instr_error_set(MISSING_INPUT, instr_str);
 	else
 	{
 		const char** line_ptr = vector_read(handler->instruction_lines_vect, line_index++);
 		if (!line_ptr || !*line_ptr)
-			error = ERROR_INVALID_INSTR_FILE;
+			//error = ERROR_INVALID_INSTR_FILE;
+			instr_error_set(MISSING_LINE, instr_str);
 		else
+		//CHECK_IF_NULL(line_ptr);
+		//CHECK_IF_NULL(*line_ptr);
 		{
 			unsigned instr_num;
 			int read = sscanf_s(*line_ptr, "liczba=%u\n", &instr_num);
 			if (read != 1)
-				error = ERROR_INVALID_INSTR_FILE;
+				//error = ERROR_INVALID_INSTR_FILE;
+				instr_error_set(INVALID_INPUT, *line_ptr);
 			else
 			{
-				for (unsigned i = 0; i < instr_num && !error; i++)
+				for (unsigned i = 0; i < instr_num && !error(); i++)
 				{
 					line_ptr = vector_read(handler->instruction_lines_vect, line_index++);
 					if (!line_ptr || !*line_ptr)
-						error = ERROR_INVALID_INSTR_FILE;
+						//error = ERROR_INVALID_INSTR_FILE;
+						instr_error_set(MISSING_LINE, instr_str);
 					else
 					{
 						unsigned temp;
@@ -338,7 +348,8 @@ struct Vector* get_instr_names(struct FileHandler* handler)
 						char* name = malloc_s(MAX_NAME_LENGTH);
 						int read = sscanf_s(*line_ptr, "nazwa%u=%s\n", &temp, name, MAX_NAME_LENGTH);
 						if (read != 2)
-							error = ERROR_INVALID_INSTR_FILE;
+							//error = ERROR_INVALID_INSTR_FILE;
+							instr_error_set(INVALID_INPUT, *line_ptr);
 						else
 						{
 							struct Instruction* new_instr = instruction_init(name);
@@ -351,14 +362,14 @@ struct Vector* get_instr_names(struct FileHandler* handler)
 		}
 	}
 
-	if (error)
+	if (error())
 	{
 		struct Instruction** instr_ptr;
 		while (instr_ptr = vector_pop(instr_vect))
 			instruction_delete(*instr_ptr);
 		vector_delete(instr_vect);
 		instr_vect = NULL;
-		error_set(error);
+		//error_set(error);
 	}
 
 	return instr_vect;
@@ -384,29 +395,36 @@ unsigned count_tick_nodes(struct Tick* tick)
 		return 0;
 }
 
+#define COMPARE(token, str) \
+{if (!token || strcmp(token, str))\
+{\
+	instr_error_set(MISSING_INPUT, str);\
+	break;\
+}}
+
 struct Vector* file_compile_instructions(struct FileHandler* handler, struct Map* signal_map, struct Map* tag_map)
 {
-	check_for_NULL(handler);
-	check_for_NULL(signal_map);
-	check_for_NULL(tag_map);
+	CHECK_IF_NULL(handler);
+	CHECK_IF_NULL(signal_map);
+	CHECK_IF_NULL(tag_map);
 
 	//struct Vector* instr_vect = NULL;
 	struct Vector* instr_vect = get_instr_names(handler);
 	if (!instr_vect)
 		return NULL;
 
-	Error error = NO_ERROR;
+	//Error error = NO_ERROR;
 	//printf("Poczatek file_compile_instructions: \n");
 	//dump_lines(handler->instruction_lines_vect);
 	//printf("\nOdczytane rozkazy: \n");
 
 	
 	unsigned instr_number = vector_size(instr_vect);
-	for (unsigned instr_index = 0; instr_index < instr_number && !error; instr_index++)
+	for (unsigned instr_index = 0; instr_index < instr_number && !error(); instr_index++)
 	{
 		struct Instruction** instr_ptr = vector_read(instr_vect, instr_index);
-		check_for_NULL(instr_ptr);
-		check_for_NULL(*instr_ptr);
+		CHECK_IF_NULL(instr_ptr);
+		CHECK_IF_NULL(*instr_ptr);
 		// DEBUG
 		printf("%u - '%s'\n", instr_index, (*instr_ptr)->name);
 		const char* instr_name = (*instr_ptr)->name;
@@ -415,13 +433,17 @@ struct Vector* file_compile_instructions(struct FileHandler* handler, struct Map
 		char** line_ptr;
 		int lines_number = 0;
 
-		if (line_index == EOF || !(line_ptr = vector_read(handler->instruction_lines_vect, line_index)) || !*line_ptr)
-			error = ERROR_INVALID_INSTR_FILE;
+		if (line_index == EOF)
+			instr_error_set(MISSING_INPUT, instr_name);
+		else if (!(line_ptr = vector_read(handler->instruction_lines_vect, line_index)) || !*line_ptr)
+			//error = ERROR_INVALID_INSTR_FILE;
+			instr_error_set(MISSING_LINE, instr_name);
 		else
 		{
 			int read = sscanf_s(*line_ptr, "linie=%u\n", &lines_number);
 			if (read != 1 || lines_number <= 0)
-				error = ERROR_INVALID_INSTR_FILE;
+				//error = ERROR_INVALID_INSTR_FILE;
+				instr_error_set(INVALID_INPUT, *line_ptr);
 			else
 				line_index++;
 		}
@@ -431,10 +453,11 @@ struct Vector* file_compile_instructions(struct FileHandler* handler, struct Map
 		char* buffer = malloc_s(BUFFER_SIZE);
 		*buffer = '\0';
 
-		for (lines_number += line_index; line_index < lines_number && !error; line_index++)
+		for (lines_number += line_index; line_index < lines_number && !error(); line_index++)
 		{
 			if (!(line_ptr = vector_read(handler->instruction_lines_vect, line_index)) || !*line_ptr)
-				error = ERROR_INVALID_INSTR_FILE;
+				//error = ERROR_INVALID_INSTR_FILE;
+				instr_error_set(MISSING_LINE, instr_name);
 			else
 			{
 				// DEBUG
@@ -444,12 +467,13 @@ struct Vector* file_compile_instructions(struct FileHandler* handler, struct Map
 				char* line_buffer = malloc_s(MAX_LINE_LENGTH);
 				int read = sscanf_s(*line_ptr, "linia%u=%[^\n]\n", &unused, line_buffer, MAX_LINE_LENGTH);
 				if (read < 1)
-					error = ERROR_INVALID_INSTR_FILE;
+					//error = ERROR_INVALID_INSTR_FILE;
+					instr_error_set(INVALID_INPUT, *line_ptr);
 				// do nothing if read == 1
 				else if (read == 2)
 				{
 					//char* line_buffer = strchr(*line_ptr, '=');
-					//check_for_NULL(line_buffer++);
+					//CHECK_IF_NULL(line_buffer++);
 					const char comment_str[] = "//";
 					char* comment_pos = strstr(line_buffer, comment_str);
 					if (comment_pos)
@@ -465,7 +489,8 @@ struct Vector* file_compile_instructions(struct FileHandler* handler, struct Map
 					put_to_buffer(buffer, &buffer_size, ' ', buffer_str_len++);
 					put_to_buffer(buffer, &buffer_size, '\0', buffer_str_len);
 					if (strcat_s(buffer, buffer_size, line_buffer))
-						error = ERROR_STRING_HANDLING;
+						//error = ERROR_STRING_HANDLING;
+						CRASH_LOG(LIBRARY_FUNC_FAILURE);
 				}
 				free(line_buffer);
 			}
@@ -479,7 +504,7 @@ struct Vector* file_compile_instructions(struct FileHandler* handler, struct Map
 			const char* label_next_if_true;
 		};
 
-		if (!error)
+		if (!error())
 		{
 			printf("Odczytano: '%s'\n", buffer);
 
@@ -497,25 +522,37 @@ struct Vector* file_compile_instructions(struct FileHandler* handler, struct Map
 			struct Tick* current_tick = NULL;
 			struct Vector* tick_vect = vector_init(sizeof(struct Tick*));
 
-			while (state && !error)
+			while (state && !error())
 			{
 				switch (state)
 				{
 				case INSTR_NAME:
 				{
 					//state = COMP_ERROR;
-					error = ERROR_INSTR_COMPILATION;
+					//error = ERROR_INSTR_COMPILATION;
 					token = strtok_s(buffer, delim, &next_token);
-					if (!token || strcmp(token, "rozkaz"))
-						break;
+					COMPARE(token, "rozkaz");
+					//if (!token || strcmp(token, "rozkaz"))
+					//{
+					//	instr_error_set(MISSING_INPUT, "rozkaz");
+					//	break;
+					//}
 					token = strtok_s(NULL, delim, &next_token);
-					if (!token || strcmp(token, instr_name))
-						break;
+					COMPARE(token, instr_name);
+					//if (!token || strcmp(token, instr_name))
+					//{
+					//	instr_error_set(MISSING_INPUT, instr_name);
+					//	break;
+					//}
 					token = strtok_s(NULL, delim, &next_token);
-					if (!token || strcmp(token, ";"))
-						break;
+					COMPARE(token, ";");
+					//if (!token || strcmp(token, ";"))
+					//{
+					//	instr_error_set(MISSING_INPUT, ";");
+					//	break;
+					//}
 					state = ARGUMENTS;
-					error = NO_ERROR;
+					//error = NO_ERROR;
 				}
 				break;
 				case ARGUMENTS:
@@ -533,61 +570,83 @@ struct Vector* file_compile_instructions(struct FileHandler* handler, struct Map
 					}
 					free(temp_str);
 
-					error = ERROR_INSTR_COMPILATION;
+					//error = ERROR_INSTR_COMPILATION;
 					token = strtok_s(NULL, delim, &next_token);
+					COMPARE(token, "argumenty");
 					// potrzebne?
-					if (!token || strcmp(token, "argumenty"))
-						break;
+					//if (!token || strcmp(token, "argumenty"))
+					//{
+					//	instr_error_set(MISSING_INPUT, "argumenty");
+					//	break;
+					//}
 					token = strtok_s(NULL, delim, &next_token);
 					if (!token)
+					{
+						instr_error_set(MISSING_INPUT, "args_number");
 						break;
+					}
+
 					int args_num = atoi(token);
 					if (args_num < 0 || args_num > MAX_ARGS_NUM)
+					{
+						instr_error_set(INVALID_INPUT, token);
 						break;
+					}
 					(*instr_ptr)->arguments = args_num;
 					token = strtok_s(NULL, delim, &next_token);
-					if (!token || strcmp(token, ";"))
-						break;
-					error = NO_ERROR;
+					COMPARE(token, ";");
+					//if (!token || strcmp(token, ";"))
+						//break;
+					//error = NO_ERROR;
 				}
 				break;
 				case FIRST_TICK:
 				{
 					//state = COMP_ERROR;
 
-					Error local_error = NO_ERROR;
+					//Error local_error = NO_ERROR;
 					current_tick = tick_init();
 					vector_push(tick_vect, &current_tick);
 					char expected_tokens[FIRST_TOKENS_NUMBER][MAX_FIRST_TOKEN_LENGTH] = { "czyt", "wys", "wei", "il" };
 					unsigned tokens_number = FIRST_TOKENS_NUMBER;
 					//char* read_token;
-					for (unsigned i = 0; i < tokens_number && !local_error; i++)
+					for (unsigned i = 0; i < tokens_number && !error(); i++)
 					{
-						local_error = ERROR;
+						//local_error = ERROR;
 						token = strtok_s(NULL, delim, &next_token);
 						if (token)
+						{
+							bool found = false;
 							for (unsigned j = 0; j < tokens_number; j++)
 								if (!strcmp(token, expected_tokens[j]))
 								{
-									local_error = NO_ERROR;
+									//local_error = NO_ERROR;
 									(expected_tokens[j])[0] = '\0';
 									struct Signal** signal_ptr = map_read_from_key(signal_map, token);
 									vector_push(current_tick->signal_vect, signal_ptr);
+									found = true;
 									break;
 								}
+							if (!found)
+								instr_error_set(INVALID_INPUT, token);
+						}
+						else
+							instr_error_set(MISSING_LINE, instr_name);
+							
 					}
 
-					if (!local_error)
+					if (!error())
 					{
 						token = strtok_s(NULL, delim, &next_token);
-						if (!token || strcmp(token, ";"))
-							local_error = ERROR;
+						COMPARE(token, ";");
+						//if (!token || strcmp(token, ";"))
+						//	local_error = ERROR;
 					}
 
-					if (!local_error)
+					//if (!local_error)
 						state = SEMICOLON;
-					else
-						error = ERROR_INSTR_COMPILATION;
+					//else
+						//error = ERROR_INSTR_COMPILATION;
 				}
 				break;
 				case GET_TOKEN:
@@ -617,7 +676,8 @@ struct Vector* file_compile_instructions(struct FileHandler* handler, struct Map
 				case LABEL:
 				{
 					if (map_read_from_key(label_map, token))
-						error = ERROR_INSTR_COMPILATION;
+						//error = ERROR_INSTR_COMPILATION;
+						instr_error_set(UNKNOWN_LABEL, token);
 					else
 					{
 						map_push(label_map, token, &current_tick);
@@ -627,39 +687,69 @@ struct Vector* file_compile_instructions(struct FileHandler* handler, struct Map
 				break;
 				case CONDITIONAL:
 				{
-					error = ERROR_INSTR_COMPILATION;
+					//error = ERROR_INSTR_COMPILATION;
 					token = strtok_s(NULL, delim, &next_token);
 					void** condition_ptr;
-					if (!token || !(condition_ptr = map_read_from_key(tag_map, token)))
+					if (!token)
+					{
+						instr_error_set(MISSING_INPUT, "tag_name");
 						break;
+					}
+					else if (!(condition_ptr = map_read_from_key(tag_map, token)))
+					{
+						instr_error_set(INVALID_INPUT, token);
+						break;
+					}
 					current_tick->condition = *condition_ptr;
 
 					token = strtok_s(NULL, delim, &next_token);
-					if (!token || strcmp(token, "to"))
-						break;
+					COMPARE(token, "to");
+					//if (!token || strcmp(token, "to"))
+						//break;
 
 					token = strtok_s(NULL, delim, &next_token);
-					if (!token || *token != '@')
+					if (!token)
+					{
+						instr_error_set(MISSING_INPUT, "label_name");
 						break;
+					}
+					else if (*token != '@')
+					{
+						instr_error_set(INVALID_INPUT, token);
+						break;
+					}
+						
 					struct ConditionalMap c_map = { .tick = current_tick, .label_next = token };
 
 					token = strtok_s(NULL, delim, &next_token);
-					if (!token || strcmp(token, "gdy"))
-						break;
+					COMPARE(token, "gdy");
+					//if (!token || strcmp(token, "gdy"))
+						//break;
 					token = strtok_s(NULL, delim, &next_token);
-					if (!token || strcmp(token, "nie"))
-						break;
+					COMPARE(token, "nie");
+					//if (!token || strcmp(token, "nie"))
+						//break;
 
 					token = strtok_s(NULL, delim, &next_token);
-					if (!token || *token != '@')
+					if (!token)
+					{
+						instr_error_set(MISSING_INPUT, "label_name");
 						break;
+					}
+					else if (*token != '@')
+					{
+						instr_error_set(INVALID_INPUT, token);
+						break;
+					}
+
 					c_map.label_next_if_true = token;
 					vector_push(conditional_vect, &c_map);
 					token = strtok_s(NULL, delim, &next_token);
-					if (!token || strcmp(token, ";"))
-						break;
+					COMPARE(token, ";");
+					//if (!token || strcmp(token, ";"))
+						//break;
 					state = SEMICOLON;
-					error = NO_ERROR;
+					//error = NO_ERROR;
 				}
 				break;
 				case END_OF_INSTR:
@@ -673,10 +763,11 @@ struct Vector* file_compile_instructions(struct FileHandler* handler, struct Map
 				{
 					struct Signal** signal_ptr = map_read_from_key(signal_map, token);
 					if (!signal_ptr)
-						error = ERROR_INSTR_COMPILATION;
+						//error = ERROR_INSTR_COMPILATION;
+						instr_error_set(INVALID_INPUT, token);
 					else
 					{
-						check_for_NULL(*signal_ptr);
+						CHECK_IF_NULL(*signal_ptr);
 						vector_push(current_tick->signal_vect, signal_ptr);
 						state = GET_TOKEN;
 					}
@@ -694,26 +785,27 @@ struct Vector* file_compile_instructions(struct FileHandler* handler, struct Map
 				}
 				break;
 				default:
-					error = ERROR;
+					//error = ERROR;
+					CRASH_LOG(LOG_UNKNOWN_VALUE);
 				}
 			}
 
-			if (!error)
+			if (!error())
 			{
 				size_t tick_array_size;
 				struct Tick** tick_array = vector_unwrap(tick_vect, &tick_array_size);
 				tick_vect = NULL;
-				check_for_NULL(tick_array);
+				CHECK_IF_NULL(tick_array);
 				size_t cond_array_size;
 				struct ConditionalMap* cond_array = vector_unwrap(conditional_vect, &cond_array_size);
 				conditional_vect = NULL;
-				check_for_NULL(cond_array);
+				CHECK_IF_NULL(cond_array);
 				unsigned empty_ticks_num = 0;
 
-				for (unsigned tick_index = 0; tick_index < tick_array_size && !error; tick_index++)
+				for (unsigned tick_index = 0; tick_index < tick_array_size && !error(); tick_index++)
 				{
 					struct Tick* tick = tick_array[tick_index];
-					check_for_NULL(tick);
+					CHECK_IF_NULL(tick);
 					bool found = false;
 					// DEBUG
 					printf("Takt nr %u: '", tick_index);
@@ -737,22 +829,28 @@ struct Vector* file_compile_instructions(struct FileHandler* handler, struct Map
 							}
 							else
 							{
-								error = ERROR_INSTR_COMPILATION;
+								//error = ERROR_INSTR_COMPILATION;
 								struct Tick** next_tick_ptr = map_read_from_key(label_map, cond_array[j].label_next);
 								if (!next_tick_ptr)
+								{
+									instr_error_set(MISSING_INPUT, cond_array[j].label_next);
 									break;
+								}		
 								tick->next = *next_tick_ptr;
 								struct Tick** next_if_true_tick_ptr = map_read_from_key(label_map, cond_array[j].label_next_if_true);
 								if (!next_if_true_tick_ptr)
+								{
+									instr_error_set(MISSING_INPUT, cond_array[j].label_next_if_true);
 									break;
+								}
 								tick->next_if_true = *next_if_true_tick_ptr;
-								error = NO_ERROR;
+								//error = NO_ERROR;
 							}
 							found = true;
 						}
 					}
 
-					if (!found && !error)
+					if (!found && !error())
 					{
 						if (vector_size(tick->signal_vect))
 						{
@@ -772,11 +870,12 @@ struct Vector* file_compile_instructions(struct FileHandler* handler, struct Map
 					}
 				}
 
-				if (!error)
+				if (!error())
 				{
 					unsigned connected_ticks_num = count_tick_nodes(*tick_array);
 					if (connected_ticks_num != (tick_array_size - empty_ticks_num))
-						error = ERROR_INSTR_COMPILATION;
+						//error = ERROR_INSTR_COMPILATION;
+						instr_error_set(LOST_TICK, instr_name);
 					else
 						(*instr_ptr)->first_tick = *tick_array;
 				}
@@ -793,14 +892,14 @@ struct Vector* file_compile_instructions(struct FileHandler* handler, struct Map
 		free(buffer);
 	}
 
-	if (error)
+	if (error())
 	{
 		struct Instruction** instr_ptr;
 		while (instr_ptr = vector_pop(instr_vect))
 			instruction_delete(*instr_ptr);
 		vector_delete(instr_vect);
 		instr_vect = NULL;
-		error_set(error);
+		//error_set(error);
 	}
 		
 	return instr_vect;
@@ -808,9 +907,9 @@ struct Vector* file_compile_instructions(struct FileHandler* handler, struct Map
 
 struct Vector* get_program_lines(const char* file_name)
 {
-	check_for_NULL(file_name);
+	CHECK_IF_NULL(file_name);
 
-	Error error = NO_ERROR;
+	//Error error = NO_ERROR;
 	struct Vector* lines_vect = NULL;
 
 	FILE* input_file;
@@ -850,15 +949,16 @@ struct Vector* get_program_lines(const char* file_name)
 		fclose(input_file);
 	}
 	else
-		error_set(ERROR_NO_PROGRAM_FILE);
+		//error_set(ERROR_NO_PROGRAM_FILE);
+		prog_error_set(NO_FILE, file_name);
 
 	return lines_vect;
 }
 
 bool file_compile_program(const char* file_name, struct Vector* instr_vect, var addr_len, var code_len, var* memory) 
 {
-	check_for_NULL(instr_vect);
-	check_for_NULL(memory);
+	CHECK_IF_NULL(instr_vect);
+	CHECK_IF_NULL(memory);
 
 	struct Vector* lines_vect = get_program_lines(file_name);
 	if (!lines_vect)
@@ -866,7 +966,7 @@ bool file_compile_program(const char* file_name, struct Vector* instr_vect, var 
 	// DEBUG
 	printf("\nPoczatek file_compile_program: \n");
 
-	Error error = NO_ERROR;
+	//Error error = NO_ERROR;
 	unsigned lines_number = vector_size(lines_vect);
 	var memory_index = 0;
 	const var memory_size = 1 << addr_len;
@@ -893,8 +993,8 @@ bool file_compile_program(const char* file_name, struct Vector* instr_vect, var 
 		for (unsigned i = 0; i < instr_num; i++)
 		{
 			struct Instruction** instr_ptr = vector_read(instr_vect, i);
-			check_for_NULL(instr_ptr);
-			check_for_NULL(*instr_ptr);
+			CHECK_IF_NULL(instr_ptr);
+			CHECK_IF_NULL(*instr_ptr);
 			struct InstructionProperties instr_prop = { value_mask, i << addr_len, (*instr_ptr)->arguments };
 			map_push(instr_map, (*instr_ptr)->name, &instr_prop);
 		}
@@ -908,10 +1008,10 @@ bool file_compile_program(const char* file_name, struct Vector* instr_vect, var 
 
 
 	
-	for (unsigned line_index = 0; line_index < lines_number && !error; line_index++)
+	for (unsigned line_index = 0; line_index < lines_number && !error(); line_index++)
 	{
 		char** line_ptr = vector_read(lines_vect, line_index);
-		check_for_NULL(line_ptr);
+		CHECK_IF_NULL(line_ptr);
 		// DEBUG
 		printf("%u - '%s'\n", line_index + 1, *line_ptr);
 
@@ -922,7 +1022,7 @@ bool file_compile_program(const char* file_name, struct Vector* instr_vect, var 
 
 		//char* line = _strdup(*line_ptr);
 		char* line = *line_ptr;
-		check_for_NULL(line);
+		CHECK_IF_NULL(line);
 		//if (!line)
 			//critical_error_set("strdup failed\n");
 
@@ -955,21 +1055,24 @@ bool file_compile_program(const char* file_name, struct Vector* instr_vect, var 
 			
 			size_t first_token_len = strlen(token_array[0]);
 			if (!first_token_len)
-				error = ERROR_INVALID_PROGRAM_FILE;
+				prog_error_set(INVALID_INPUT, token_array[0]);
+				//error = ERROR_INVALID_PROGRAM_FILE;
 			else if ((token_array[0])[first_token_len - 1] == ':')
 				{
 					(token_array[0])[first_token_len - 1] = '\0';
 					token_index++;
 					if (!map_push(label_map, token_array[0], &memory_index))
-						error = ERROR_INVALID_PROGRAM_FILE;
+						prog_error_set(REPEATED_LABEL, token_array[0]);
+						//error = ERROR_INVALID_PROGRAM_FILE;
 					//	ju¿ istniej¹ca etykieta
 				}
 			
-			if (!error && token_index < token_array_size)
+			if (!error() && token_index < token_array_size)
 			{
 				struct InstructionProperties* instr_prop = map_read_from_key(instr_map, token_array[token_index]);
 				if (!instr_prop || instr_prop->args_num != (token_array_size - 1 - token_index))
-					error = ERROR_INVALID_PROGRAM_FILE;
+					//error = ERROR_INVALID_PROGRAM_FILE;
+					prog_error_set(INVALID_INPUT, token_array[token_index]);
 				else
 				{
 					//memory_ptr[memory_index++] = token_array[token_index++];
@@ -1005,11 +1108,12 @@ bool file_compile_program(const char* file_name, struct Vector* instr_vect, var 
 	}
 
 	struct SoughtLabel* s_label_ptr;
-	while (!error && (s_label_ptr = vector_pop(sought_label_vect)))
+	while (!error() && (s_label_ptr = vector_pop(sought_label_vect)))
 	{
 		var* label_index_ptr = map_read_from_key(label_map, s_label_ptr->name);
 		if (!label_index_ptr)
-			error = ERROR_INVALID_PROGRAM_FILE;
+			prog_error_set(MISSING_INPUT, s_label_ptr->name);
+			//error = ERROR_INVALID_PROGRAM_FILE;
 		//	nieistniej¹ca etykieta
 		else
 			memory[s_label_ptr->line] |= *label_index_ptr;
@@ -1029,7 +1133,7 @@ bool file_compile_program(const char* file_name, struct Vector* instr_vect, var 
 		free(*line_ptr);
 	vector_delete(lines_vect);
 
-	if (error)
-		error_set(error);
-	return !error;
+	//if (error)
+		//error_set(error);
+	return !error();
 }

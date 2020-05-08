@@ -15,7 +15,7 @@ struct Drawable* drawable_init(Point position)
 
 void drawable_draw(struct Drawable* drawable, struct RenderInfo r_info)
 {
-	check_for_NULL(drawable);
+	CHECK_IF_NULL(drawable);
 
 	if (drawable->is_visible)
 	{
@@ -32,13 +32,13 @@ void drawable_draw(struct Drawable* drawable, struct RenderInfo r_info)
 
 void drawable_set_visibility(struct Drawable* drawable, bool is_visible)
 {
-	check_for_NULL(drawable);
+	CHECK_IF_NULL(drawable);
 	drawable->is_visible = is_visible;
 }
 
 void drawable_set_value(struct Drawable* drawable, void* value_ptr)
 {
-	check_for_NULL(drawable);
+	CHECK_IF_NULL(drawable);
 	if (drawable->set_value)
 		drawable->set_value(drawable, value_ptr);
 }

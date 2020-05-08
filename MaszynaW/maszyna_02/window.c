@@ -19,7 +19,7 @@ struct Window* window_init()
 
 struct Canvas* window_new_canvas(struct Window* window, Point position, Point size)
 {
-	check_for_NULL(window);
+	CHECK_IF_NULL(window);
 	Point new_size = { position.x + size.x, position.y + size.y };
 	if (new_size.x > window->size.x || new_size.y > window->size.y)
 	{
@@ -34,7 +34,7 @@ struct Canvas* window_new_canvas(struct Window* window, Point position, Point si
 
 /*struct Canvas* window_new_canvas(struct Window* window, Point offset, Point new_buff_length)
 {
-	check_for_NULL(window);
+	CHECK_IF_NULL(window);
 	Point new_size = { offset.x + new_buff_length.x, offset.y + new_buff_length.y };
 	if (new_size.x > window->new_buff_length.x || new_size.y > window->new_buff_length.y)
 	{
@@ -47,7 +47,7 @@ struct Canvas* window_new_canvas(struct Window* window, Point position, Point si
 
 void window_draw(struct Window* window)
 {
-	check_for_NULL(window);
+	CHECK_IF_NULL(window);
 	window_clear_buffer(window);
 	struct RenderInfo r_info = { window->buffer, window->size, { 0, 0 } };
 	size_t canvas_num = vector_size(window->canvas_vect);
@@ -60,7 +60,7 @@ void window_draw(struct Window* window)
 
 void window_line_to_wchar(struct Pixel* pixel)
 {
-	check_for_NULL(pixel);
+	CHECK_IF_NULL(pixel);
 
 	if (pixel->type == LINE_PRIMITIVE)
 	{
@@ -165,7 +165,7 @@ void window_line_to_wchar(struct Pixel* pixel)
 
 void window_clear_buffer(struct Window* window)
 {
-	check_for_NULL(window);
+	CHECK_IF_NULL(window);
 	struct Pixel blank_pixel = { .type = TEXT_PRIMITIVE, .u_char = '\0', .color = COLOR_BGND_DEFAULT };
 	for (int i = 0; i < (window->size.x * window->size.y); i++)
 		window->buffer[i] = blank_pixel;

@@ -10,13 +10,13 @@
 #define EXIT_VALUE -10
 #define CRASH_MSG_LENGTH 256
 
-char crash_log_msg[CRASH_MSG_LENGTH] = "";
-
 typedef enum { INSTR_COMP_ERROR = 1, PROG_COMP_ERROR, RUNTIME_ERROR } UserErrorType;
 struct ErrorStruct {
 	Error err;
 	const char* msg;
 };
+
+char crash_log_msg[CRASH_MSG_LENGTH] = "";
 
 struct ErrorStruct* get_error()
 {
@@ -88,6 +88,7 @@ void _crash_log(const char* file, const char* func, int line, ProgramErrorType t
 		break;
 	}
 	int unused = snprintf(crash_log_msg, CRASH_MSG_LENGTH, "Critical error!%sfile: %s\nfunction: %s - line(%d)\n", msg, file, func, line);
+	//exit(EXIT_VALUE);
 }
 
 Error error()
@@ -182,17 +183,17 @@ void error_set(UserErrorType err_type, Error error, const char* arg)
 	*error_s = (struct ErrorStruct){ err_type, new_msg };
 }
 
-void instr_error_set(CompilationError error, const char* arg)
+inline void instr_error_set(CompilationError error, const char* arg)
 {
 	error_set(INSTR_COMP_ERROR, error, arg);
 }
 
-void prog_error_set(CompilationError error, const char* arg)
+inline void prog_error_set(CompilationError error, const char* arg)
 {
 	error_set(PROG_COMP_ERROR, error, arg);
 }
 
-void runtime_error_set(RuntimeError error, const char* arg)
+inline void runtime_error_set(RuntimeError error, const char* arg)
 {
 	error_set(RUNTIME_ERROR, error, arg);
 }

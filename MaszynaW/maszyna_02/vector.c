@@ -24,8 +24,8 @@ struct Vector* vector_init(size_t element_size)
 
 void* vector_push(struct Vector* vect, void* value_ptr)
 {
-	check_for_NULL(vect);
-	check_for_NULL(value_ptr);
+	CHECK_IF_NULL(vect);
+	CHECK_IF_NULL(value_ptr);
 
 	if (vect->el_number >= vect->array_size)
 	{
@@ -41,7 +41,7 @@ void* vector_push(struct Vector* vect, void* value_ptr)
 
 void* vector_pop(struct Vector* vect)
 {
-	check_for_NULL(vect);
+	CHECK_IF_NULL(vect);
 	if (vect->el_number)
 	{
 		vect->el_number--;
@@ -53,7 +53,7 @@ void* vector_pop(struct Vector* vect)
 
 void* vector_write(struct Vector* vect, size_t index, void* value_ptr)
 {
-	check_for_NULL(vect);
+	CHECK_IF_NULL(vect);
 	if (index < vect->el_number)
 	{
 		void* dest = (char*)vect->array + (vect->el_size * index);
@@ -66,19 +66,19 @@ void* vector_write(struct Vector* vect, size_t index, void* value_ptr)
 
 void* vector_read(struct Vector* vect, size_t index)
 {
-	check_for_NULL(vect);
+	CHECK_IF_NULL(vect);
 	return (index < vect->el_number) ? (char*)vect->array + (vect->el_size * index) : NULL;
 }
 
 size_t vector_size(struct Vector* vect)
 {
-	check_for_NULL(vect);
+	CHECK_IF_NULL(vect);
 	return vect->el_number;
 }
 
 void* vector_unwrap(struct Vector* vect, size_t* size)
 {
-	check_for_NULL(vect);
+	CHECK_IF_NULL(vect);
 	if (size)
 		*size = vect->el_number;
 	void* temp = vect->array;
@@ -88,7 +88,7 @@ void* vector_unwrap(struct Vector* vect, size_t* size)
 
 struct Vector* vector_copy(struct Vector* vect)
 {
-	check_for_NULL(vect);
+	CHECK_IF_NULL(vect);
 	void* new_array = malloc_s(vect->el_number * vect->el_size);
 	struct Vector* new_vect = malloc_s(sizeof(struct Vector));
 	*new_vect = (struct Vector){ .el_size = vect->el_size, .el_number = vect->el_number, .array_size = vect->el_number, .array = new_array };

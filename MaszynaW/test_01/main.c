@@ -1,18 +1,23 @@
-#include <stdlib.h>
-#include <string.h>
+//#include <stdlib.h>
+//#include <string.h>
 #include <stdio.h>
-#include <locale.h>
-#include <wchar.h>
-#pragma warning(disable : 4996)
+//#include <locale.h>
+//#include <wchar.h>
+//#pragma warning(disable : 4996)
 
-#include "file_handling.h"
+#include "error.h"
+
+//#define LOG (struct CrashLog) { __FILE__, __func__, __LINE__ }
 
 int main()
 {
-	char str[] = "Linia-125=asd\n";
-	char buff[20];
-	int unused;
-	int read = sscanf_s(str, "Linia%d=%[^\n]\n", &unused, buff, 20);
-	char buffer[8][20];
+	printf("przed\n");
+	init_crash_log();
+	void* ptr = NULL;
+	//CHECK_IF_NULL(ptr);
+	//if (error())
+	CRASH_LOG(LOG_UNKNOWN_VALUE);
+	//_crash_log(LOG, NULL_DEREFERENCE);
+	printf("po\n");
 	return 0;
 }

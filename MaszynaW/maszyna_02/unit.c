@@ -27,8 +27,8 @@ struct Unit* unit_init()
 
 struct Unit* unit_new_reg(struct UnitInit* init, const char* name)
 {
-	check_for_NULL(init);
-	check_for_NULL(name);
+	CHECK_IF_NULL(init);
+	CHECK_IF_NULL(name);
 	struct Unit* new_reg = unit_init();
 	struct Drawable* new_drawable = drawable_new_reg(init->canvas, init->position, init->size, name);
 	*new_reg = (struct Unit){ REG_TYPE, 0, EMPTY, new_drawable };
@@ -37,7 +37,7 @@ struct Unit* unit_new_reg(struct UnitInit* init, const char* name)
 
 struct Unit* unit_new_comb(struct UnitInit* init)
 {
-	check_for_NULL(init);
+	CHECK_IF_NULL(init);
 	struct Unit* new_comb = unit_init();
 	struct Drawable* new_drawable;
 	if (init->size.x && init->size.y)
@@ -50,7 +50,7 @@ struct Unit* unit_new_comb(struct UnitInit* init)
 
 struct Unit* unit_new_bus(struct UnitInit* init)
 {
-	check_for_NULL(init);
+	CHECK_IF_NULL(init);
 	struct Unit* new_bus = unit_init();
 	struct Drawable* new_drawable = drawable_new_bus(init->canvas, init->position, init->size);
 	*new_bus = (struct Unit){ BUS_TYPE, EMPTY, EMPTY, new_drawable };
@@ -59,7 +59,7 @@ struct Unit* unit_new_bus(struct UnitInit* init)
 
 var unit_set(struct Unit* unit, var value)
 {
-	check_for_NULL(unit);
+	CHECK_IF_NULL(unit);
 	if (unit->input_value == EMPTY)
 	{
 		if (unit->type != REG_TYPE)
@@ -85,20 +85,20 @@ var unit_immediate_set(struct Unit* unit, var value)
 
 var unit_read(struct Unit* unit)
 {
-	check_for_NULL(unit);
+	CHECK_IF_NULL(unit);
 	return unit->value;
 }
 
 void unit_latch(struct Unit* unit)
 {
-	check_for_NULL(unit);
+	CHECK_IF_NULL(unit);
 	if (unit->type == REG_TYPE && unit->input_value != EMPTY)
 		unit->value = unit->input_value;
 }
 
 void unit_reset(struct Unit* unit)
 {
-	check_for_NULL(unit);
+	CHECK_IF_NULL(unit);
 	if (unit->type != REG_TYPE)
 		unit->value = EMPTY;
 	unit->input_value = EMPTY;
@@ -106,35 +106,35 @@ void unit_reset(struct Unit* unit)
 
 void unit_restart(struct Unit* unit)
 {
-	check_for_NULL(unit);
+	CHECK_IF_NULL(unit);
 	unit->value = (unit->type == REG_TYPE) ? 0 : EMPTY;
 	unit->input_value = EMPTY;
 }
 
 void unit_draw(struct Unit* unit)
 {
-	check_for_NULL(unit);
+	CHECK_IF_NULL(unit);
 	if (unit->drawable)
 		drawable_set_value(unit->drawable, &unit->value);
 }
 
 void unit_show(struct Unit* unit)
 {
-	check_for_NULL(unit);
+	CHECK_IF_NULL(unit);
 	if (unit->drawable)
 		drawable_set_visibility(unit->drawable, true);
 }
 
 void unit_hide(struct Unit* unit)
 {
-	check_for_NULL(unit);
+	CHECK_IF_NULL(unit);
 	if (unit->drawable)
 		drawable_set_visibility(unit->drawable, false);
 }
 
 void unit_set_visibility(struct Unit* unit, bool visibility)
 {
-	check_for_NULL(unit);
+	CHECK_IF_NULL(unit);
 	if (unit->drawable)
 		drawable_set_visibility(unit->drawable, visibility);
 }

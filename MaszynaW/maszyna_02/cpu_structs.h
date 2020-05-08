@@ -188,7 +188,7 @@ struct CPU
 		struct Vector* instructions;
 	} vector;
 	struct CPURuntime runtime;
-	struct Drawable* frame;
+	//struct Drawable* frame;
 };
 
 struct CPUTag cpu_tag_init(const char* name, CPUTagType type);

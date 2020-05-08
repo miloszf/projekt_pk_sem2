@@ -30,18 +30,18 @@ int main()
 {
 	setlocale(LC_ALL, "Polish_Poland.1250");
 	struct Terminal* term = terminal_init(NULL);
-	if (error_get())
+	if (error())
 		printf("B³¹d!");
 	else
 	{
-		Error error = NO_ERROR;
+		//Error error = NO_ERROR;
 		
 		struct Window* window = window_init();
 		struct Canvas* canvas = window_new_canvas(window, (Point) {0, 0 }, (Point) { 73, 31 });
 		struct CPU* cpu = cpu_init(canvas);
 
 		bool exit = false;
-		while (!exit && !error)
+		while (!exit && !error())
 		{
 			struct Vector* events_vect = event_get(term);
 			struct InputEvent* event_ptr;
@@ -64,7 +64,7 @@ int main()
 	}
 	
 	terminal_del(term);
-	debug_error_delete();
+	//debug_error_delete();
 	_CrtDumpMemoryLeaks();
 	return 0;
 }

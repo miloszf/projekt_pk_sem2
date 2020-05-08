@@ -31,8 +31,8 @@ LineType line_map_type(LineType background, LineType line_type)
 
 struct LineChar line_char_overwrite(struct LineChar* back_char, struct LineChar* new_char)
 {
-	check_for_NULL(back_char);
-	check_for_NULL(new_char);
+	CHECK_IF_NULL(back_char);
+	CHECK_IF_NULL(new_char);
 
 	struct LineChar overwriten_char;
 	//overwriten_char.line_char = new_char->line_char;
@@ -46,9 +46,9 @@ struct LineChar line_char_overwrite(struct LineChar* back_char, struct LineChar*
 
 void primitive_draw(struct Primitive* primitive, struct RenderInfo r_info)
 {
-	check_for_NULL(primitive);
+	CHECK_IF_NULL(primitive);
 
-	Error error = NO_ERROR;
+	//Error error = NO_ERROR;
 	r_info.offset.x += primitive->position.x;
 	r_info.offset.y += primitive->position.y;
 
@@ -60,7 +60,7 @@ void primitive_draw(struct Primitive* primitive, struct RenderInfo r_info)
 		Point coord = { r_info.offset.x, r_info.offset.y };
 		unsigned length = (primitive->type == TEXT_PRIMITIVE) ? wcslen(primitive->text.string) : primitive->line.length;
 
-		for (unsigned int i = 0; i < length && in_rect(coord, r_info.buffer_size) && !error; i++)
+		for (unsigned int i = 0; i < length && in_rect(coord, r_info.buffer_size) && !error(); i++)
 		{
 			size_t buff_coord = coord.x + r_info.buffer_size.x * coord.y;
 			if (!(pixel.color & BACKGROUND))
@@ -102,7 +102,9 @@ void primitive_draw(struct Primitive* primitive, struct RenderInfo r_info)
 			}
 			break;
 			default:
-				error = ERROR_RENDER_FAILURE;
+				CRASH_LOG(LOG_UNKNOWN_VALUE);
+				break;
+				//error = ERROR_RENDER_FAILURE;
 			}
 
 			r_info.buffer[buff_coord] = pixel;
@@ -113,8 +115,9 @@ void primitive_draw(struct Primitive* primitive, struct RenderInfo r_info)
 		}
 	}
 	else
-		error = ERROR_RENDER_FAILURE;
+		CRASH_LOG(GRAPHICS_FAILURE);
+		//error = ERROR_RENDER_FAILURE;
 
-	if (error)
-		error_set(error);
+	//if (error)
+		//error_set(error);
 }

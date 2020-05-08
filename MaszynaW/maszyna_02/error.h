@@ -1,54 +1,36 @@
 #ifndef ERROR_H
 #define ERROR_H
-// Struktura zajmuj¹ca siê obs³ug¹ b³êdów
-// - jedna na ca³y program
-// - koñczy pracê programu w razie wykrycia b³êdu
-// - komunikat?
 
-#define NO_ERROR 0
-#define ERROR -1
-#define ERROR_TERMINAL_FAILURE		0x0001
-#define ERROR_EVENTS_FAILURE		0x0002
-#define ERROR_WINDOW_FAILURE		0x0004
-#define ERROR_RENDER_FAILURE		0x0008
-#define ERROR_SIGNAL_FAILURE		0x0010
-#define ERROR_NO_INSTR_FILE			0x0020
-#define ERROR_INVALID_INSTR_FILE	0x0040
-#define ERROR_STRING_HANDLING		0x0080
-#define ERROR_INSTR_COMPILATION		0x0100
-#define ERROR_UNIT_ALREADY_SET		0x0200		
-#define ERROR_INSTR_ADDR_OUT_OF_RANGE	0x0400		
-#define ERROR_CPU_STOPPED			0x0800
-#define ERROR_EMPTY_UNIT			0x1000
-#define ERROR_NO_PROGRAM_FILE		0x2000
-#define ERROR_INVALID_PROGRAM_FILE	0x4000
-#define ERROR_MEMORY_TOO_SHORT		0x8000
+#include <stdlib.h>
+
+#define LOG (struct CrashLog) { __FILE__, __func__, __LINE__ }
+#define CRASH_LOG(x) do {_crash_log(__FILE__, __func__, __LINE__, x); exit(-1);} while(0)
+#define CHECK_IF_NULL(x) do {if (!(x)) { _crash_log(__FILE__, __func__, __LINE__, NULL_DEREFERENCE); exit(-1); }} while(0)
+
+typedef enum { NULL_DEREFERENCE, LIBRARY_FUNC_FAILURE, MEM_ALOC_FAILURE, LOG_UNKNOWN_VALUE, GRAPHICS_FAILURE, TERMINAL_FAILURE } ProgramErrorType;
+struct CrashLog
+{
+	const char* file;
+	const char* function;
+	int line;
+};
+
+void init_crash_log();
+void _crash_log(const char* file, const char* func, int line, ProgramErrorType type);
 
 typedef int Error;
-// b³êdy krytyczne, wyst¹pienie oznacza natychmiastowe zamkniêcie programu
-// - b³¹d alokacji pamiêci
-// - wy³uskanie wskaŸnika NULL
-// - ?inne?
+typedef enum { NO_FILE = 1, MISSING_INPUT, INVALID_INPUT, MISSING_LINE, UNKNOWN_LABEL, REPEATED_LABEL, LOST_TICK } CompilationError;
+typedef enum { CPU_STOPPED = 1, UNKNOWN_INSTRUCTION, ALREADY_SET, EMPTY_UNIT } RuntimeError;
 
-// b³êdy niekrytyczne, program wyœwietla stosowny komunikat
-// i czeka na reakcjê u¿ytkownika:
-// - przetwarzania podanych plików:
-//   - b³¹d otwierania pliku
-//   - nierozpoznane znaczniki
-//   - niepoprawne wartoœci
-// - b³¹d podczas wykonywania instrukcji/programu:
-//   - nierozpoznana wartoœæ w rejestrze instrukcji
 
-Error error_get();
-void error_set(Error error);
-void error_set_msg(Error error, const char* message);
-void critical_error_set(const char* message);
-const char* error_get_msg();
+Error error();
+Error error_msg(const char** message);
+void instr_error_set(CompilationError error, const char* arg);
+void prog_error_set(CompilationError error, const char* arg);
+void runtime_error_set(RuntimeError error, const char* arg);
+
 void* malloc_s(size_t size);
 void* calloc_s(size_t count, size_t size);
 void* realloc_s(void* ptr, size_t new_size);
-void check_for_NULL(const void* ptr);
-
-void debug_error_delete();
 
 #endif

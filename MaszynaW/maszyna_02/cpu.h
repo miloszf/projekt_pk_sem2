@@ -1,3 +1,6 @@
+#ifndef CPU_H
+#define CPU_H
+
 // Struktura bêd¹ca "sercem" maszynyW. Inicjalizuje bloki, sygna³y, wczytuje rozkazy i program.
 // Wykonuje takty lub rozkazy. Poœredniczy miêdzy sygna³ami zewnêtrznymi (przerwania, we/wy klawiatury)
 
@@ -12,12 +15,15 @@ struct CPU* cpu_init(struct Canvas* canvas);
 
 // Funkcja wczytuj¹ca i kompiluj¹ca listê rozkazów i ustawieñ
 // argumenty: nazwa pliku z rozkazami
+bool cpu_import_instructions(struct CPU* cpu, const char* file_name);
 
 // Funkcja wczytuj¹ca i kompiluj¹ca program. 
 // argumenty: nazwa pliku z programem
+bool cpu_import_program(struct CPU* cpu, const char* file_name);
 
 // Funkcja wykonuj¹ca jeden takt, zwraca wartoœæ 
 // argumenty: [?]
+void* cpu_tick(struct CPU* cpu);
 
 // Funkcja wykonuj¹ca jeden rozkaz
 // NIE MA!!! (mo¿liwa blokada)
@@ -28,7 +34,7 @@ struct CPU* cpu_init(struct Canvas* canvas);
 // Funkcja resetuj¹ca maszynê (bez pamiêci)
 // argumenty: -
 
-// Funkcja rysuj¹ca aktualny stan maszyny
-
 
 void cpu_delete(struct CPU* cpu);
+
+#endif

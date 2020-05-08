@@ -10,12 +10,13 @@
 
 struct CPUPreference cpu_preference_init(const char* name)
 {
-	check_for_NULL(name);
+	CHECK_IF_NULL(name);
 	// strdup?
 	size_t name_len = strlen(name) + 1;
 	char* new_name = malloc_s(name_len);
 	if (strcpy_s(new_name, name_len, name))
-		critical_error_set("strcpy_s failed\n");
+		CRASH_LOG(LIBRARY_FUNC_FAILURE);
+		//critical_error_set("strcpy_s failed\n");
 	// ?
 	struct Vector* unit_vect = vector_init(sizeof(struct Unit*));
 	struct Vector* signal_vect = vector_init(sizeof(struct Signal*));

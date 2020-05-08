@@ -24,7 +24,7 @@
 
 void add_rectangle(struct Drawable* drawable, Point position, Point size)
 {
-	check_for_NULL(drawable);
+	CHECK_IF_NULL(drawable);
 
 	struct Primitive new_line = {
 		.type = LINE_PRIMITIVE,
@@ -52,8 +52,8 @@ struct ValueReg
 
 void value_set_reg(struct Drawable* drawable, void* value_ptr)
 {
-	check_for_NULL(drawable);
-	check_for_NULL(value_ptr);
+	CHECK_IF_NULL(drawable);
+	CHECK_IF_NULL(value_ptr);
 	var value = *(var*)value_ptr;
 	struct ValueReg* value_struct = drawable->value_ptr;
 	size_t wbuffer_size = sizeof(value_struct->text) / sizeof(*value_struct->text);
@@ -62,13 +62,14 @@ void value_set_reg(struct Drawable* drawable, void* value_ptr)
 	// for other compilers switch to format L"%s:%u"!
 	int chars_written = swprintf_s(value_struct->text, wbuffer_size, L"%" WINDOWS_WCHAR_SPECIFIER L":%u", value_struct->name, value);
 	if (chars_written < 0)
-		error_set(ERROR);
+		CRASH_LOG(LIBRARY_FUNC_FAILURE);
+		//error_set(ERROR);
 }
 
 struct Drawable* drawable_new_reg(struct Canvas* canvas, Point position, Point size, const char* name)
 {
-	check_for_NULL(canvas);
-	check_for_NULL(name);
+	CHECK_IF_NULL(canvas);
+	CHECK_IF_NULL(name);
 
 	struct Drawable* new_drawable;
 	if (size.x && size.y)
@@ -78,7 +79,8 @@ struct Drawable* drawable_new_reg(struct Canvas* canvas, Point position, Point s
 
 		struct ValueReg* new_value = malloc_s(sizeof(struct ValueReg));
 		if (strncpy_s(new_value->name, MAX_STRING_LENGTH + 1, name, MAX_STRING_LENGTH))
-			error_set(ERROR);
+			CRASH_LOG(LIBRARY_FUNC_FAILURE);
+			//error_set(ERROR);
 		new_drawable->value_ptr = new_value;
 
 		struct Primitive new_text = {
@@ -102,7 +104,7 @@ struct Drawable* drawable_new_reg(struct Canvas* canvas, Point position, Point s
 
 struct Drawable* drawable_new_comb(struct Canvas* canvas, Point position, Point size)
 {
-	check_for_NULL(canvas);
+	CHECK_IF_NULL(canvas);
 
 	struct Drawable* new_drawable;
 	if (size.x && size.y)
@@ -118,7 +120,7 @@ struct Drawable* drawable_new_comb(struct Canvas* canvas, Point position, Point 
 
 void change_color(struct Drawable* drawable, Color color)
 {
-	check_for_NULL(drawable);
+	CHECK_IF_NULL(drawable);
 	size_t vect_len = vector_size(drawable->primitive_vect);
 	for (size_t i = 0; i < vect_len; i++)
 	{
@@ -129,8 +131,8 @@ void change_color(struct Drawable* drawable, Color color)
 
 void value_set_bus(struct Drawable* drawable, void* value_ptr)
 {
-	check_for_NULL(drawable);
-	check_for_NULL(value_ptr);
+	CHECK_IF_NULL(drawable);
+	CHECK_IF_NULL(value_ptr);
 	var value = *(var*)value_ptr;
 	if (value == EMPTY)
 		change_color(drawable, COLOR_FGND_DEFAULT);
@@ -140,7 +142,7 @@ void value_set_bus(struct Drawable* drawable, void* value_ptr)
 
 struct Drawable* drawable_new_bus(struct Canvas* canvas, Point position, Point size)
 {
-	check_for_NULL(canvas);
+	CHECK_IF_NULL(canvas);
 	struct Drawable* new_drawable;
 	if ((size.x && !size.y) || (!size.x && size.y))
 	{
@@ -170,8 +172,8 @@ struct ValueSignal
 
 void value_set_signal(struct Drawable* drawable, void* value_ptr)
 {
-	check_for_NULL(drawable);
-	check_for_NULL(value_ptr);
+	CHECK_IF_NULL(drawable);
+	CHECK_IF_NULL(value_ptr);
 	bool value = *(bool*)value_ptr;
 	struct ValueSignal* value_signal = drawable->value_ptr;
 	Color color = value ? COLOR_FGND_ACTIVE : COLOR_FGND_DEFAULT;
@@ -182,8 +184,8 @@ void value_set_signal(struct Drawable* drawable, void* value_ptr)
 
 struct Drawable* drawable_new_signal(struct DrawableSignalInit* init, const char* name)
 {
-	check_for_NULL(init);
-	check_for_NULL(init->canvas);
+	CHECK_IF_NULL(init);
+	CHECK_IF_NULL(init->canvas);
 
 	struct Drawable* new_drawable;
 	if ((init->arrow.head.x == init->arrow.tail.x) && 
@@ -242,7 +244,8 @@ struct Drawable* drawable_new_signal(struct DrawableSignalInit* init, const char
 				tag_pointer_char = 0x253F;
 				break;
 			default:
-				critical_error_set("");
+				//critical_error_set("");
+				CRASH_LOG(LOG_UNKNOWN_VALUE);
 				tag_pointer_char = '\0';
 			}
 
@@ -298,8 +301,8 @@ struct ValueMemory
 
 void value_set_memory(struct Drawable* drawable, void* value_ptr)
 {
-	check_for_NULL(drawable);
-	check_for_NULL(value_ptr);
+	CHECK_IF_NULL(drawable);
+	CHECK_IF_NULL(value_ptr);
 
 	var offset = *(var*)value_ptr;
 	struct ValueMemory* value_memory = drawable->value_ptr;
@@ -312,8 +315,8 @@ void value_set_memory(struct Drawable* drawable, void* value_ptr)
 		value_memory->offset = (offset > memory_max_offset) ? memory_max_offset : offset;
 	}
 
-	Error error = NO_ERROR;
-	check_for_NULL(value_memory->memory_ptr);
+	//Error error = NO_ERROR;
+	CHECK_IF_NULL(value_memory->memory_ptr);
 	for (unsigned i = 0; i < MEMORY_LINES_NUMBER; i++)
 	{
 		var index = value_memory->offset + i;
@@ -329,18 +332,19 @@ void value_set_memory(struct Drawable* drawable, void* value_ptr)
 
 		int chars_written = swprintf_s(value_memory->buffer[i], MEMORY_LINE_BUFFER_SIZE, L"%5u %8u %3" WINDOWS_WCHAR_SPECIFIER, index, value, name);
 		if (chars_written < 0)
-			error = ERROR;
+			CRASH_LOG(LIBRARY_FUNC_FAILURE);
+			//error = ERROR;
 	}
 
-	if (error)
-		error_set(error);
+	//if (error)
+		//error_set(error);
 }
 
 struct Drawable* drawable_new_memory(struct DrawableMemoryInit* init)
 {
-	check_for_NULL(init);
-	check_for_NULL(init->canvas);
-	check_for_NULL(init->memory_ptr);
+	CHECK_IF_NULL(init);
+	CHECK_IF_NULL(init->canvas);
+	CHECK_IF_NULL(init->memory_ptr);
 
 	struct Drawable* new_drawable = canvas_new_drawable(init->canvas, init->position);
 	struct ValueMemory* new_value = malloc_s(sizeof(struct ValueMemory));
@@ -378,3 +382,4 @@ struct Drawable* drawable_new_frame(struct Canvas* canvas, Point position, Point
 		drawable_set_visibility(new_frame, true);
 	return new_frame;
 }
+

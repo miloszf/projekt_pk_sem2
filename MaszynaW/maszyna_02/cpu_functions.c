@@ -8,11 +8,12 @@
 
 var sig_read_from_memory(void* value_ptr)
 {
-	check_for_NULL(value_ptr);
+	CHECK_IF_NULL(value_ptr);
 	struct SignalMemory* memory_struct = value_ptr;
 	var address = unit_read(memory_struct->reg_a);
 	if (address == EMPTY)
-		critical_error_set("");
+		CRASH_LOG(LOG_UNKNOWN_VALUE);
+		//critical_error_set("");
 	var value = memory_struct->memory[address];
 	return unit_immediate_set(memory_struct->reg_s, value) ? 0 : OUTPUT_ALREADY_SET;
 	//if (unit_immediate_set(memory_struct->reg_s, value))
@@ -26,28 +27,29 @@ var sig_read_from_memory(void* value_ptr)
 
 var sig_write_to_memory(void* value_ptr)
 {
-	check_for_NULL(value_ptr);
+	CHECK_IF_NULL(value_ptr);
 	struct SignalMemory* memory_struct = value_ptr;
 	var address = unit_read(memory_struct->reg_a);
 	var value = unit_read(memory_struct->reg_s);
 	if (address == EMPTY || value == EMPTY)
-		critical_error_set("");
+		CRASH_LOG(LOG_UNKNOWN_VALUE);
+		//critical_error_set("");
 	memory_struct->memory[address] = value;
 	return 0;
 }
 
 var sig_stop(void* value_ptr)
 {
-	check_for_NULL(value_ptr);
+	CHECK_IF_NULL(value_ptr);
 	bool* stop = *(bool**)value_ptr;
-	check_for_NULL(stop);
+	CHECK_IF_NULL(stop);
 	*stop = true;
 	return 0;
 }
 
 var sig_load_instruction(void* value_ptr)
 {
-	check_for_NULL(value_ptr);
+	CHECK_IF_NULL(value_ptr);
 	var return_value = 0;
 	struct SignalInstruction* instr_struct = value_ptr;
 	var value = unit_read(instr_struct->from);
@@ -67,7 +69,7 @@ var sig_load_instruction(void* value_ptr)
 
 var sig_connect_buses(void* value_ptr)
 {
-	check_for_NULL(value_ptr);
+	CHECK_IF_NULL(value_ptr);
 	var return_value = 0;
 	struct SignalBusConnection* bus_struct = value_ptr;
 	var value = unit_read(bus_struct->from);

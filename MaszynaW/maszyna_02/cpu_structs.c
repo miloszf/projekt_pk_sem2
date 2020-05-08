@@ -11,8 +11,8 @@
 
 bool cpu_tag_update(struct CPUTag* tag, struct CPU* cpu)
 {
-	check_for_NULL(tag);
-	check_for_NULL(cpu);
+	CHECK_IF_NULL(tag);
+	CHECK_IF_NULL(cpu);
 	bool return_value;
 
 	switch (tag->type)
@@ -42,7 +42,8 @@ bool cpu_tag_update(struct CPUTag* tag, struct CPU* cpu)
 	}
 	break;
 	default:
-		critical_error_set("");
+		//critical_error_set("");
+		CRASH_LOG(LOG_UNKNOWN_VALUE);
 		return_value = false;
 	}
 
@@ -51,10 +52,11 @@ bool cpu_tag_update(struct CPUTag* tag, struct CPU* cpu)
 
 struct CPUTag cpu_tag_init(const char* name, CPUTagType type)
 {
-	check_for_NULL(name);
+	CHECK_IF_NULL(name);
 	char* new_name = _strdup(name);
 	if (!new_name)
-		critical_error_set("strdup failed\n");
+		CRASH_LOG(LIBRARY_FUNC_FAILURE);
+		//critical_error_set("strdup failed\n");
 	return (struct CPUTag) { new_name, false, type };
 }
 
@@ -85,8 +87,8 @@ struct CPUMemory* cpu_memory_init(struct Canvas* canvas, const Point position, c
 
 void cpu_memory_update(struct CPUMemory* memory, struct Vector* instr_vect)
 {
-	check_for_NULL(memory);
-	check_for_NULL(memory->addr_len);
+	CHECK_IF_NULL(memory);
+	CHECK_IF_NULL(memory->addr_len);
 
 	if (memory->memory_array)
 		free(memory->memory_array);
@@ -101,8 +103,8 @@ void cpu_memory_update(struct CPUMemory* memory, struct Vector* instr_vect)
 	for (unsigned i = 0; i < vect_size; i++)
 	{
 		struct Instruction** instr_ptr = vector_read(instr_vect, i);
-		check_for_NULL(instr_ptr);
-		check_for_NULL(*instr_ptr);
+		CHECK_IF_NULL(instr_ptr);
+		CHECK_IF_NULL(*instr_ptr);
 		char* name = _strdup((*instr_ptr)->name);
 		vector_push(memory->instr_names_vect, &name);
 	}
@@ -110,7 +112,7 @@ void cpu_memory_update(struct CPUMemory* memory, struct Vector* instr_vect)
 
 void cpu_memory_scroll(struct CPUMemory* memory, var offset)
 {
-	check_for_NULL(memory);
+	CHECK_IF_NULL(memory);
 	drawable_set_value(memory->drawable, &offset);
 }
 
@@ -139,7 +141,7 @@ struct CPUWord cpu_word_init()
 
 void  cpu_word_update(struct CPUWord* word, var code_length, var address_length, struct Vector* instr_vect)
 {
-	check_for_NULL(word);
+	CHECK_IF_NULL(word);
 	word->addr_len = address_length;
 	word->word_len = word->addr_len + code_length;
 	word->word_mask = (u_var)(-1) >> (sizeof(var) * 8 - word->word_len);

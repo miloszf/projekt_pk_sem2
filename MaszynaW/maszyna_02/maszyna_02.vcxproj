@@ -139,6 +139,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="canvas.c" />
+    <ClCompile Include="console.c" />
     <ClCompile Include="cpu.c" />
     <ClCompile Include="cpu_components.c" />
     <ClCompile Include="cpu_functions.c" />
@@ -161,6 +162,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="canvas.h" />
+    <ClInclude Include="console.h" />
     <ClInclude Include="cpu.h" />
     <ClInclude Include="cpu_components.h" />
     <ClInclude Include="cpu_functions.h" />
