@@ -54,18 +54,18 @@ struct Vector* event_get(struct Terminal* term);
 
 #define ACSII_KEY
 #define CONTROL_KEY 0x80
-#define F1_KEY		0x01
-#define F2_KEY		0x02
-#define F3_KEY		0x03
-#define F4_KEY		0x04
-#define F5_KEY		0x05
-#define F6_KEY		0x06
-#define F7_KEY		0x07
-#define F8_KEY		0x08
-#define F9_KEY		0x09
-#define F10_KEY		0x0A
-#define F11_KEY		0x0B
-#define F12_KEY		0x0C
-#define ESC_KEY		0x1B
+#define F1_KEY	(char)(0x01 | CONTROL_KEY)
+#define F2_KEY	(char)(0x02 | CONTROL_KEY)
+#define F3_KEY	(char)(0x03 | CONTROL_KEY)
+#define F4_KEY	(char)(0x04 | CONTROL_KEY)
+#define F5_KEY	(char)(0x05 | CONTROL_KEY)
+#define F6_KEY	(char)(0x06 | CONTROL_KEY)
+#define F7_KEY	(char)(0x07 | CONTROL_KEY)
+#define F8_KEY	(char)(0x08 | CONTROL_KEY)
+#define F9_KEY	(char)(0x09 | CONTROL_KEY)
+#define F10_KEY	(char)(0x0A | CONTROL_KEY)
+#define F11_KEY	(char)(0x0B | CONTROL_KEY)
+#define F12_KEY	(char)(0x0C | CONTROL_KEY)
+#define ESC_KEY	(char)(0x1B | CONTROL_KEY)
 
 #endif

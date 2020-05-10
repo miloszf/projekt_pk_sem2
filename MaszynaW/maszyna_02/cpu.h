@@ -21,7 +21,8 @@ bool cpu_import_instructions(struct CPU* cpu, const char* file_name);
 // argumenty: nazwa pliku z programem
 bool cpu_import_program(struct CPU* cpu, const char* file_name);
 
-// Funkcja wykonuj¹ca jeden takt, zwraca wartoœæ 
+// Funkcja wykonuj¹ca jeden takt, zwraca wskaŸnik na nastêpny takt lub NULL gdy w³asnie wykonany 
+// takt by³ ostatni w danym rozkazie lub w przypadku b³êdu
 // argumenty: [?]
 void* cpu_tick(struct CPU* cpu);
 

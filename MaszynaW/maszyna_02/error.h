@@ -18,10 +18,35 @@ struct CrashLog
 void init_crash_log();
 void _crash_log(const char* file, const char* func, int line, ProgramErrorType type);
 
-typedef int Error;
-typedef enum { NO_FILE = 1, MISSING_INPUT, INVALID_INPUT, MISSING_LINE, UNKNOWN_LABEL, REPEATED_LABEL, LOST_TICK } CompilationError;
-typedef enum { CPU_STOPPED = 1, UNKNOWN_INSTRUCTION, ALREADY_SET, EMPTY_UNIT } RuntimeError;
 
+//#define
+//typedef enum { INSTR_COMP_ERROR = 1, PROG_COMP_ERROR, RUNTIME_ERROR } UserErrorType;
+//typedef enum { NO_FILE = 1, MISSING_INPUT, INVALID_INPUT, MISSING_LINE, UNKNOWN_LABEL, REPEATED_LABEL, LOST_TICK } CompilationError;
+//typedef enum { CPU_STOPPED = 1, UNKNOWN_INSTRUCTION, ALREADY_SET, EMPTY_UNIT } RuntimeError;
+typedef int Error;
+
+typedef Error UserErrorType;
+#define USER_ERROR_TYPE  0xE000
+#define INSTR_COMP_ERROR 0x8000
+#define PROG_COMP_ERROR	 0x4000
+#define RUNTIME_ERROR	 0x2000
+
+typedef Error CompilationError;
+//#define COMPILATION_ERROR	0x007F
+#define NO_FILE				0x0001
+#define MISSING_INPUT		0x0002
+#define INVALID_INPUT		0x0004
+#define MISSING_LINE		0x0008
+#define UNKNOWN_LABEL		0x0010
+#define REPEATED_LABEL		0x0020
+#define LOST_TICK			0x0040
+
+typedef Error RuntimeError;
+//#define RUNTIME_ERROR		0x000F
+#define CPU_STOPPED			0x0001
+#define UNKNOWN_INSTRUCTION	0x0002
+#define ALREADY_SET			0x0004
+#define EMPTY_UNIT			0x0008
 
 Error error();
 Error error_msg(const char** message);

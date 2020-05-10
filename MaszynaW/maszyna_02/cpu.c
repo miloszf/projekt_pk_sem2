@@ -61,6 +61,7 @@ struct CPU* cpu_init(struct Canvas* canvas)
 	//	cpu_memory_update(&cpu->memory, cpu->vector.instructions);
 	//	cpu_import_program(cpu);
 	//}
+
 	//if (cpu_import_instructions(cpu))
 	//{
 	//	cpu_word_update(&cpu->word, cpu->setup.all.code_length.value, cpu->setup.all.addr_length.value, cpu->vector.instructions);
@@ -142,11 +143,16 @@ bool cpu_import_instructions(struct CPU* cpu, const char* file_name)
 		map_delete(signal_map);
 		map_delete(tag_map);
 	}
-	//else
-		//error = ERROR;
 
 	map_delete(setup_map);
 	file_handler_delete(files_handler);
+
+	if (!error())
+	{
+		cpu_word_update(&cpu->word, cpu->setup.all.code_length.value, cpu->setup.all.addr_length.value, cpu->vector.instructions);
+		cpu_memory_update(cpu->memory, cpu->vector.instructions);
+	}
+
 	return !error();
 }
 
@@ -154,7 +160,10 @@ bool cpu_import_program(struct CPU* cpu, const char* file_name)
 {
 	CHECK_IF_NULL(cpu);
 	var code = cpu->word.word_len - cpu->word.addr_len;
-	return file_compile_program(file_name, cpu->vector.instructions, cpu->word.addr_len, code, cpu->memory->memory_array);
+	bool result = file_compile_program(file_name, cpu->vector.instructions, cpu->word.addr_len, code, cpu->memory->memory_array);
+	if (result)
+		cpu_memory_scroll(cpu->memory, 0);
+	return result;
 }
 
 void* cpu_tick(struct CPU* cpu)
@@ -165,6 +174,24 @@ void* cpu_tick(struct CPU* cpu)
 		//error_set(ERROR_CPU_STOPPED);
 		runtime_error_set(CPU_STOPPED, NULL);
 		return false;
+	}
+
+	// reset all
+	{
+		unsigned units_num = vector_size(cpu->vector.units);
+		for (unsigned i = 0; i < units_num; i++)
+		{
+			struct Unit** unit_ptr = vector_read(cpu->vector.units, i);
+			CHECK_IF_NULL(unit_ptr);
+			unit_reset(*unit_ptr);
+		}
+		unsigned signals_num = vector_size(cpu->vector.signals);
+		for (unsigned i = 0; i < signals_num; i++)
+		{
+			struct Unit** signal_ptr = vector_read(cpu->vector.signals, i);
+			CHECK_IF_NULL(signal_ptr);
+			signal_reset(*signal_ptr);
+		}
 	}
 
 	//Error error = NO_ERROR;
@@ -178,27 +205,43 @@ void* cpu_tick(struct CPU* cpu)
 
 	if (!error())
 	{
-		var address = (u_var)(value) >> (cpu->word.word_len - cpu->word.addr_len);
-		struct Instruction** instr_ptr = vector_read(cpu->vector.instructions, address);
+		//var memory_address = value & cpu->word.addr_mask;
+		//var instr_word = cpu->memory->memory_array[memory_address];
+		//var instr_code = (u_var)instr_word >> cpu->word.addr_len;
+		var instr_code = (u_var)value >> cpu->word.addr_len;
+		struct Instruction** instr_ptr = vector_read(cpu->vector.instructions, instr_code);
 		CHECK_IF_NULL(instr_ptr);
 		CHECK_IF_NULL(*instr_ptr);
 
-		if (!cpu->runtime.current_tick  || *instr_ptr != cpu->runtime.current_instr)
+		//if (!cpu->runtime.current_tick  || *instr_ptr != cpu->runtime.current_instr)
+		//{
+		//	cpu->runtime.current_instr = *instr_ptr;
+		//	cpu->runtime.current_tick = (*instr_ptr)->first_tick;
+		//}
+
+		if (/*!cpu->runtime.current_instr || */ !cpu->runtime.current_tick)
 		{
 			cpu->runtime.current_instr = *instr_ptr;
 			cpu->runtime.current_tick = (*instr_ptr)->first_tick;
 		}
+		else if (*instr_ptr != cpu->runtime.current_instr)
+		{
+			cpu->runtime.current_instr = *instr_ptr;
+			cpu->runtime.current_tick = (*instr_ptr)->first_tick->next;
+		}
+
 
 		CHECK_IF_NULL(cpu->runtime.current_tick);
 		size_t signal_ptr_array_size;
 		struct Signal** signal_ptr_array = vector_unwrap(vector_copy(cpu->runtime.current_tick->signal_vect), &signal_ptr_array_size);
 		size_t current_array_size = 0;
 		size_t new_array_size = signal_ptr_array_size;
-		while (!error() && current_array_size != new_array_size)
+		while (!error() && new_array_size && current_array_size != new_array_size)
 		{
 			current_array_size = new_array_size;
 			for (size_t i = 0; i < signal_ptr_array_size && !error(); i++)
 			{
+				struct Signal* debug = signal_ptr_array[i];
 				if (signal_ptr_array[i])
 				{
 					var result = signal_set(signal_ptr_array[i]);
@@ -218,6 +261,17 @@ void* cpu_tick(struct CPU* cpu)
 			runtime_error_set(EMPTY_UNIT, NULL);
 			//error = ERROR_EMPTY_UNIT;
 		free(signal_ptr_array);
+	}
+
+	// latch regs
+	{
+		unsigned units_num = vector_size(cpu->vector.units);
+		for (unsigned i = 0; i < units_num; i++)
+		{
+			struct Unit** unit_ptr = vector_read(cpu->vector.units, i);
+			CHECK_IF_NULL(unit_ptr);
+			unit_latch(*unit_ptr);
+		}
 	}
 
 	if (!error())

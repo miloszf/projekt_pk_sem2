@@ -285,8 +285,8 @@ struct InputEvent event_translate(INPUT_RECORD* record)
 			in_event.key_event.repeat_count = record->Event.KeyEvent.wRepeatCount;
 			if (record->Event.KeyEvent.uChar.UnicodeChar > 0 && record->Event.KeyEvent.uChar.UnicodeChar <= 127)
 				in_event.key_event.key = record->Event.KeyEvent.uChar.AsciiChar;
-			else if (record->Event.KeyEvent.wVirtualKeyCode >= VK_F1 && record->Event.KeyEvent.wVirtualKeyCode >= VK_F12)
-				in_event.key_event.key = (record->Event.KeyEvent.wVirtualKeyCode - VK_F1) + F1_KEY + CONTROL_KEY;
+			else if (record->Event.KeyEvent.wVirtualKeyCode >= VK_F1 && record->Event.KeyEvent.wVirtualKeyCode <= VK_F12)
+				in_event.key_event.key = (record->Event.KeyEvent.wVirtualKeyCode - VK_F1) + F1_KEY;
 		}
 		break;
 	

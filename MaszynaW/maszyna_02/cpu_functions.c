@@ -10,13 +10,14 @@ var sig_read_from_memory(void* value_ptr)
 {
 	CHECK_IF_NULL(value_ptr);
 	struct SignalMemory* memory_struct = value_ptr;
+	CHECK_IF_NULL(memory_struct->memory);
 	var address = unit_read(memory_struct->reg_a);
 	if (address == EMPTY)
 		CRASH_LOG(LOG_UNKNOWN_VALUE);
 		//critical_error_set("");
-	var value = memory_struct->memory[address];
+	var value = (*memory_struct->memory)[address];
 	return unit_immediate_set(memory_struct->reg_s, value) ? 0 : OUTPUT_ALREADY_SET;
-	//if (unit_immediate_set(memory_struct->reg_s, value))
+	//if (unit_immediate_set(memory_struct->reg_s, word))
 	//{
 	//	unit_latch(memory_struct->reg_s);
 	//	return 0;
@@ -29,12 +30,13 @@ var sig_write_to_memory(void* value_ptr)
 {
 	CHECK_IF_NULL(value_ptr);
 	struct SignalMemory* memory_struct = value_ptr;
+	CHECK_IF_NULL(memory_struct->memory);
 	var address = unit_read(memory_struct->reg_a);
 	var value = unit_read(memory_struct->reg_s);
 	if (address == EMPTY || value == EMPTY)
 		CRASH_LOG(LOG_UNKNOWN_VALUE);
 		//critical_error_set("");
-	memory_struct->memory[address] = value;
+	(*memory_struct->memory)[address] = value;
 	return 0;
 }
 
@@ -52,15 +54,15 @@ var sig_load_instruction(void* value_ptr)
 	CHECK_IF_NULL(value_ptr);
 	var return_value = 0;
 	struct SignalInstruction* instr_struct = value_ptr;
-	var value = unit_read(instr_struct->from);
-	if (value == EMPTY)
+	var word = unit_read(instr_struct->from);
+	if (word == EMPTY)
 		return_value = EMPTY;
 	else
 	{
-		value = (u_var)(value) >> *instr_struct->addr_len;
-		if (value > *instr_struct->instr_num)
-			value = EMPTY;
-		if (!unit_set(instr_struct->to, value))
+		var code = (u_var)(word) >> *instr_struct->addr_len;
+		if (code > *instr_struct->instr_num)
+			word = EMPTY;
+		if (!unit_set(instr_struct->to, word))
 			return_value = OUTPUT_ALREADY_SET;
 	}
 

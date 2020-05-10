@@ -106,15 +106,23 @@ var signal_set(struct Signal* signal)
 		//critical_error_set("");
 	}
 
-	if (!return_value)
+	if (!return_value && !signal->is_set)
+	{
 		signal->is_set = true;
+		drawable_set_value(signal->drawable, &signal->is_set);
+	}
+		
 	return return_value;
 }
 
 void signal_reset(struct Signal* signal)
 {
 	CHECK_IF_NULL(signal);
-	signal->is_set = false;
+	if (signal->is_set)
+	{
+		signal->is_set = false;
+		drawable_set_value(signal->drawable, &signal->is_set);
+	}
 }
 
 void signal_draw(struct Signal* signal)

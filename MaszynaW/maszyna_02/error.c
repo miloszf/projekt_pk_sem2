@@ -12,7 +12,6 @@
 
 char crash_log_msg[CRASH_MSG_LENGTH] = "";
 
-typedef enum { INSTR_COMP_ERROR = 1, PROG_COMP_ERROR, RUNTIME_ERROR } UserErrorType;
 struct ErrorStruct {
 	Error err;
 	const char* msg;
@@ -117,10 +116,17 @@ void error_set(UserErrorType err_type, Error error, const char* arg)
 	const char* comp_format_array[] = {
 		"%s cannot access \"%s\" file\n",
 		"%s cannot find \"%s\"\n",
-		"%s invalid value \"%s\"\n"
+		"%s invalid value \"%s\"\n",
+		"%s missing line in section \"%s\"\n",
+		"%s unknown label \"%s\"\n",
+		"%s repated label \"%s\"\n",
+		"%s instruction \"%s\" has a line which won't be reached\n"
 	};
 	const char* runtime_format_array[] = {
-		"%s already stopped\n"
+		"already stopped\n",
+		"%s unknown instruction\n",
+		"\"%s\" execution failed - output already set\n",
+		"\"%s\" execution failed - input in not set\n",
 	};
 	const char empty[] = "";
 	if (!arg)
@@ -145,6 +151,15 @@ void error_set(UserErrorType err_type, Error error, const char* arg)
 		case CPU_STOPPED:
 			format = runtime_format_array[0];
 			break;
+		case UNKNOWN_INSTRUCTION:
+			format = runtime_format_array[1];
+			break;
+		case ALREADY_SET:
+			format = runtime_format_array[2];
+			break;
+		case EMPTY_UNIT:
+			format = runtime_format_array[3];
+			break;
 		default:
 			CRASH_LOG(LOG_UNKNOWN_VALUE);
 			break;
@@ -168,6 +183,18 @@ void error_set(UserErrorType err_type, Error error, const char* arg)
 		case INVALID_INPUT:
 			format = comp_format_array[2];
 			break;
+		case MISSING_LINE:
+			format = comp_format_array[3];
+			break;
+		case UNKNOWN_LABEL:
+			format = comp_format_array[4];
+			break;
+		case REPEATED_LABEL:
+			format = comp_format_array[5];
+			break;
+		case LOST_TICK:
+			format = comp_format_array[6];
+			break;
 		default:
 			CRASH_LOG(LOG_UNKNOWN_VALUE);
 			break;
@@ -179,7 +206,7 @@ void error_set(UserErrorType err_type, Error error, const char* arg)
 		CRASH_LOG(LIBRARY_FUNC_FAILURE);
 	if (error_s->msg)
 		free((char*)error_s->msg);
-	*error_s = (struct ErrorStruct){ err_type, new_msg };
+	*error_s = (struct ErrorStruct){ (err_type | error), new_msg };
 }
 
 void instr_error_set(CompilationError error, const char* arg)

@@ -6,7 +6,7 @@
 
 struct SignalMemory
 {
-	var* memory;
+	var** memory;
 	struct Unit* reg_a;
 	struct Unit* reg_s;
 };

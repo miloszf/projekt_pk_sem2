@@ -51,7 +51,7 @@ void unit_restart(struct Unit* unit);
 // argumenty: -
 var unit_read(struct Unit* unit);
 
-void unit_draw(struct Unit* unit);
+//void unit_draw(struct Unit* unit);
 void unit_show(struct Unit* unit);
 void unit_hide(struct Unit* unit);
 void unit_set_visibility(struct Unit* unit, bool visibility);

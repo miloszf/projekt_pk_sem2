@@ -89,9 +89,11 @@ void* vector_unwrap(struct Vector* vect, size_t* size)
 struct Vector* vector_copy(struct Vector* vect)
 {
 	CHECK_IF_NULL(vect);
-	void* new_array = malloc_s(vect->el_number * vect->el_size);
 	struct Vector* new_vect = malloc_s(sizeof(struct Vector));
-	*new_vect = (struct Vector){ .el_size = vect->el_size, .el_number = vect->el_number, .array_size = vect->el_number, .array = new_array };
+	size_t new_array_size = vect->el_number * vect->el_size;
+	void* new_array = malloc_s(new_array_size);
+	memcpy(new_array, vect->array, new_array_size);
+	*new_vect = (struct Vector){ .el_size = vect->el_size, .el_number = vect->el_number, .array_size = vect->array_size, .array = new_array };
 	return new_vect;
 }
 

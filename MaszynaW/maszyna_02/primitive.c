@@ -60,7 +60,7 @@ void primitive_draw(struct Primitive* primitive, struct RenderInfo r_info)
 		Point coord = { r_info.offset.x, r_info.offset.y };
 		unsigned length = (primitive->type == TEXT_PRIMITIVE) ? wcslen(primitive->text.string) : primitive->line.length;
 
-		for (unsigned int i = 0; i < length && in_rect(coord, r_info.buffer_size) && !error(); i++)
+		for (unsigned int i = 0; i < length && in_rect(coord, r_info.buffer_size); i++)
 		{
 			size_t buff_coord = coord.x + r_info.buffer_size.x * coord.y;
 			if (!(pixel.color & BACKGROUND))

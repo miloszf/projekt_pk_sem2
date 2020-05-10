@@ -463,7 +463,10 @@ void cpu_init_mem_signals(struct CPU* cpu, const Point offset, struct Canvas* ca
 	cpu->components.mem.sig_wes = signal_new(&signal_init);
 	// SIG_CZYT
 	struct SignalMemory* read_memory_init = malloc_s(sizeof(struct SignalMemory));
-	*read_memory_init = (struct SignalMemory){ .memory = cpu->memory->memory_array, .reg_a = cpu->components.mem.reg_a, .reg_s = cpu->components.mem.reg_s };
+	*read_memory_init = (struct SignalMemory){ 
+		.memory = &cpu->memory->memory_array, 
+		.reg_a = cpu->components.mem.reg_a, 
+		.reg_s = cpu->components.mem.reg_s };
 	drawable_signal_init = (struct DrawableSignalInit){
 		.canvas = canvas,
 		.arrow.head = p_zero,
@@ -699,8 +702,8 @@ void cpu_init_addr_signals(struct CPU* cpu, const Point offset, struct Canvas* c
 		.type = SIGNAL_FROM_TO,
 		.name = "il",
 		.drawable_init = &drawable_signal_init,
-		.value.from_to.from = cpu->components.addr.reg_i,
-		.value.from_to.to = cpu->components.addr.reg_i,
+		.value.from_to.from = cpu->components.addr.reg_l,
+		.value.from_to.to = cpu->components.addr.reg_l,
 		.value.from_to.mask_ptr = &cpu->word.addr_mask,
 		.value.from_to.function = &sig_increment
 	};
