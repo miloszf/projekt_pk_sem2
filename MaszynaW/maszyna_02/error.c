@@ -96,13 +96,11 @@ Error error()
 	return error->err;
 }
 
-Error error_msg(const char** message)
+const char* error_msg()
 {
-	CHECK_IF_NULL(message);
 	struct ErrorStruct* error = get_error();
 	CHECK_IF_NULL(error);
-	*message = error->msg;
-	return error->err;
+	return error->msg;
 }
 
 void error_set(UserErrorType err_type, Error error, const char* arg)
@@ -127,6 +125,7 @@ void error_set(UserErrorType err_type, Error error, const char* arg)
 		"%s unknown instruction\n",
 		"\"%s\" execution failed - output already set\n",
 		"\"%s\" execution failed - input in not set\n",
+		"%s invalid io address\n",
 	};
 	const char empty[] = "";
 	if (!arg)
@@ -159,6 +158,9 @@ void error_set(UserErrorType err_type, Error error, const char* arg)
 			break;
 		case EMPTY_UNIT:
 			format = runtime_format_array[3];
+			break;
+		case INVALID_IO_ADDRESS:
+			format = runtime_format_array[4];
 			break;
 		default:
 			CRASH_LOG(LOG_UNKNOWN_VALUE);
@@ -222,6 +224,14 @@ void prog_error_set(CompilationError error, const char* arg)
 void runtime_error_set(RuntimeError error, const char* arg)
 {
 	error_set(RUNTIME_ERROR, error, arg);
+}
+
+void error_reset()
+{
+	struct ErrorStruct* error = get_error();
+	CHECK_IF_NULL(error);
+	free((char*)error->msg);
+	*error = (struct ErrorStruct){ 0, NULL };
 }
 
 void* malloc_s(size_t size)

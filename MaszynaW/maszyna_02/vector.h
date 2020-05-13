@@ -24,7 +24,7 @@ void* vector_read(struct Vector* vect, size_t index);
 // Funkcja zwracaj¹ca liczbê zapisanych elementów
 size_t vector_size(struct Vector* vect);
 // Funkcja usuwaj¹ca wektor, zwraca tablicê elementów i ich liczbê
-void* vector_unwrap(struct Vector* vect, size_t* size);
+void* vector_convert_to_array(struct Vector* vect, size_t* size);
 // Funkcja zwaracaj¹ca kopiê podanego wektora
 struct Vector* vector_copy(struct Vector* vect);
 

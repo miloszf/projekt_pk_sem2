@@ -11,13 +11,6 @@
 
 int main()
 {
-	printf("przed\n");
-	init_crash_log();
-	void* ptr = NULL;
-	//CHECK_IF_NULL(ptr);
-	//if (error())
-	CRASH_LOG(LOG_UNKNOWN_VALUE);
-	//_crash_log(LOG, NULL_DEREFERENCE);
-	printf("po\n");
+	
 	return 0;
 }

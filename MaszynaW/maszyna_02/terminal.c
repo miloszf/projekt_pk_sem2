@@ -10,31 +10,7 @@
 #include "window.h"
 #include "primitive.h"
 
-//#define WCHAR_BUFFER_SIZE 256
 #define EVENTS_BUFFER_SIZE 128
-
-//#define ESC "\x1b"
-//#define CSI "\x1b["
-//
-//void inline enter_alternate_buffer()
-//{
-//	printf(CSI "?1049h");
-//}
-//
-//void inline exit_alternate_buffer()
-//{
-//	printf(CSI "?1049l");
-//}
-//
-//void inline hide_cursor()
-//{
-//	printf(CSI "?25l");
-//}
-//
-//void inline show_cursor()
-//{
-//	printf(CSI "?25h");
-//}
 
 struct Terminal
 {
@@ -111,12 +87,6 @@ struct Terminal* terminal_init(const char* window_name)
 			error = true;
 		else 
 		{
-			//COORD max_window_size = GetLargestConsoleWindowSize(term->out_handle);
-			//if (!max_window_size.X || !max_window_size.Y)
-			//	error_get = ERROR;
-			//else if (!SetConsoleScreenBufferSize(term->out_handle, max_window_size))
-			//	error_get = ERROR;
-			//else 
 			if (!SetConsoleActiveScreenBuffer(term->out_handle))
 				error = true;
 			else
@@ -125,21 +95,6 @@ struct Terminal* terminal_init(const char* window_name)
 		
 	}
 
-	//if (!error_get)
-	//{
-	//	if (!GetConsoleMode(term->out_handle, &orginal_setup.out_mode))
-	//		error = ERROR;
-	//	else
-	//	{
-	//		DWORD console_mode =
-	//			orginal_setup.out_mode |
-	//			//ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-	//			DISABLE_NEWLINE_AUTO_RETURN;
-	//		if (!SetConsoleMode(term->out_handle, console_mode))
-	//			error = ERROR;
-	//	}
-	//}
-	
 	if (!error)
 	{
 		if (!GetConsoleMode(term->in_handle, &orginal_setup.in_mode))
@@ -147,29 +102,39 @@ struct Terminal* terminal_init(const char* window_name)
 		else
 		{
 			DWORD console_mode =
-				orginal_setup.in_mode |
+				ENABLE_EXTENDED_FLAGS;
+				//orginal_setup.in_mode |
 				//ENABLE_WINDOW_INPUT |
-				ENABLE_MOUSE_INPUT;
+				//ENABLE_MOUSE_INPUT;
 			if (!SetConsoleMode(term->in_handle, console_mode))
 				error = true;
+			else
+			{
+				console_mode = ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT;
+				if (!SetConsoleMode(term->in_handle, console_mode))
+					error = true;
+			}
+			//DWORD new_console_mode;
+			//GetConsoleMode(term->in_handle, &new_console_mode);
+			//if (new_console_mode)
+			//{
+			//}
+			//DWORD a = new_console_mode;
 		}
 	}
 
-	//if (!error)
-	//{
-	//	CONSOLE_CURSOR_INFO cursor_info;
-	//	if (!GetConsoleCursorInfo(term->out_handle, &cursor_info))
-	//		error = true;
-	//	else
-	//	{
-	//		//orginal_setup.cursor_info = cursor_info;
-	//		cursor_info.bVisible = false;
-	//		if (!SetConsoleCursorInfo(term->out_handle, &cursor_info))
-	//			error = true;
-	//	}
-	//}
-		
-	//WCHAR console_title[WCHAR_BUFFER_SIZE];
+	if (!error)
+	{
+		CONSOLE_CURSOR_INFO cursor_info;
+		if (!GetConsoleCursorInfo(term->out_handle, &cursor_info))
+			error = true;
+		else
+		{
+			cursor_info.bVisible = false;
+			if (!SetConsoleCursorInfo(term->out_handle, &cursor_info))
+				error = true;
+		}
+	}
 
 	if (!error)
 	{
@@ -224,18 +189,18 @@ void terminal_display(struct Terminal* term, struct Window* window)
 			}
 		}
 
-		if (!error)
-		{
-			CONSOLE_CURSOR_INFO cursor_info;
-			if (!GetConsoleCursorInfo(term->out_handle, &cursor_info))
-				error = true;
-			else
-			{
-				cursor_info.bVisible = false;
-				if (!SetConsoleCursorInfo(term->out_handle, &cursor_info))
-					error = true;
-			}
-		}
+		//if (!error)
+		//{
+		//	CONSOLE_CURSOR_INFO cursor_info;
+		//	if (!GetConsoleCursorInfo(term->out_handle, &cursor_info))
+		//		error = true;
+		//	else
+		//	{
+		//		cursor_info.bVisible = false;
+		//		if (!SetConsoleCursorInfo(term->out_handle, &cursor_info))
+		//			error = true;
+		//	}
+		//}
 	}
 
 	if (!error)
@@ -272,24 +237,37 @@ void terminal_del(struct Terminal* terminal)
 /****************************************** INPUT_EVENT ******************************************/
 /*************************************************************************************************/
 
+#define EVENT_NONE 0
+
 struct InputEvent event_translate(INPUT_RECORD* record)
 {
 	CHECK_IF_NULL(record);
 
-	struct InputEvent in_event = {0};
+	struct InputEvent in_event = { EVENT_NONE };
 	switch (record->EventType)
 	{
-	case KEY_EVENT: {
-			in_event.type = EVENT_KEY;
-			in_event.key_event.key_down = record->Event.KeyEvent.bKeyDown;
-			in_event.key_event.repeat_count = record->Event.KeyEvent.wRepeatCount;
-			if (record->Event.KeyEvent.uChar.UnicodeChar > 0 && record->Event.KeyEvent.uChar.UnicodeChar <= 127)
-				in_event.key_event.key = record->Event.KeyEvent.uChar.AsciiChar;
-			else if (record->Event.KeyEvent.wVirtualKeyCode >= VK_F1 && record->Event.KeyEvent.wVirtualKeyCode <= VK_F12)
-				in_event.key_event.key = (record->Event.KeyEvent.wVirtualKeyCode - VK_F1) + F1_KEY;
-		}
+	case KEY_EVENT: 
+	{
+		in_event.type = EVENT_KEY;
+		in_event.key_event.key_down = record->Event.KeyEvent.bKeyDown;
+		in_event.key_event.repeat_count = record->Event.KeyEvent.wRepeatCount;
+		if (record->Event.KeyEvent.uChar.UnicodeChar > 0 && record->Event.KeyEvent.uChar.UnicodeChar <= 127)
+			in_event.key_event.key = record->Event.KeyEvent.uChar.AsciiChar;
+		else if (record->Event.KeyEvent.wVirtualKeyCode >= VK_F1 && record->Event.KeyEvent.wVirtualKeyCode <= VK_F12)
+			in_event.key_event.key = (record->Event.KeyEvent.wVirtualKeyCode - VK_F1) + F1_KEY;
+	}
+	break;
+	case MOUSE_EVENT:
+	{
+		if (record->Event.MouseEvent.dwEventFlags & MOUSE_WHEELED)
+		{
+			in_event.type = EVENT_MOUSE;
+			in_event.mouse_event.scroll = ((INT32)record->Event.MouseEvent.dwButtonState > 0) ? -1 : 1;
+		}	
+	}
+	break;
+	default:
 		break;
-	
 	}
 
 	return in_event;
@@ -319,7 +297,8 @@ struct Vector* event_get(struct Terminal* term)
 					for (unsigned int i = 0; i < events_read; i++)
 					{
 						struct InputEvent input_event = event_translate(input_buffer + i);
-						vector_push(events_vect, &input_event);
+						if (input_event.type != EVENT_NONE)
+							vector_push(events_vect, &input_event);
 					}
 			} while (!error && events_read == EVENTS_BUFFER_SIZE);
 		}

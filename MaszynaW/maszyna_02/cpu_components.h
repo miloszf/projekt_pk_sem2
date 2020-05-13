@@ -20,4 +20,6 @@ void cpu_init_io_signals(struct CPU* cpu, const Point offset, struct Canvas* can
 void cpu_init_intr_units(struct CPU* cpu, const Point offset, struct Canvas* canvas);
 void cpu_init_intr_signals(struct CPU* cpu, const Point offset, struct Canvas* canvas);
 
+
+
 #endif

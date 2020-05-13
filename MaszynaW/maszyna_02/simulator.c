@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "simulator.h"
 #include "cpu.h"
@@ -9,104 +10,109 @@
 #include "event.h"
 #include "error.h"
 #include "settings.h"
+#include "console.h"
+
+#define INTERRUPTS_NUMBER 4
 
 struct Simulator
 {
 	struct Terminal* terminal;
 	struct Window* window;
 	struct CPU* cpu;
-	struct Console* console;
+	struct Console* err_console;
+	struct Console* in_console;
+	struct Console* out_console;
+	struct
+	{
+		char in;
+		char out;
+	} cpu_io_buffer;
 };
-
-//struct Simulator* simulator_init(int argc, char** argv)
-//{
-//
-//	//sim->console = console_init(cpu_canvas);
-//
-//	return sim;
-//}
-
-//void simulator_delete(struct Simulator* sim)
-//{
-//	if (sim)
-//	{
-//
-//	}
-//}
 
 typedef enum { READY, INIT, EXIT, CLEAR, TICK, INSTR, PROGRAM, RELOAD_INSTR, RELOAD_PROGRAM} SimState;
 
 struct UserInput
 {
 	SimState new_state;
-	char mouse_scroll;
+	var mouse_scroll;
+	char interrupts;
+	char chr;
 };
 
 struct UserInput simulator_get_events(struct Vector* events_vect)
 {
 	CHECK_IF_NULL(events_vect);
-	struct UserInput new_input = { READY, 0 };
+	struct UserInput new_input = { READY, 0, 0, '\0' };
 	struct InputEvent* event_ptr;
 	while (event_ptr = vector_pop(events_vect))
 	{
 		if (event_ptr->type == EVENT_KEY && event_ptr->key_event.key_down)
 		{
-			switch (event_ptr->key_event.key)
+			if (event_ptr->key_event.key == ESC_KEY)
 			{
-			case 27: // ESC
 				new_input.new_state = EXIT;
 				break;
-			case F2_KEY:
+			}
+			else if (event_ptr->key_event.key >= F1_KEY && event_ptr->key_event.key <= F4_KEY)
+			{
+				new_input.interrupts |= 1 << (INTERRUPTS_NUMBER - (event_ptr->key_event.key - F1_KEY + 1));
+			}
+			else if (event_ptr->key_event.key >= ' ' && event_ptr->key_event.key < CONTROL_KEY)
+			{
+				new_input.chr = event_ptr->key_event.key;
+			}
+			else switch (event_ptr->key_event.key)
+			{
+			case F5_KEY:
 				new_input.new_state = CLEAR;
 				break;
-			case F7_KEY:
+			case F6_KEY:
 				new_input.new_state = TICK;
 				break;
-			case F8_KEY:
+			case F7_KEY:
 				new_input.new_state = INSTR;
 				break;
-			case F9_KEY:
+			case F8_KEY:
 				new_input.new_state = PROGRAM;
 				break;
-			case F11_KEY:
+			case F9_KEY:
 				new_input.new_state = RELOAD_INSTR;
 				break;
-			case F12_KEY:
+			case F10_KEY:
 				new_input.new_state = RELOAD_PROGRAM;
 				break;
 			default:
 				break;
 			}
-
-			if (new_input.new_state == EXIT)
-				break;
 		}
 		else if (event_ptr->type == EVENT_MOUSE)
 		{ 
-			new_input.mouse_scroll = -event_ptr->mouse_event.scroll;
+			new_input.mouse_scroll += event_ptr->mouse_event.scroll;
 		}
 	}
 	vector_delete(events_vect);
-	//events_vect = NULL;
 	return new_input;
 }
 
 void simulator_run(int argc, char** argv)
 {
 	init_crash_log();
-	//struct Simulator* sim = calloc_s(1, sizeof(struct Simulator));
 	struct Simulator sim = { NULL, NULL, NULL, NULL };
-	//*sim = (struct Simulator)
 
 	sim.terminal = terminal_init("MaszynaW");
 	sim.window = window_init();
 	struct Canvas* cpu_canvas = window_new_canvas(sim.window, (Point) { 0, 0 }, (Point) { 73, 31 });
-	//struct Canvas* console_canvas = window_new_canvas(sim.window, (Point) { 0, 31 }, (Point) { 73, 40 });
-	sim.cpu = cpu_init(cpu_canvas);
-	//sim->console = console_init(cpu_canvas);
+	struct Canvas* err_console_canvas = window_new_canvas(sim.window, (Point) { 72, 0 }, (Point) { 40, 16 });
+	struct Canvas* io_console_canvas = window_new_canvas(sim.window, (Point) { 72, 15 }, (Point) { 40, 16 });
+	sim.cpu_io_buffer.in = '\0';
+	sim.cpu_io_buffer.out = '\0';
+	sim.cpu = cpu_init(cpu_canvas, &sim.cpu_io_buffer.in, &sim.cpu_io_buffer.out);
+	sim.err_console = console_init(err_console_canvas, POINT(0, 0), POINT(40, 16)); // 40, 16
+	drawable_new_frame(io_console_canvas, POINT(0, 0), POINT(40, 16));
+	sim.in_console = console_init(io_console_canvas, POINT(1, 1), POINT(38, 3)); // POINT(38, 3)
+	sim.out_console = console_init(io_console_canvas, POINT(1, 3), POINT(38, 12)); // POINT(38, 12)
 
 	SimState state = INIT;
-	//bool exit = false;
 
 	// DEBUG
 	const char instr_file_name[] = "MaszynaW.lst";
@@ -119,6 +125,11 @@ void simulator_run(int argc, char** argv)
 		struct UserInput user_input = simulator_get_events(event_get(sim.terminal));
 		if (user_input.new_state == EXIT)
 			state = EXIT;
+		else
+		{
+			//console_print
+			cpu_user_input_set(sim.cpu, user_input.mouse_scroll, user_input.interrupts);
+		}
 		
 		switch (state)
 		{
@@ -134,43 +145,46 @@ void simulator_run(int argc, char** argv)
 		break;
 		case READY:
 		{
-			Error err = error();
-			UserErrorType err_type = err & USER_ERROR_TYPE;
-			err &= ~USER_ERROR_TYPE;
-			const UserErrorType COMP_ERROR = INSTR_COMP_ERROR | PROG_COMP_ERROR;
-
-			if (user_input.new_state == RELOAD_INSTR)
-				state = RELOAD_INSTR;
-			else if (user_input.new_state == RELOAD_PROGRAM && !(err_type & INSTR_COMP_ERROR))
-				state = RELOAD_PROGRAM;
-			else if (user_input.new_state == CLEAR && !(err_type & COMP_ERROR))
-				state = CLEAR;
-			else if (!err_type)
+			if (user_input.new_state != READY)
 			{
-				switch (user_input.new_state)
+				Error err = error();
+				UserErrorType err_type = err & USER_ERROR_TYPE;
+				err &= ~USER_ERROR_TYPE;
+				const UserErrorType COMP_ERROR = INSTR_COMP_ERROR | PROG_COMP_ERROR;
+
+				if (user_input.new_state == RELOAD_INSTR)
+					state = RELOAD_INSTR;
+				else if (user_input.new_state == RELOAD_PROGRAM && !(err_type & INSTR_COMP_ERROR))
+					state = RELOAD_PROGRAM;
+				else if (user_input.new_state == CLEAR && !(err_type & COMP_ERROR))
+					state = CLEAR;
+				else if (!err_type)
 				{
-				case TICK:
-				case INSTR:
-				case PROGRAM:
-					state = user_input.new_state;
-					break;
-				case READY:
-					break;
-				default:
-					CRASH_LOG(LOG_UNKNOWN_VALUE);
+					switch (user_input.new_state)
+					{
+					case TICK:
+					case INSTR:
+					case PROGRAM:
+						state = user_input.new_state;
+						break;
+					default:
+						CRASH_LOG(LOG_UNKNOWN_VALUE);
+					}
+				}
+				else
+				{
+					log_error = true;
+					redraw = true;
 				}
 			}
-			else
-			{
-				log_error = true;
-				redraw = true;
-			}
+			
 		}
 		break;
 		case EXIT:
 			break;
 		case RELOAD_INSTR:
 		{
+			error_reset();
 			if (!cpu_import_instructions(sim.cpu, instr_file_name) || !cpu_import_program(sim.cpu, prog_file_name))
 			{
 				log_error = true;
@@ -181,6 +195,7 @@ void simulator_run(int argc, char** argv)
 		break;
 		case RELOAD_PROGRAM:
 		{
+			error_reset();
 			if (!cpu_import_program(sim.cpu, prog_file_name))
 			{
 				log_error = true;
@@ -191,7 +206,11 @@ void simulator_run(int argc, char** argv)
 		break;
 		case CLEAR:
 		{
-			//cpu_clear(sim.cpu);
+			error_reset();
+			cpu_reset(sim.cpu);
+			console_clear(sim.err_console);
+			console_clear(sim.in_console);
+			console_clear(sim.out_console);
 			redraw = true;
 			state = READY;
 		}
@@ -246,24 +265,32 @@ void simulator_run(int argc, char** argv)
 			CRASH_LOG(LOG_UNKNOWN_VALUE);
 		}
 
-		if (log_error)
+		if (user_input.chr)
 		{
-			//console log error
+			char str[2] = "";
+			*str = user_input.chr;
+			console_print(sim.in_console, str);
 		}
 
-		if (user_input.mouse_scroll)
+		if (log_error)
 		{
-			//memory scroll
+			console_print(sim.err_console, error_msg());
+			//printf("\a");
+			log_error = false;
 		}
+
 		redraw = true;
 		if (redraw)
 		{
 			window_draw(sim.window);
 			terminal_display(sim.terminal, sim.window);
+			/* redraw = false; */
 		}
 	}
 
-	//console_delete(sim.console);
+	console_delete(sim.err_console);
+	console_delete(sim.in_console);
+	console_delete(sim.out_console);
 	cpu_delete(sim.cpu);
 	window_delete(sim.window);
 	terminal_del(sim.terminal);

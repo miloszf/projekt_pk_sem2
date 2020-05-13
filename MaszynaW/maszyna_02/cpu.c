@@ -16,8 +16,9 @@
 #include "map.h"
 #include "file.h"
 #include "instruction.h"
+#include "color.h"
 
-struct CPU* cpu_init(struct Canvas* canvas)
+struct CPU* cpu_init(struct Canvas* canvas, char* input_buffer, char* output_buffer)
 {
 	CHECK_IF_NULL(canvas);
 
@@ -29,6 +30,20 @@ struct CPU* cpu_init(struct Canvas* canvas)
 	cpu->word = cpu_word_init();
 	cpu->memory = cpu_memory_init(canvas, POINT(47, 12), &cpu->word.addr_len);
 	cpu->runtime = (struct CPURuntime){ NULL, NULL, false };
+	cpu->peripherals = (struct CPUPeripherals){ input_buffer, output_buffer };
+	struct ColorSet buttons_color_set = {
+		.f_default = 0,
+		.b_default = BACKGROUND_INTENSITY,
+		.f_active = 0,
+		.b_active = (BACKGROUND_BLUE | BACKGROUND_INTENSITY)
+	};
+	for (int i = 0; i < CPU_INTERRUPTS_NUMBER; i++)
+	{
+		char text[4];
+		int chars_written = sprintf_s(text, 4, " %1d ", i);
+		cpu->peripherals.buttons_array[i] = drawable_new_button(canvas, POINT(2 + 4 * i, 1), POINT(3, 1), text, &buttons_color_set);
+	}
+		
 	//cpu->frame = drawable_new_frame(canvas, POINT(0, 0), POINT(73, 31));
 	drawable_new_frame(canvas, POINT(0, 0), POINT(73, 31));
 
@@ -127,6 +142,11 @@ bool cpu_import_instructions(struct CPU* cpu, const char* file_name)
 			}
 		}
 
+		for (int i = 0; i < CPU_INTERRUPTS_NUMBER; i++)
+		{
+			drawable_set_visibility(cpu->peripherals.buttons_array[i], cpu->setup.all.interrupts.value);
+		}
+
 		struct Map* tag_map = map_init(sizeof(struct CPUTag));
 		for (int i = 0; i < CPU_TAGS_NUMBER; i++)
 		{
@@ -188,7 +208,7 @@ void* cpu_tick(struct CPU* cpu)
 		unsigned signals_num = vector_size(cpu->vector.signals);
 		for (unsigned i = 0; i < signals_num; i++)
 		{
-			struct Unit** signal_ptr = vector_read(cpu->vector.signals, i);
+			struct Signal** signal_ptr = vector_read(cpu->vector.signals, i);
 			CHECK_IF_NULL(signal_ptr);
 			signal_reset(*signal_ptr);
 		}
@@ -233,7 +253,7 @@ void* cpu_tick(struct CPU* cpu)
 
 		CHECK_IF_NULL(cpu->runtime.current_tick);
 		size_t signal_ptr_array_size;
-		struct Signal** signal_ptr_array = vector_unwrap(vector_copy(cpu->runtime.current_tick->signal_vect), &signal_ptr_array_size);
+		struct Signal** signal_ptr_array = vector_convert_to_array(vector_copy(cpu->runtime.current_tick->signal_vect), &signal_ptr_array_size);
 		size_t current_array_size = 0;
 		size_t new_array_size = signal_ptr_array_size;
 		while (!error() && new_array_size && current_array_size != new_array_size)
@@ -291,6 +311,58 @@ void* cpu_tick(struct CPU* cpu)
 		//error_set(error);
 
 	return error() ? NULL : cpu->runtime.current_tick;
+}
+
+void cpu_user_input_set(struct CPU* cpu, var mouse_scroll, var interrupts)
+{
+	CHECK_IF_NULL(cpu);
+	//if (mouse_scroll)
+		drawable_set_value(cpu->memory->drawable, &mouse_scroll);
+	if (cpu->setup.all.interrupts.value)
+	{
+		var old_interrupts = unit_read(cpu->components.intr.reg_rz);
+		if (old_interrupts == EMPTY)
+			CRASH_LOG(LOG_UNKNOWN_VALUE);
+		interrupts = (interrupts | old_interrupts) & cpu->word.intr_mask;
+		if (interrupts != old_interrupts)
+		{
+			unit_immediate_set(cpu->components.intr.reg_rz, interrupts & cpu->word.intr_mask);
+			unit_reset(cpu->components.intr.reg_rz);
+		}
+		if (interrupts != cpu->peripherals.buttons_set)
+		{
+			cpu_peripherals_update_buttons(interrupts, cpu->peripherals.buttons_array);
+			cpu->peripherals.buttons_set = interrupts;
+		}
+	}
+}
+
+void cpu_reset(struct CPU* cpu)
+{
+	int unit_vect_size = vector_size(cpu->vector.units);
+	for (int index = 0; index < unit_vect_size; index++)
+	{
+		struct Unit** unit_ptr = vector_read(cpu->vector.units, index);
+		CHECK_IF_NULL(unit_ptr);
+		unit_restart(*unit_ptr);
+	}
+	int signal_vect_size = vector_size(cpu->vector.signals);
+	for (int index = 0; index < signal_vect_size; index++)
+	{
+		struct Signal** signal_ptr = vector_read(cpu->vector.signals, index);
+		CHECK_IF_NULL(signal_ptr);
+		signal_reset(*signal_ptr);
+	}
+	cpu->runtime.current_instr = NULL;
+	cpu->runtime.current_tick = NULL;
+	cpu->runtime.stop = false;
+	for (int index = 0; index < CPU_TAGS_NUMBER; index++)
+		cpu->components.tags.list[index].value = false;
+	*cpu->peripherals.in_buffer = '\0';
+	*cpu->peripherals.out_buffer = '\0';
+	//for (int index = 0; index < CPU_INTERRUPTS_NUMBER; index++)
+	// BUTTONS RESET
+		//drawable_set_value()
 }
 
 void cpu_delete(struct CPU* cpu)

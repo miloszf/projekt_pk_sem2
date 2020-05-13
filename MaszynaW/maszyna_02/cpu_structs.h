@@ -14,6 +14,7 @@ struct CPUPreference
 
 #define CPU_SETUP_SIZE 13
 #define CPU_TAGS_NUMBER 4
+#define CPU_INTERRUPTS_NUMBER 4
 
 struct CPUSetup
 {
@@ -174,6 +175,15 @@ struct CPURuntime
 	bool stop;
 };
 
+
+struct CPUPeripherals
+{
+	char* in_buffer;
+	char* out_buffer;
+	struct Drawable* buttons_array[CPU_INTERRUPTS_NUMBER];
+	var buttons_set;
+};
+
 struct CPU
 {
 	struct CPUSetup setup;
@@ -188,6 +198,7 @@ struct CPU
 		struct Vector* instructions;
 	} vector;
 	struct CPURuntime runtime;
+	struct CPUPeripherals peripherals;
 	//struct Drawable* frame;
 };
 
@@ -202,5 +213,7 @@ void cpu_memory_delete(struct CPUMemory*);
 
 struct CPUWord cpu_word_init();
 void  cpu_word_update(struct CPUWord* word, var code_length, var address_length, struct Vector* instr_vect);
+
+void cpu_peripherals_update_buttons(var interrupts, struct Drawable** buttons_array);
 
 #endif

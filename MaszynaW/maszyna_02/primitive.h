@@ -3,21 +3,7 @@
 // Struktura przedstawiaj¹ca podstawowe graficzne obiekty.
 
 #include "settings.h"
-
-#define FOREGROUND_BLUE 0x0001
-#define FOREGROUND_GREEN 0x0002
-#define FOREGROUND_RED 0x0004
-#define FOREGROUND_INTENSITY 0x0008
-#define FOREGROUND 0x000F
-#define BACKGROUND_BLUE 0x0010
-#define BACKGROUND_GREEN 0x0020
-#define BACKGROUND_RED 0x0040
-#define BACKGROUND_INTENSITY 0x0080
-#define BACKGROUND 0x00F0
-
-#define COLOR_FGND_DEFAULT 0 //(FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED)
-#define COLOR_FGND_ACTIVE (FOREGROUND_RED | FOREGROUND_INTENSITY)
-#define COLOR_BGND_DEFAULT (BACKGROUND_BLUE | BACKGROUND_GREEN | BACKGROUND_RED | BACKGROUND_INTENSITY)
+#include "color.h"
 
 typedef enum { TEXT_PRIMITIVE, LINE_PRIMITIVE } PrimitiveType;
 typedef enum { VERTICAL, HORIZONTAL } Orientation;
@@ -26,8 +12,6 @@ typedef enum {
 	SINGLE_LINE = 1,
 	DOUBLE_LINE = 2,
 } LineType;
-
-typedef unsigned int Color;
 
 struct Text
 {

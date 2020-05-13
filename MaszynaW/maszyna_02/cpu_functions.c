@@ -17,13 +17,6 @@ var sig_read_from_memory(void* value_ptr)
 		//critical_error_set("");
 	var value = (*memory_struct->memory)[address];
 	return unit_immediate_set(memory_struct->reg_s, value) ? 0 : OUTPUT_ALREADY_SET;
-	//if (unit_immediate_set(memory_struct->reg_s, word))
-	//{
-	//	unit_latch(memory_struct->reg_s);
-	//	return 0;
-	//}
-	//else
-	//	return OUTPUT_ALREADY_SET;
 }
 
 var sig_write_to_memory(void* value_ptr)
@@ -35,7 +28,6 @@ var sig_write_to_memory(void* value_ptr)
 	var value = unit_read(memory_struct->reg_s);
 	if (address == EMPTY || value == EMPTY)
 		CRASH_LOG(LOG_UNKNOWN_VALUE);
-		//critical_error_set("");
 	(*memory_struct->memory)[address] = value;
 	return 0;
 }
@@ -82,6 +74,110 @@ var sig_connect_buses(void* value_ptr)
 		value &= *bus_struct->mask;
 		if (!unit_set(bus_struct->through, value) || !unit_set(bus_struct->to, value))
 			return_value = OUTPUT_ALREADY_SET;
+	}
+
+	return return_value;
+}
+
+#define INPUT 1
+#define OUTPUT 2
+# define CHAR_MASK 0x7F
+
+var sig_io_handling(void* value_ptr)
+{
+	CHECK_IF_NULL(value_ptr);
+	var return_value = 0;
+	struct SignalIOHandling* io_struct = value_ptr;
+	var address = unit_read(io_struct->address_reg);
+	
+	if (address == EMPTY)
+		CRASH_LOG(LOG_UNKNOWN_VALUE);
+	else
+	{
+		bool io_flag = false;
+		address &= *io_struct->addr_mask;
+		switch (address)
+		{
+		case INPUT:
+		{
+			char chr = *io_struct->in_buffer;
+			if (chr)
+			{
+				if (!unit_set(io_struct->char_reg, chr))
+					return_value = ALREADY_SET;
+				io_flag = true;
+			}
+		}
+		break;
+		case OUTPUT:
+		{
+			char chr = *io_struct->out_buffer;
+			if (!chr)
+			{
+				var char_to_write = unit_read(io_struct->char_reg);
+				if (char_to_write == EMPTY)
+					CRASH_LOG(LOG_UNKNOWN_VALUE);
+				char_to_write &= CHAR_MASK;
+				*io_struct->out_buffer = char_to_write;
+				io_flag = true;
+			}
+		}
+		break;
+		default:
+			runtime_error_set(INVALID_IO_ADDRESS, NULL);
+		}
+
+		if (!unit_set(io_struct->flag_reg, io_flag))
+			CRASH_LOG(LOG_UNKNOWN_VALUE);
+	}
+
+	return return_value;
+}
+
+var sig_enable_interrupts(void* value_ptr)
+{
+	CHECK_IF_NULL(value_ptr);
+	var return_value = 0;
+	struct SignalInterrupts* intr_struct = value_ptr;
+	var interrupts = unit_read(intr_struct->reg_rz);
+	var interrupts_mask = unit_read(intr_struct->reg_rm);
+	if (interrupts == EMPTY || interrupts_mask == EMPTY)
+		CRASH_LOG(LOG_UNKNOWN_VALUE);
+	if (interrupts &= ~interrupts_mask)
+	{
+		var highest_priority_interrupt = 0;
+		var interrupt_address = 1;
+		for (; interrupt_address <= CPU_INTERRUPTS_NUMBER; interrupt_address++)
+		{
+			if (highest_priority_interrupt = (interrupts & (1 << (CPU_INTERRUPTS_NUMBER - interrupt_address))))
+				break;
+		}
+
+		if (!unit_set(intr_struct->reg_rp, highest_priority_interrupt) || !unit_set(intr_struct->reg_ap, interrupt_address))
+			return_value = ALREADY_SET;
+		else
+			*intr_struct->int_tag = true;		
+	}
+	else
+		*intr_struct->int_tag = false;
+
+	return return_value;
+}
+
+var sig_reset_interrupts(void* value_ptr)
+{
+	CHECK_IF_NULL(value_ptr);
+	var return_value = 0;
+	struct SignalInterrupts* intr_struct = value_ptr;
+	var interrupts = unit_read(intr_struct->reg_rz);
+	var current_interrupt = unit_read(intr_struct->reg_rp);
+	if (interrupts == EMPTY || current_interrupt == EMPTY)
+		CRASH_LOG(LOG_UNKNOWN_VALUE);
+	if (current_interrupt)
+	{
+		interrupts &= ~current_interrupt;
+		if (!unit_set(intr_struct->reg_rz, interrupts) || !unit_set(intr_struct->reg_rp, 0) || !unit_set(intr_struct->reg_ap, 0))
+			return_value = ALREADY_SET;
 	}
 
 	return return_value;

@@ -485,7 +485,10 @@ void cpu_init_mem_signals(struct CPU* cpu, const Point offset, struct Canvas* ca
 	cpu->components.mem.sig_czyt = signal_new(&signal_init);
 	// SIG_PISZ
 	struct SignalMemory* write_memory_init = malloc_s(sizeof(struct SignalMemory));
-	*write_memory_init = (struct SignalMemory){ .memory = cpu->memory->memory_array, .reg_a = cpu->components.mem.reg_a, .reg_s = cpu->components.mem.reg_s };
+	*write_memory_init = (struct SignalMemory){ 
+		.memory = &cpu->memory->memory_array, 
+		.reg_a = cpu->components.mem.reg_a, 
+		.reg_s = cpu->components.mem.reg_s };
 	drawable_signal_init = (struct DrawableSignalInit){
 		.canvas = canvas,
 		.arrow.head = p_zero,
@@ -1091,15 +1094,26 @@ void cpu_init_io_signals(struct CPU* cpu, Point offset, struct Canvas* canvas)
 		.tag.tail = p_add(offset, POINT(2, 1)),
 	};
 	signal_init = (struct SignalInit){
-		.type = SIGNAL_OTHER,
+		.type = SIGNAL_FROM_TO,
 		.name = "wyg",
 		.drawable_init = &drawable_signal_init,
 		// TODO
-		.value.other.value_ptr = NULL,
-		.value.other.function = NULL
+		.value.from_to.from = cpu->components.io.reg_g,
+		.value.from_to.to = cpu->components.addr.bus_s,
+		.value.from_to.mask_ptr = &cpu->word.word_mask,
+		.value.from_to.function = &sig_pass
 	};
 	cpu->components.io.sig_wyg = signal_new(&signal_init);
 	// SIG_START
+	struct SignalIOHandling* io_handling = malloc_s(sizeof(struct SignalIOHandling));
+	*io_handling = (struct SignalIOHandling){
+		.char_reg = cpu->components.io.reg_rb,
+		.flag_reg = cpu->components.io.reg_g,
+		.address_reg = cpu->components.addr.reg_i,
+		.addr_mask = &cpu->word.addr_mask,
+		.in_buffer = cpu->peripherals.in_buffer,
+		.out_buffer = cpu->peripherals.out_buffer
+	};
 	drawable_signal_init = (struct DrawableSignalInit){
 		.canvas = canvas,
 		.arrow.head = p_add(offset, POINT(9, 2)),
@@ -1112,9 +1126,8 @@ void cpu_init_io_signals(struct CPU* cpu, Point offset, struct Canvas* canvas)
 		.type = SIGNAL_OTHER,
 		.name = "start",
 		.drawable_init = &drawable_signal_init,
-		// TODO
-		.value.other.value_ptr = NULL,
-		.value.other.function = NULL
+		.value.other.value_ptr = io_handling,
+		.value.other.function = &sig_io_handling
 	};
 	cpu->components.io.sig_start = signal_new(&signal_init);
 
@@ -1238,6 +1251,15 @@ void cpu_init_intr_signals(struct CPU* cpu, const Point offset, struct Canvas* c
 	};
 	cpu->components.intr.sig_wyap = signal_new(&signal_init);
 	// SIG_RINT
+	struct SignalInterrupts* rint_init = malloc_s(sizeof(struct SignalInterrupts));
+	*rint_init = (struct SignalInterrupts){
+		.reg_rz = cpu->components.intr.reg_rz,
+		.reg_rm = cpu->components.intr.reg_rm,
+		.reg_rp = cpu->components.intr.reg_rp,
+		.reg_ap = cpu->components.intr.reg_ap,
+		.int_tag = &cpu->components.tags.all.tag_int.value,
+		.intr_mask = &cpu->word.intr_mask
+	};
 	drawable_signal_init = (struct DrawableSignalInit){
 		.canvas = canvas,
 		.arrow.head = p_zero,
@@ -1250,12 +1272,20 @@ void cpu_init_intr_signals(struct CPU* cpu, const Point offset, struct Canvas* c
 		.type = SIGNAL_OTHER,
 		.name = "rint",
 		.drawable_init = &drawable_signal_init,
-		// TODO
-		.value.other.value_ptr = NULL,
-		.value.other.function = NULL
+		.value.other.value_ptr = rint_init,
+		.value.other.function = &sig_reset_interrupts
 	};
 	cpu->components.intr.sig_rint = signal_new(&signal_init);
 	// SIG_ENI
+	struct SignalInterrupts* eni_init = malloc_s(sizeof(struct SignalInterrupts));
+	*eni_init = (struct SignalInterrupts){
+		.reg_rz = cpu->components.intr.reg_rz,
+		.reg_rm = cpu->components.intr.reg_rm,
+		.reg_rp = cpu->components.intr.reg_rp,
+		.reg_ap = cpu->components.intr.reg_ap,
+		.int_tag = &cpu->components.tags.all.tag_int.value,
+		.intr_mask = &cpu->word.intr_mask
+	};
 	drawable_signal_init = (struct DrawableSignalInit){
 		.canvas = canvas,
 		.arrow.head = p_zero,
@@ -1268,9 +1298,8 @@ void cpu_init_intr_signals(struct CPU* cpu, const Point offset, struct Canvas* c
 		.type = SIGNAL_OTHER,
 		.name = "eni",
 		.drawable_init = &drawable_signal_init,
-		// TODO
-		.value.other.value_ptr = NULL,
-		.value.other.function = NULL
+		.value.other.value_ptr = eni_init,
+		.value.other.function = &sig_enable_interrupts
 	};
 	cpu->components.intr.sig_eni = signal_new(&signal_init);
 

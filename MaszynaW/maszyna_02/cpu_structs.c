@@ -148,3 +148,13 @@ void  cpu_word_update(struct CPUWord* word, var code_length, var address_length,
 	word->addr_mask = (u_var)(word->word_mask) >> (code_length);
 	word->instr_num = instr_vect ? vector_size(instr_vect) : 0;
 }
+
+void cpu_peripherals_update_buttons(var interrupts, struct Drawable** buttons_array)
+{
+	CHECK_IF_NULL(buttons_array);
+	for (int i = 1; i <= CPU_INTERRUPTS_NUMBER; i++)
+	{
+		bool is_button_set = interrupts & (1 << (CPU_INTERRUPTS_NUMBER - i));
+		drawable_set_value(buttons_array[i - 1], &is_button_set);
+	}
+}

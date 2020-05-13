@@ -13,15 +13,11 @@ struct Unit
 	UnitType type;
 	var value;
 	var input_value;
-	//const unsigned char* word_length;
 	struct Drawable* drawable;
-	//bool visible;
-	//union
 };
 
 struct Unit* unit_init()
 {
-	//struct Unit* new_unit = malloc_s(sizeof(struct Unit));
 	return malloc_s(sizeof(struct Unit));
 }
 
@@ -77,6 +73,8 @@ var unit_immediate_set(struct Unit* unit, var value)
 	{
 		unit->value = value;
 		unit->input_value = value;
+		if (unit->drawable)
+			drawable_set_value(unit->drawable, &unit->input_value);
 		return EMPTY;
 	}
 	else
@@ -92,13 +90,12 @@ var unit_read(struct Unit* unit)
 void unit_latch(struct Unit* unit)
 {
 	CHECK_IF_NULL(unit);
-	/*if (unit->type == REG_TYPE && unit->input_value != EMPTY)
-		unit->value = unit->input_value;*/
 	if (unit->input_value != EMPTY)
 	{
 		if (unit->type == REG_TYPE)
 			unit->value = unit->input_value;
-		drawable_set_value(unit->drawable, &unit->input_value);
+		if (unit->drawable)
+			drawable_set_value(unit->drawable, &unit->input_value);
 	}
 }
 
@@ -108,7 +105,8 @@ void unit_reset(struct Unit* unit)
 	if (unit->type != REG_TYPE && unit->value != EMPTY)
 	{
 		unit->value = EMPTY;
-		drawable_set_value(unit->drawable, &unit->value);
+		if (unit->drawable)
+			drawable_set_value(unit->drawable, &unit->value);
 	}
 		
 	unit->input_value = EMPTY;
@@ -119,14 +117,9 @@ void unit_restart(struct Unit* unit)
 	CHECK_IF_NULL(unit);
 	unit->value = (unit->type == REG_TYPE) ? 0 : EMPTY;
 	unit->input_value = EMPTY;
+	if (unit->drawable)
+		drawable_set_value(unit->drawable, &unit->value);
 }
-
-//void unit_draw(struct Unit* unit)
-//{
-//	CHECK_IF_NULL(unit);
-//	if (unit->drawable)
-//		drawable_set_value(unit->drawable, &unit->value);
-//}
 
 void unit_show(struct Unit* unit)
 {

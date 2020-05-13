@@ -793,11 +793,11 @@ struct Vector* file_compile_instructions(struct FileHandler* handler, struct Map
 			if (!error())
 			{
 				size_t tick_array_size;
-				struct Tick** tick_array = vector_unwrap(tick_vect, &tick_array_size);
+				struct Tick** tick_array = vector_convert_to_array(tick_vect, &tick_array_size);
 				tick_vect = NULL;
 				CHECK_IF_NULL(tick_array);
 				size_t cond_array_size;
-				struct ConditionalMap* cond_array = vector_unwrap(conditional_vect, &cond_array_size);
+				struct ConditionalMap* cond_array = vector_convert_to_array(conditional_vect, &cond_array_size);
 				conditional_vect = NULL;
 				CHECK_IF_NULL(cond_array);
 				unsigned empty_ticks_num = 0;
@@ -1042,7 +1042,7 @@ bool file_compile_program(const char* file_name, struct Vector* instr_vect, var 
 			} while (token = strtok_s(NULL, delim, &next_token));
 
 			size_t token_array_size;
-			char** token_array = vector_unwrap(token_vect, &token_array_size);
+			char** token_array = vector_convert_to_array(token_vect, &token_array_size);
 			token_vect = NULL;
 			unsigned token_index = 0;
 

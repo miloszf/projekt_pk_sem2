@@ -162,6 +162,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="canvas.h" />
+    <ClInclude Include="color.h" />
     <ClInclude Include="console.h" />
     <ClInclude Include="cpu.h" />
     <ClInclude Include="cpu_components.h" />

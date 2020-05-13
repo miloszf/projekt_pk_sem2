@@ -18,6 +18,8 @@ struct SignalInterrupts
 	struct Unit* reg_rp;
 	struct Unit* reg_ap;
 	bool* int_tag;
+	const var* intr_mask;
+	struct Drawable** buttons_array;
 };
 
 struct SignalInstruction
@@ -36,14 +38,24 @@ struct SignalBusConnection
 	const var* mask;
 };
 
+struct SignalIOHandling
+{
+	struct Unit* char_reg;
+	struct Unit* flag_reg;
+	struct Unit* address_reg;
+	const var* addr_mask;
+	char* in_buffer;
+	char* out_buffer;
+};
+
 var sig_read_from_memory(void*);
 var sig_write_to_memory(void*);
-//var sig_enable_interrupts(void*);
-//var sig_reset_interrupts(void*);
+var sig_enable_interrupts(void*);
+var sig_reset_interrupts(void*);
 var sig_stop(void*);
 var sig_load_instruction(void*);
 var sig_connect_buses(void*);
-// IO?
+var sig_io_handling(void*);
 
 var sig_pass(var value, var mask);
 var sig_increment(var value, var mask);

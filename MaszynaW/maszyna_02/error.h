@@ -32,7 +32,6 @@ typedef Error UserErrorType;
 #define RUNTIME_ERROR	 0x2000
 
 typedef Error CompilationError;
-//#define COMPILATION_ERROR	0x007F
 #define NO_FILE				0x0001
 #define MISSING_INPUT		0x0002
 #define INVALID_INPUT		0x0004
@@ -42,17 +41,18 @@ typedef Error CompilationError;
 #define LOST_TICK			0x0040
 
 typedef Error RuntimeError;
-//#define RUNTIME_ERROR		0x000F
 #define CPU_STOPPED			0x0001
 #define UNKNOWN_INSTRUCTION	0x0002
 #define ALREADY_SET			0x0004
 #define EMPTY_UNIT			0x0008
+#define INVALID_IO_ADDRESS	0x0010
 
 Error error();
-Error error_msg(const char** message);
+const char* error_msg();
 void instr_error_set(CompilationError error, const char* arg);
 void prog_error_set(CompilationError error, const char* arg);
 void runtime_error_set(RuntimeError error, const char* arg);
+void error_reset();
 
 void* malloc_s(size_t size);
 void* calloc_s(size_t count, size_t size);
