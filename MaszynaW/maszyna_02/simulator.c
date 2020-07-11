@@ -81,6 +81,9 @@ struct UserInput simulator_get_events(struct Vector* events_vect)
 			case F10_KEY:
 				new_input.new_state = RELOAD_PROGRAM;
 				break;
+			case ENTER_KEY:
+				new_input.chr = '\n';
+				break;
 			default:
 				break;
 			}
@@ -108,9 +111,10 @@ void simulator_run(int argc, char** argv)
 	sim.cpu_io_buffer.out = '\0';
 	sim.cpu = cpu_init(cpu_canvas, &sim.cpu_io_buffer.in, &sim.cpu_io_buffer.out);
 	sim.err_console = console_init(err_console_canvas, POINT(0, 0), POINT(40, 16)); // 40, 16
+	//sim.err_console = console_init(err_console_canvas, POINT(0, 0), POINT(12, 5)); // 40, 16
 	drawable_new_frame(io_console_canvas, POINT(0, 0), POINT(40, 16));
-	sim.in_console = console_init(io_console_canvas, POINT(1, 1), POINT(38, 3)); // POINT(38, 3)
-	sim.out_console = console_init(io_console_canvas, POINT(1, 3), POINT(38, 12)); // POINT(38, 12)
+	sim.in_console = console_init(io_console_canvas, POINT(1, 1), POINT(38, 4)); // POINT(38, 3)
+	sim.out_console = console_init(io_console_canvas, POINT(1, 4), POINT(38, 12)); // POINT(38, 12)
 
 	SimState state = INIT;
 
@@ -267,15 +271,26 @@ void simulator_run(int argc, char** argv)
 
 		if (user_input.chr)
 		{
-			char str[2] = "";
-			*str = user_input.chr;
-			console_print(sim.in_console, str);
+			char str[] = { user_input.chr, '\0' };
+			if (user_input.chr == '`')
+			{
+				int chr = console_get_char(sim.in_console);
+				if (chr != EOL)
+				{
+					*str = chr;
+					console_print(sim.out_console, str);
+				}	
+			}
+			else
+			{
+				console_print(sim.in_console, str);
+				//console_print(sim.err_console, str);
+			}
 		}
 
 		if (log_error)
 		{
 			console_print(sim.err_console, error_msg());
-			//printf("\a");
 			log_error = false;
 		}
 

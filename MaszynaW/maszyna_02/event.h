@@ -67,6 +67,7 @@ struct Vector* event_get(struct Terminal* term);
 #define F10_KEY	(char)(0x0A | CONTROL_KEY)
 #define F11_KEY	(char)(0x0B | CONTROL_KEY)
 #define F12_KEY	(char)(0x0C | CONTROL_KEY)
+#define ENTER_KEY 13
 #define ESC_KEY	27
 
 #endif

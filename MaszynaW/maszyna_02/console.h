@@ -3,6 +3,8 @@
 
 #include "settings.h"
 
+#define EOL -1
+
 struct Console;
 
 struct Console* console_init(struct Canvas* canvas, Point position, Point size);
@@ -10,7 +12,7 @@ struct Console* console_init(struct Canvas* canvas, Point position, Point size);
 //void scroll(struct Console* console);
 
 void console_print(struct Console* console, const char* text);
-char console_get_char(struct Console* console);
+int console_get_char(struct Console* console);
 void console_clear(struct Console* console);
 void console_delete(struct Console* console);
 

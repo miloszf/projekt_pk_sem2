@@ -412,10 +412,10 @@ var value_set_text_field(struct Drawable* drawable, void* value_ptr)
 	}
 }*/
 
-struct Drawable* drawable_new_text_field(struct Canvas* canvas, Point position, Point size, wchar*** line_ptr_array)
+struct Drawable* drawable_new_text_field(struct Canvas* canvas, Point position, Point size, wchar** line_array)
 {
 	CHECK_IF_NULL(canvas);
-	CHECK_IF_NULL(line_ptr_array);
+	CHECK_IF_NULL(line_array);
 
 	struct Drawable* new_drawable;
 	if (size.x && size.y)
@@ -431,13 +431,11 @@ struct Drawable* drawable_new_text_field(struct Canvas* canvas, Point position, 
 			.position = POINT(0, i),
 			.orientation = HORIZONTAL,
 			.color = COLOR_FGND_DEFAULT,
-			.text = (struct Text){ *(line_ptr_array[i]) }
+			.text = (struct Text){ line_array[i] }
 			};
 			// NIEBEZPIECZNE!!!!!!!!
 			// POPRAWIÆ!
 			struct Primitive* prim_ptr = vector_push(new_drawable->primitive_vect, &new_line);
-			//CHECK_IF_NULL(prim_ptr);
-			line_ptr_array[i] = &prim_ptr->text.string;
 		}
 		new_drawable->is_visible = true;
 		//new_drawable->set_value = &value_set_text_field;

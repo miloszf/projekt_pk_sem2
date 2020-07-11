@@ -55,7 +55,7 @@ struct Drawable* drawable_new_signal(struct DrawableSignalInit* init, const char
 struct Drawable* drawable_new_memory(struct DrawableMemoryInit* init);
 
 struct Drawable* drawable_new_frame(struct Canvas* canvas, Point position, Point size);
-struct Drawable* drawable_new_text_field(struct Canvas* canvas, Point position, Point size, wchar*** line_ptr_array);
+struct Drawable* drawable_new_text_field(struct Canvas* canvas, Point position, Point size, wchar** line_array);
 struct Drawable* drawable_new_button(struct Canvas* canvas, Point position, Point size, const char* text, struct ColorSet* color_set);
 
 #endif
