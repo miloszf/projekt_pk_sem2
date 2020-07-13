@@ -80,8 +80,8 @@ var signal_set(struct Signal* signal)
 	{
 		struct SignalInitALU* init_struct = signal->init_struct;
 		CHECK_IF_NULL(init_struct);
-		var value_a = unit_read(init_struct->from);
-		var value_b = unit_read(init_struct->value_from);
+		var value_a = unit_read(init_struct->value_from);
+		var value_b = unit_read(init_struct->from);
 		if (value_a == EMPTY || value_b == EMPTY)
 			return_value = EMPTY;
 		else

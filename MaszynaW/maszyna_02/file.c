@@ -40,7 +40,10 @@ void file_handler_delete(struct FileHandler* handler)
 		{
 			char** line_ptr;
 			while (line_ptr = vector_pop(handler->instruction_lines_vect))
+			{
 				free(*line_ptr);
+				free(line_ptr);
+			}	
 			vector_delete(handler->instruction_lines_vect);
 		}
 			
@@ -366,7 +369,10 @@ struct Vector* get_instr_names(struct FileHandler* handler)
 	{
 		struct Instruction** instr_ptr;
 		while (instr_ptr = vector_pop(instr_vect))
+		{
 			instruction_delete(*instr_ptr);
+			free(instr_ptr);
+		}
 		vector_delete(instr_vect);
 		instr_vect = NULL;
 		//error_set(error);
@@ -719,7 +725,7 @@ struct Vector* file_compile_instructions(struct FileHandler* handler, struct Map
 						break;
 					}
 						
-					struct ConditionalMap c_map = { .tick = current_tick, .label_next = token };
+					struct ConditionalMap c_map = { .tick = current_tick, .label_next_if_true = token };
 
 					token = strtok_s(NULL, delim, &next_token);
 					COMPARE(token, "gdy");
@@ -742,7 +748,7 @@ struct Vector* file_compile_instructions(struct FileHandler* handler, struct Map
 						break;
 					}
 
-					c_map.label_next_if_true = token;
+					c_map.label_next = token;
 					vector_push(conditional_vect, &c_map);
 					token = strtok_s(NULL, delim, &next_token);
 					COMPARE(token, ";");
@@ -777,7 +783,7 @@ struct Vector* file_compile_instructions(struct FileHandler* handler, struct Map
 				{
 					if (!vector_size(current_tick->signal_vect) && !(current_tick->condition))
 					{
-						vector_pop(tick_vect);
+						free(vector_pop(tick_vect));
 						tick_delete(current_tick);
 						current_tick = NULL;
 					}
@@ -896,7 +902,10 @@ struct Vector* file_compile_instructions(struct FileHandler* handler, struct Map
 	{
 		struct Instruction** instr_ptr;
 		while (instr_ptr = vector_pop(instr_vect))
+		{
 			instruction_delete(*instr_ptr);
+			free(instr_ptr);
+		}
 		vector_delete(instr_vect);
 		instr_vect = NULL;
 		//error_set(error);
@@ -1005,8 +1014,6 @@ bool file_compile_program(const char* file_name, struct Vector* instr_vect, var 
 		instr_prop.args_num = 1;
 		map_push(instr_map, "rst", &instr_prop);
 	}
-
-
 	
 	for (unsigned line_index = 0; line_index < lines_number && !error(); line_index++)
 	{
@@ -1075,31 +1082,43 @@ bool file_compile_program(const char* file_name, struct Vector* instr_vect, var 
 					prog_error_set(INVALID_INPUT, token_array[token_index]);
 				else
 				{
-					//memory_ptr[memory_index++] = token_array[token_index++];
-					memory[memory_index] = instr_prop->code;
-					if (!instr_prop->args_num)
-						memory_index++;
+					if (memory_index >= memory_size)
+						prog_error_set(FULL_MEMORY, NULL);
 					else
-						for (token_index++; token_index < token_array_size; token_index++)
-						{
-							char* end;
-							long number = strtol(token_array[token_index], &end, 0);
-							if (end != token_array[token_index])
-								memory[memory_index] |= (number & instr_prop->value_mask);
-							else
-							{ 
-								char chr;
-								int read = sscanf_s(token_array[token_index], "'%c'", &chr, sizeof(chr));
-								if (read == 1)
-									memory[memory_index] |= (chr & instr_prop->value_mask);
+					{
+						memory[memory_index] = instr_prop->code;
+						if (!instr_prop->args_num)
+							memory_index++;
+						else
+							for (token_index++; token_index < token_array_size && !error(); token_index++)
+							{
+								if (memory_index >= memory_size)
+									prog_error_set(FULL_MEMORY, NULL);
 								else
 								{
-									struct SoughtLabel s_label = { token_array[token_index], memory_index };
-									vector_push(sought_label_vect, &s_label);
+									char* end;
+									long number = strtol(token_array[token_index], &end, 0);
+									// for a value/address given as a number
+									if (end != token_array[token_index])
+										memory[memory_index] |= (number & instr_prop->value_mask);
+									// for a value given as a character
+									else
+									{
+										char chr;
+										int read = sscanf_s(token_array[token_index], "'%c'", &chr, sizeof(chr));
+										if (read == 1)
+											memory[memory_index] |= (chr & instr_prop->value_mask);
+										// for an address given as a label
+										else
+										{
+											struct SoughtLabel s_label = { token_array[token_index], memory_index };
+											vector_push(sought_label_vect, &s_label);
+										}
+									}
+									memory_index++;
 								}
 							}
-							memory_index++;
-						}
+					}
 				}
 			}
 			free(token_array);
@@ -1117,6 +1136,7 @@ bool file_compile_program(const char* file_name, struct Vector* instr_vect, var 
 		//	nieistniej¹ca etykieta
 		else
 			memory[s_label_ptr->line] |= *label_index_ptr;
+		free(s_label_ptr);
 	}
 
 	// DEBUG
@@ -1130,7 +1150,10 @@ bool file_compile_program(const char* file_name, struct Vector* instr_vect, var 
 
 	char** line_ptr;
 	while (line_ptr = vector_pop(lines_vect))
+	{
 		free(*line_ptr);
+		free(line_ptr);
+	}
 	vector_delete(lines_vect);
 
 	//if (error)

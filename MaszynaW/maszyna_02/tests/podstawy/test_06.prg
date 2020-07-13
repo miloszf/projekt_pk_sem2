@@ -1,0 +1,37 @@
+// Test 06 - zdane
+// Wyszukiwanie najwiêkszej liczby w tablicy
+		POB PTR_0
+		£AD POB_A
+		POB ARRAY
+		£AD MAX
+		POB ARR_L
+LOOP:	£AD VAR_I
+		SOZ STOP
+POB_A:	POB ARRAY
+		ODE MAX
+		SOM CD
+		DOD MAX
+		£AD MAX
+CD:		POB POB_A
+		DOD CST_1
+		£AD POB_A
+		POB VAR_I
+		ODE CST_1
+		SOB LOOP
+		
+STOP:	STP
+
+
+CST_1:	RST 1
+ARR_L:	RST 7
+ARRAY:	RST 10
+		RST 11
+		RST 12
+		RST 13
+		RST 11
+		RST 257
+		RST 11
+PTR_0:	POB ARRAY
+VAR_I:	RPA
+MAX:	RPA
+	

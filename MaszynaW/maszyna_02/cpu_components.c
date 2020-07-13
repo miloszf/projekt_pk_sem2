@@ -342,8 +342,8 @@ void cpu_init_alu_signals(struct CPU* cpu, const Point offset, struct Canvas* ca
 		.type = SIGNAL_FROM_TO,
 		.name = "wyak",
 		.drawable_init = &drawable_signal_init,
-		.value.from_to.from = cpu->components.alu.comb_weja,
-		.value.from_to.to = cpu->components.alu.comb_weak,
+		.value.from_to.from = cpu->components.alu.reg_ak,
+		.value.from_to.to = cpu->components.addr.bus_s,
 		.value.from_to.mask_ptr = &cpu->word.word_mask,
 		.value.from_to.function = &sig_pass
 	};
@@ -1111,8 +1111,7 @@ void cpu_init_io_signals(struct CPU* cpu, Point offset, struct Canvas* canvas)
 		.flag_reg = cpu->components.io.reg_g,
 		.address_reg = cpu->components.addr.reg_i,
 		.addr_mask = &cpu->word.addr_mask,
-		.in_buffer = cpu->peripherals.in_buffer,
-		.out_buffer = cpu->peripherals.out_buffer
+		.handler = &cpu->peripherals.cpu_io_handler
 	};
 	drawable_signal_init = (struct DrawableSignalInit){
 		.canvas = canvas,

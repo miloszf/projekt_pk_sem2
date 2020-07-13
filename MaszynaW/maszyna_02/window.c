@@ -176,7 +176,10 @@ void window_delete(struct Window* window)
 	free(window->buffer);
 	struct Canvas** canvas;
 	while (canvas = vector_pop(window->canvas_vect))
+	{
 		canvas_delete(*canvas);
+		free(canvas);
+	}
 	vector_delete(window->canvas_vect);
 	free(window);
 }

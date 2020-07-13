@@ -44,8 +44,7 @@ struct SignalIOHandling
 	struct Unit* flag_reg;
 	struct Unit* address_reg;
 	const var* addr_mask;
-	char* in_buffer;
-	char* out_buffer;
+	struct CPU_IO_Handler* handler;
 };
 
 var sig_read_from_memory(void*);

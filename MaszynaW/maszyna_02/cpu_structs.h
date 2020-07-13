@@ -2,6 +2,7 @@
 #define CPU_STRUCTS_H
 
 #include <stdbool.h>
+#include "cpu.h"
 #include "settings.h"
 
 struct CPUPreference
@@ -178,8 +179,7 @@ struct CPURuntime
 
 struct CPUPeripherals
 {
-	char* in_buffer;
-	char* out_buffer;
+	struct CPU_IO_Handler cpu_io_handler;
 	struct Drawable* buttons_array[CPU_INTERRUPTS_NUMBER];
 	var buttons_set;
 };

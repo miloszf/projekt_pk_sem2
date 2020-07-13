@@ -21,14 +21,14 @@ bool cpu_tag_update(struct CPUTag* tag, struct CPU* cpu)
 	{
 		var value = unit_read(cpu->components.alu.reg_ak);
 		if (value != EMPTY)
-			return_value = value & (cpu->word.word_mask >> 1);
+			return_value = value & (cpu->word.word_mask - (cpu->word.word_mask >> 1));
 		else
 			return_value = false;
 	}
 	break;
 	case TAG_ZAK:
 	{
-		return_value = unit_read(cpu->components.alu.reg_ak);
+		return_value = !unit_read(cpu->components.alu.reg_ak);
 	}
 	break;
 	case TAG_V:
@@ -97,7 +97,10 @@ void cpu_memory_update(struct CPUMemory* memory, struct Vector* instr_vect)
 
 	const char** name_ptr;
 	while (name_ptr = vector_pop(memory->instr_names_vect))
+	{
 		free((char*)*name_ptr);
+		free(name_ptr);
+	}
 
 	size_t vect_size = vector_size(instr_vect);
 	for (unsigned i = 0; i < vect_size; i++)
@@ -122,7 +125,11 @@ void cpu_memory_delete(struct CPUMemory* memory)
 	{
 		const char** name_ptr;
 		while (name_ptr = vector_pop(memory->instr_names_vect))
+		{
 			free((char*)*name_ptr);
+			free(name_ptr);
+		}
+			
 		vector_delete(memory->instr_names_vect);
 		free(memory->memory_array);
 		free(memory);

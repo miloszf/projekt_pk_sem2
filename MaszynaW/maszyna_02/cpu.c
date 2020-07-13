@@ -4,6 +4,7 @@
 // DEBUG
 #include <stdio.h>
 
+#include "cpu.h"
 #include "cpu_structs.h"
 #include "cpu_components.h"
 #include "cpu_setup.h"
@@ -18,7 +19,7 @@
 #include "instruction.h"
 #include "color.h"
 
-struct CPU* cpu_init(struct Canvas* canvas, char* input_buffer, char* output_buffer)
+struct CPU* cpu_init(struct Canvas* canvas, struct CPU_IO_Handler cpu_io_handler)
 {
 	CHECK_IF_NULL(canvas);
 
@@ -30,7 +31,7 @@ struct CPU* cpu_init(struct Canvas* canvas, char* input_buffer, char* output_buf
 	cpu->word = cpu_word_init();
 	cpu->memory = cpu_memory_init(canvas, POINT(47, 12), &cpu->word.addr_len);
 	cpu->runtime = (struct CPURuntime){ NULL, NULL, false };
-	cpu->peripherals = (struct CPUPeripherals){ input_buffer, output_buffer };
+	cpu->peripherals = (struct CPUPeripherals){ cpu_io_handler };
 	struct ColorSet buttons_color_set = {
 		.f_default = 0,
 		.b_default = BACKGROUND_INTENSITY,
@@ -104,6 +105,8 @@ bool cpu_import_instructions(struct CPU* cpu, const char* file_name)
 		map_push(setup_map, key, &value_ptr);
 	}
 
+
+
 	if (file_import_setup(file_name, files_handler, setup_map))
 	{
 		if (cpu->vector.units)
@@ -156,6 +159,17 @@ bool cpu_import_instructions(struct CPU* cpu, const char* file_name)
 		}
 
 		//struct Vector* instr_vect = file_compile_instructions(files_handler, signal_map, tag_map);
+		if (cpu->vector.instructions)
+		{
+			struct Instruction** instr_ptr;
+			while (instr_ptr = vector_pop(cpu->vector.instructions))
+			{
+				instruction_delete(*instr_ptr);
+				free(instr_ptr);
+			}
+			vector_delete(cpu->vector.instructions);
+		}
+			
 		cpu->vector.instructions = file_compile_instructions(files_handler, signal_map, tag_map);
 		//if (!cpu->vector.instructions)
 			//error = ERROR;
@@ -277,7 +291,7 @@ void* cpu_tick(struct CPU* cpu)
 			}
 		}
 
-		if (!current_array_size)
+		if (!current_array_size && signal_ptr_array_size)
 			runtime_error_set(EMPTY_UNIT, NULL);
 			//error = ERROR_EMPTY_UNIT;
 		free(signal_ptr_array);
@@ -358,8 +372,6 @@ void cpu_reset(struct CPU* cpu)
 	cpu->runtime.stop = false;
 	for (int index = 0; index < CPU_TAGS_NUMBER; index++)
 		cpu->components.tags.list[index].value = false;
-	*cpu->peripherals.in_buffer = '\0';
-	*cpu->peripherals.out_buffer = '\0';
 	//for (int index = 0; index < CPU_INTERRUPTS_NUMBER; index++)
 	// BUTTONS RESET
 		//drawable_set_value()
@@ -377,7 +389,11 @@ void cpu_delete(struct CPU* cpu)
 		// delete instructions
 		struct Instruction** instr_ptr;
 		while (instr_ptr = vector_pop(cpu->vector.instructions))
+		{
 			instruction_delete(*instr_ptr);
+			free(instr_ptr);
+		}
+			
 		vector_delete(cpu->vector.instructions);
 		cpu->vector.instructions = NULL;
 		// delete units & signals
@@ -385,7 +401,9 @@ void cpu_delete(struct CPU* cpu)
 		vector_delete(cpu->vector.units);
 		// delete memory
 		cpu_memory_delete(cpu->memory);
-		//free(cpu->memory);
+		// delete periperals tokens
+		free(cpu->peripherals.cpu_io_handler.input_token);
+		free(cpu->peripherals.cpu_io_handler.output_token);
 
 		free(cpu);
 	}

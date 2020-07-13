@@ -1,0 +1,62 @@
+// Test 08 - zdane
+// Odwracanie tablicy o znanej d³ugoœci (ABCDE->EDCBA)
+		POB £AD_0
+		ODE POB_P
+		£AD £AD_P
+		POB POB_P
+		£AD P_ADR
+		DOD ARR_L
+		ODE CST_1
+		£AD P_ADRN
+		POB ARR_L
+LOOP:	£AD VAR_I
+		SOZ STOP
+		SOM STOP
+P_ADR:	RPA
+		£AD TEMP
+P_ADRN:	RPA
+		£AD TEMP2
+		POB P_ADR
+		DOD £AD_P
+		£AD £_ADR
+		POB TEMP2
+£_ADR:	RPA
+		POB P_ADRN
+		DOD £AD_P
+		£AD £_ADRN
+		POB TEMP
+£_ADRN:	RPA
+		POB P_ADR
+		DOD CST_1
+		£AD P_ADR
+		POB P_ADRN
+		ODE CST_1
+		£AD P_ADRN
+		POB VAR_I
+		ODE CST_1
+		ODE CST_1
+		SOB LOOP
+STOP:	STP
+
+CST_1:	RST 1
+ARR_L:	RST 6
+ARRAY:	RST 'A'
+		RST 'B'
+		RST 'C'
+		RST 'D'
+		RST 'E'
+		RST 'F'
+//ARRAY:	RST 10
+//		RST 11
+//		RST 12
+//		RST 13
+//		RST 14
+//		RST 15
+POB_P:	POB ARRAY
+£AD_0:	£AD ARRAY
+£AD_P:	RPA
+VAR_I:	RPA
+TEMP:	RPA
+TEMP2: 	RPA
+
+	

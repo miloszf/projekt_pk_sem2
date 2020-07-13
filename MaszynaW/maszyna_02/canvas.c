@@ -37,7 +37,10 @@ void canvas_delete(struct Canvas* canvas)
 {
 	struct Drawable** draw;
 	while (draw = vector_pop(canvas->drawable_vect))
+	{
 		drawable_delete(*draw);
+		free(draw);
+	}
 	vector_delete(canvas->drawable_vect);
 	free(canvas);
 }

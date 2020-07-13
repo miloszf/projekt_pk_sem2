@@ -22,11 +22,6 @@ struct Simulator
 	struct Console* err_console;
 	struct Console* in_console;
 	struct Console* out_console;
-	struct
-	{
-		char in;
-		char out;
-	} cpu_io_buffer;
 };
 
 typedef enum { READY, INIT, EXIT, CLEAR, TICK, INSTR, PROGRAM, RELOAD_INSTR, RELOAD_PROGRAM} SimState;
@@ -44,23 +39,16 @@ struct UserInput simulator_get_events(struct Vector* events_vect)
 	CHECK_IF_NULL(events_vect);
 	struct UserInput new_input = { READY, 0, 0, '\0' };
 	struct InputEvent* event_ptr;
-	while (event_ptr = vector_pop(events_vect))
+	while ((event_ptr = vector_pop(events_vect)) && new_input.new_state != EXIT)
 	{
 		if (event_ptr->type == EVENT_KEY && event_ptr->key_event.key_down)
 		{
 			if (event_ptr->key_event.key == ESC_KEY)
-			{
 				new_input.new_state = EXIT;
-				break;
-			}
 			else if (event_ptr->key_event.key >= F1_KEY && event_ptr->key_event.key <= F4_KEY)
-			{
 				new_input.interrupts |= 1 << (INTERRUPTS_NUMBER - (event_ptr->key_event.key - F1_KEY + 1));
-			}
 			else if (event_ptr->key_event.key >= ' ' && event_ptr->key_event.key < CONTROL_KEY)
-			{
 				new_input.chr = event_ptr->key_event.key;
-			}
 			else switch (event_ptr->key_event.key)
 			{
 			case F5_KEY:
@@ -88,13 +76,31 @@ struct UserInput simulator_get_events(struct Vector* events_vect)
 				break;
 			}
 		}
-		else if (event_ptr->type == EVENT_MOUSE)
-		{ 
+		else if (event_ptr->type == EVENT_MOUSE) 
 			new_input.mouse_scroll += event_ptr->mouse_event.scroll;
-		}
+		free(event_ptr);
 	}
 	vector_delete(events_vect);
 	return new_input;
+}
+
+struct CPU_IO_Token
+{
+	struct Console* console;
+};
+
+char simulator_console_to_cpu(struct CPU_IO_Token* token)
+{
+	int chr = console_get_char(token->console);
+	return (chr == EOL) ? 0 : (char)chr;
+}
+
+void simulator_cpu_to_console(struct CPU_IO_Token* token, char chr)
+{
+	if (chr == 10 || chr == 13)
+		chr = '\n';
+	char str[] = { chr, '\0' };
+	console_print(token->console, str);
 }
 
 void simulator_run(int argc, char** argv)
@@ -107,20 +113,23 @@ void simulator_run(int argc, char** argv)
 	struct Canvas* cpu_canvas = window_new_canvas(sim.window, (Point) { 0, 0 }, (Point) { 73, 31 });
 	struct Canvas* err_console_canvas = window_new_canvas(sim.window, (Point) { 72, 0 }, (Point) { 40, 16 });
 	struct Canvas* io_console_canvas = window_new_canvas(sim.window, (Point) { 72, 15 }, (Point) { 40, 16 });
-	sim.cpu_io_buffer.in = '\0';
-	sim.cpu_io_buffer.out = '\0';
-	sim.cpu = cpu_init(cpu_canvas, &sim.cpu_io_buffer.in, &sim.cpu_io_buffer.out);
 	sim.err_console = console_init(err_console_canvas, POINT(0, 0), POINT(40, 16)); // 40, 16
 	//sim.err_console = console_init(err_console_canvas, POINT(0, 0), POINT(12, 5)); // 40, 16
 	drawable_new_frame(io_console_canvas, POINT(0, 0), POINT(40, 16));
 	sim.in_console = console_init(io_console_canvas, POINT(1, 1), POINT(38, 4)); // POINT(38, 3)
-	sim.out_console = console_init(io_console_canvas, POINT(1, 4), POINT(38, 12)); // POINT(38, 12)
+	sim.out_console = console_init(io_console_canvas, POINT(1, 4), POINT(38, 11)); // POINT(38, 12)
+	struct CPU_IO_Token* in_token = malloc_s(sizeof(struct CPU_IO_Token));
+	*in_token = (struct CPU_IO_Token){ sim.in_console };
+	struct CPU_IO_Token* out_token = malloc_s(sizeof(struct CPU_IO_Token));
+	*out_token = (struct CPU_IO_Token){ sim.out_console };
+	struct CPU_IO_Handler cpu_io_handler = { &simulator_console_to_cpu, in_token, &simulator_cpu_to_console, out_token };
+	sim.cpu = cpu_init(cpu_canvas, cpu_io_handler);
 
 	SimState state = INIT;
 
 	// DEBUG
-	const char instr_file_name[] = "MaszynaW.lst";
-	const char prog_file_name[] = "program.prg";
+	const char instr_file_name[] = "tests/MaszynaW.lst";
+	const char prog_file_name[] = "tests/test_10.prg";
 
 	while (state != EXIT)
 	{
@@ -145,6 +154,7 @@ void simulator_run(int argc, char** argv)
 			}
 			redraw = true;
 			state = READY;
+			//state = EXIT;
 		}
 		break;
 		case READY:
@@ -181,7 +191,7 @@ void simulator_run(int argc, char** argv)
 					redraw = true;
 				}
 			}
-			
+			//state = EXIT;
 		}
 		break;
 		case EXIT:
@@ -192,9 +202,11 @@ void simulator_run(int argc, char** argv)
 			if (!cpu_import_instructions(sim.cpu, instr_file_name) || !cpu_import_program(sim.cpu, prog_file_name))
 			{
 				log_error = true;
+				state = READY;
 			}
+			else
+				state = CLEAR;
 			redraw = true;
-			state = READY;
 		}
 		break;
 		case RELOAD_PROGRAM:
@@ -203,9 +215,11 @@ void simulator_run(int argc, char** argv)
 			if (!cpu_import_program(sim.cpu, prog_file_name))
 			{
 				log_error = true;
+				state = READY;
 			}
+			else
+				state = CLEAR;
 			redraw = true;
-			state = READY;
 		}
 		break;
 		case CLEAR:
@@ -309,5 +323,6 @@ void simulator_run(int argc, char** argv)
 	cpu_delete(sim.cpu);
 	window_delete(sim.window);
 	terminal_del(sim.terminal);
+	_debug_error_delete();
 }
 

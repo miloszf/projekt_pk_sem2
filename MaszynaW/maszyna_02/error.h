@@ -39,6 +39,7 @@ typedef Error CompilationError;
 #define UNKNOWN_LABEL		0x0010
 #define REPEATED_LABEL		0x0020
 #define LOST_TICK			0x0040
+#define FULL_MEMORY			0x0080
 
 typedef Error RuntimeError;
 #define CPU_STOPPED			0x0001
@@ -57,5 +58,7 @@ void error_reset();
 void* malloc_s(size_t size);
 void* calloc_s(size_t count, size_t size);
 void* realloc_s(void* ptr, size_t new_size);
+
+void _debug_error_delete();
 
 #endif

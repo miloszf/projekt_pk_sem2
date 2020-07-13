@@ -4,22 +4,22 @@
 #include "vector.h"
 #include "error.h"
 
-#define CHUNK_SIZE 4 
-
 struct Vector
 {
 	size_t el_size;
 	size_t el_number;
-	size_t array_size;
-	void** ptr_array;
+	struct Node
+	{
+		void* value_ptr;
+		struct Node* next;
+		struct Node* prev;
+	} *head, *tail;
 };
 
 struct Vector* vector_init(size_t element_size)
 {
 	struct Vector* new_vect = malloc_s(sizeof(struct Vector));
-	*new_vect = (struct Vector){ element_size, 0, CHUNK_SIZE };
-	new_vect->ptr_array = malloc_s(sizeof(void*));
-	*new_vect->ptr_array = malloc_s(CHUNK_SIZE * new_vect->el_size);
+	*new_vect = (struct Vector){ element_size, 0, NULL, NULL };
 	return new_vect;
 }
 
@@ -28,28 +28,62 @@ void* vector_push(struct Vector* vect, void* value_ptr)
 	CHECK_IF_NULL(vect);
 	CHECK_IF_NULL(value_ptr);
 
-	if (vect->el_number >= vect->array_size)
+	void* new_value_ptr = malloc(vect->el_size);
+	memcpy(new_value_ptr, value_ptr, vect->el_size);
+	if (vect->head)
 	{
-		vect->array_size += CHUNK_SIZE;
-		size_t ptr_array_new_size = vect->array_size / CHUNK_SIZE;
-		vect->ptr_array = realloc_s(vect->ptr_array, sizeof(void*) * ptr_array_new_size);
-		vect->ptr_array[ptr_array_new_size - 1] = malloc_s(CHUNK_SIZE * vect->el_size);
+		vect->tail->next = malloc_s(sizeof(struct Node));
+		*vect->tail->next = (struct Node){ new_value_ptr, NULL, vect->tail };
+		vect->tail = vect->tail->next;
 	}
-
-	void* dest = (char*)(vect->ptr_array[vect->el_number / CHUNK_SIZE]) + (vect->el_size * (vect->el_number % CHUNK_SIZE));
-	memcpy(dest, value_ptr, vect->el_size);
+	else
+	{
+		vect->head = malloc_s(sizeof(struct Node));
+		*vect->head = (struct Node){ new_value_ptr, NULL, NULL };
+		vect->tail = vect->head;
+	}
 	vect->el_number++;
-	return dest;
+	return vect->tail->value_ptr;
 }
 
 void* vector_pop(struct Vector* vect)
 {
-	CHECK_IF_NULL(vect);
+	//debug
+	if (!vect)
+		return NULL;
+		//CHECK_IF_NULL(vect);
+	void* return_ptr;
 	if (vect->el_number)
 	{
+		return_ptr = vect->tail->value_ptr;
 		vect->el_number--;
-		//return (char*)vect->array + (vect->el_size * vect->el_number);
-		return (char*)(vect->ptr_array[vect->el_number / CHUNK_SIZE]) + (vect->el_size * (vect->el_number % CHUNK_SIZE));
+		if (vect->el_number)
+		{
+			vect->tail = vect->tail->prev;
+			free(vect->tail->next);
+			vect->tail->next = NULL;
+		}
+		else
+		{
+			free(vect->tail);
+			vect->tail = NULL;
+			vect->head = NULL;
+		}
+	}
+	else
+		return_ptr =  NULL;
+	return return_ptr;
+}
+
+struct Node* vector_find(struct Vector* vect, size_t index)
+{
+	CHECK_IF_NULL(vect);
+	if (index < vect->el_number)
+	{
+		struct Node* node = vect->head;
+		while (index--)
+			node = node->next;
+		return node;
 	}
 	else
 		return NULL;
@@ -57,13 +91,11 @@ void* vector_pop(struct Vector* vect)
 
 void* vector_write(struct Vector* vect, size_t index, void* value_ptr)
 {
-	CHECK_IF_NULL(vect);
-	if (index < vect->el_number)
+	struct Node* node = vector_find(vect, index);
+	if (node)
 	{
-		//void* dest = (char*)vect->array + (vect->el_size * index);
-		void* dest = (char*)(vect->ptr_array[index / CHUNK_SIZE]) + (vect->el_size * (index % CHUNK_SIZE));
-		memcpy(dest, value_ptr, vect->el_size);
-		return dest;
+		memcpy(node->value_ptr, value_ptr, vect->el_size);
+		return node->value_ptr;
 	}
 	else
 		return NULL;
@@ -71,8 +103,11 @@ void* vector_write(struct Vector* vect, size_t index, void* value_ptr)
 
 void* vector_read(struct Vector* vect, size_t index)
 {
-	CHECK_IF_NULL(vect);
-	return (index < vect->el_number) ? (char*)(vect->ptr_array[index / CHUNK_SIZE]) + (vect->el_size * (index % CHUNK_SIZE)) : NULL;
+	struct Node* node = vector_find(vect, index);
+	if (node)
+		return node->value_ptr;
+	else
+		return NULL;
 }
 
 size_t vector_size(struct Vector* vect)
@@ -86,11 +121,10 @@ void* vector_convert_to_array(struct Vector* vect, size_t* size)
 	CHECK_IF_NULL(vect);
 	if (size)
 		*size = vect->el_number;
-	void* new_array = malloc_s(vect->el_size * vect->array_size);
-	for (unsigned i = 0; i < (vect->array_size / CHUNK_SIZE); i++)
-	{
-		memcpy((char*)new_array + (i * CHUNK_SIZE * vect->el_size), vect->ptr_array[i], (vect->el_size * CHUNK_SIZE));
-	}
+	void* new_array = malloc_s(vect->el_size * vect->el_number);
+	struct Node* iter = vect->head;
+	for (unsigned i = 0; iter; i += vect->el_size, iter = iter->next)
+		memcpy((char*)new_array + i, iter->value_ptr, vect->el_size);
 	vector_delete(vect);
 	return new_array;
 }
@@ -98,14 +132,9 @@ void* vector_convert_to_array(struct Vector* vect, size_t* size)
 struct Vector* vector_copy(struct Vector* vect)
 {
 	CHECK_IF_NULL(vect);
-	struct Vector* new_vect = malloc_s(sizeof(struct Vector));
-	*new_vect = (struct Vector){ vect->el_size, vect->el_number, vect->array_size };
-	new_vect->ptr_array = malloc_s(sizeof(void*) * vect->array_size / CHUNK_SIZE);
-	for (unsigned i = 0; i < (vect->array_size / CHUNK_SIZE); i++)
-	{
-		new_vect->ptr_array[i] = malloc_s(vect->el_size * CHUNK_SIZE);
-		memcpy(new_vect->ptr_array[i], vect->ptr_array[i], vect->el_size * CHUNK_SIZE);
-	}
+	struct Vector* new_vect = vector_init(vect->el_size);
+	for (struct Node* iter = vect->head; iter; iter = iter->next)
+		vector_push(new_vect, iter->value_ptr);
 	return new_vect;
 }
 
@@ -113,9 +142,13 @@ void vector_delete(struct Vector* vect)
 {
 	if (vect)
 	{
-		for (unsigned i = 0; i < (vect->array_size / CHUNK_SIZE); i++)
-			free(vect->ptr_array[i]);
-		free(vect->ptr_array);
+		while (vect->head)
+		{
+			struct Node* iter = vect->head->next;
+			free(vect->head->value_ptr);
+			free(vect->head);
+			vect->head = iter;
+		}
 		free(vect);
 	}
 }

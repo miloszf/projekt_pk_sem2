@@ -36,7 +36,8 @@ struct ErrorStruct* get_error()
 void log_at_exit(void)
 {
 	printf("%s", crash_log_msg);
-	free(get_error());
+	//debug
+	//free(get_error());
 }
 
 void init_crash_log()
@@ -103,6 +104,14 @@ const char* error_msg()
 	return error->msg;
 }
 
+unsigned log2(unsigned num)
+{
+	unsigned log = 0;
+	while (num = num >> 1)
+		log++;
+	return log;
+}
+
 void error_set(UserErrorType err_type, Error error, const char* arg)
 {
 	struct ErrorStruct* error_s = get_error();
@@ -118,13 +127,14 @@ void error_set(UserErrorType err_type, Error error, const char* arg)
 		"%s missing line in section \"%s\"\n",
 		"%s unknown label \"%s\"\n",
 		"%s repated label \"%s\"\n",
-		"%s instruction \"%s\" has a line which won't be reached\n"
+		"%s instruction \"%s\" has a line which won't be reached\n",
+		"%s not enough memory for a program, increase number of address bits\n"
 	};
 	const char* runtime_format_array[] = {
 		"already stopped\n",
 		"%s unknown instruction\n",
-		"\"%s\" execution failed - output already set\n",
-		"\"%s\" execution failed - input in not set\n",
+		"%s execution failed - output already set\n",
+		"%s execution failed - input in not set\n",
 		"%s invalid io address\n",
 	};
 	const char empty[] = "";
@@ -145,27 +155,33 @@ void error_set(UserErrorType err_type, Error error, const char* arg)
 	case RUNTIME_ERROR:
 	{
 		header = instr_err_str;
-		switch (error)
-		{
-		case CPU_STOPPED:
-			format = runtime_format_array[0];
-			break;
-		case UNKNOWN_INSTRUCTION:
-			format = runtime_format_array[1];
-			break;
-		case ALREADY_SET:
-			format = runtime_format_array[2];
-			break;
-		case EMPTY_UNIT:
-			format = runtime_format_array[3];
-			break;
-		case INVALID_IO_ADDRESS:
-			format = runtime_format_array[4];
-			break;
-		default:
+		unsigned index = log2(error);
+		if (index < (sizeof(runtime_format_array) / sizeof(char*)))
+			format = runtime_format_array[index];
+		else
 			CRASH_LOG(LOG_UNKNOWN_VALUE);
-			break;
-		}
+
+		//switch (error)
+		//{
+		//case CPU_STOPPED:
+		//	format = runtime_format_array[0];
+		//	break;
+		//case UNKNOWN_INSTRUCTION:
+		//	format = runtime_format_array[1];
+		//	break;
+		//case ALREADY_SET:
+		//	format = runtime_format_array[2];
+		//	break;
+		//case EMPTY_UNIT:
+		//	format = runtime_format_array[3];
+		//	break;
+		//case INVALID_IO_ADDRESS:
+		//	format = runtime_format_array[4];
+		//	break;
+		//default:
+		//	CRASH_LOG(LOG_UNKNOWN_VALUE);
+		//	break;
+		//}
 	}
 	break;
 	default:
@@ -174,7 +190,14 @@ void error_set(UserErrorType err_type, Error error, const char* arg)
 	}
 
 	if (err_type == INSTR_COMP_ERROR || err_type == PROG_COMP_ERROR)
-		switch (error)
+	{
+		unsigned index = log2(error);
+		if (index < (sizeof(comp_format_array) / sizeof(char*)))
+			format = comp_format_array[index];
+		else
+			CRASH_LOG(LOG_UNKNOWN_VALUE);
+	}
+		/*switch (error)
 		{
 		case NO_FILE:
 			format = comp_format_array[0];
@@ -200,7 +223,7 @@ void error_set(UserErrorType err_type, Error error, const char* arg)
 		default:
 			CRASH_LOG(LOG_UNKNOWN_VALUE);
 			break;
-		}
+		}*/
 
 	size_t new_msg_len = strlen(format) + strlen(header) + strlen(arg) + 1;
 	char* new_msg = malloc_s(new_msg_len);
@@ -232,6 +255,16 @@ void error_reset()
 	CHECK_IF_NULL(error);
 	free((char*)error->msg);
 	*error = (struct ErrorStruct){ 0, NULL };
+}
+
+void _debug_error_delete()
+{
+	struct ErrorStruct* error = get_error();
+	if (error)
+	{
+		free(error->msg);
+		free(error);
+	}
 }
 
 void* malloc_s(size_t size)

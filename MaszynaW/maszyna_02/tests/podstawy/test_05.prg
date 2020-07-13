@@ -1,0 +1,43 @@
+// Test 05 - zdane
+//Obliczanie liczby wyst¹pieñ okreœlonej wartoœci w tablicy
+		POB PTR_0
+		£AD POB_A
+		POB CST_1
+		ODE CST_1
+		£AD COUNT
+		POB ARR_L
+		£AD VAR_I
+LOOP:	SOZ STOP
+POB_A:	POB ARRAY
+		ODE CHAR
+		SOZ EQUAL
+		SOB CD
+		
+EQUAL:	POB COUNT
+		DOD CST_1
+		£AD COUNT
+		
+CD:		POB POB_A
+		DOD CST_1
+		£AD POB_A
+		POB VAR_I
+		ODE CST_1
+		£AD VAR_I
+		SOB LOOP
+		
+STOP:	STP
+
+
+CST_1:	RST 1
+ARR_L:	RST 7
+CHAR:	RST 12
+ARRAY:	RST 10
+		RST 11
+		RST 12
+		RST 13
+		RST 11
+		RST 12
+		RST 11
+PTR_0:	POB ARRAY
+VAR_I:	RPA
+COUNT:	RPA

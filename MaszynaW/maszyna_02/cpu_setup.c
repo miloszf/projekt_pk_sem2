@@ -30,11 +30,17 @@ void cpu_preference_delete(struct CPUPreference* pref)
 		free((char*)pref->name);
 		struct Unit** unit_ptr;
 		while (unit_ptr = vector_pop(pref->unit_vect))
+		{
 			unit_delete(*unit_ptr);
+			free(unit_ptr);
+		}
 		vector_delete(pref->unit_vect);
 		struct Signal** signal_ptr;
 		while (signal_ptr = vector_pop(pref->signal_vect))
+		{
 			signal_delete(*signal_ptr);
+			free(signal_ptr);
+		}
 		vector_delete(pref->signal_vect);
 	}
 }

@@ -68,7 +68,10 @@ void map_delete(struct Map* map)
 	{
 		char** key_ptr;
 		while (key_ptr = vector_pop(map->keys_vect))
+		{
 			free(*key_ptr);
+			free(key_ptr);
+		}
 		vector_delete(map->keys_vect);
 		vector_delete(map->values_vect);
 		free(map);

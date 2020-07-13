@@ -1,3 +1,4 @@
+#include "cpu.h"
 #include "cpu_functions.h"
 #include "cpu_structs.h"
 #include "error.h"
@@ -100,7 +101,7 @@ var sig_io_handling(void* value_ptr)
 		{
 		case INPUT:
 		{
-			char chr = *io_struct->in_buffer;
+			char chr = io_struct->handler->get_char(io_struct->handler->input_token);
 			if (chr)
 			{
 				if (!unit_set(io_struct->char_reg, chr))
@@ -111,16 +112,12 @@ var sig_io_handling(void* value_ptr)
 		break;
 		case OUTPUT:
 		{
-			char chr = *io_struct->out_buffer;
-			if (!chr)
-			{
-				var char_to_write = unit_read(io_struct->char_reg);
-				if (char_to_write == EMPTY)
-					CRASH_LOG(LOG_UNKNOWN_VALUE);
-				char_to_write &= CHAR_MASK;
-				*io_struct->out_buffer = char_to_write;
-				io_flag = true;
-			}
+			var chr = unit_read(io_struct->char_reg);
+			if (chr == EMPTY)
+				CRASH_LOG(LOG_UNKNOWN_VALUE);
+			chr &= CHAR_MASK;
+			io_struct->handler->put_char(io_struct->handler->output_token, (char)chr);
+			io_flag = true;
 		}
 		break;
 		default:
