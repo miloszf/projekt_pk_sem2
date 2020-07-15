@@ -25,15 +25,10 @@ struct Instruction
 {
 	const char* name;
 	unsigned char arguments;
-	//struct Vector* tick_vect;
 	struct Tick* first_tick;
 };
 
 struct Instruction* instruction_init(const char* name);
 void instruction_delete(struct Instruction* instruction);
-
-// UWAGA: wskaünik na NULL jest traktowany jako wskaünik na czyt wys wei il
-// (pierwszy takt kaødego rozkazu)
-
 
 #endif

@@ -8,8 +8,6 @@
 struct Console;
 
 struct Console* console_init(struct Canvas* canvas, Point position, Point size);
-// DEBUG
-//void scroll(struct Console* console);
 
 void console_print(struct Console* console, const char* text);
 int console_get_char(struct Console* console);

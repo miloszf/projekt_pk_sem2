@@ -26,35 +26,23 @@ struct ConsoleSetup
 	DWORD out_mode;
 	HANDLE orginal_output_handle;
 	HANDLE new_output_handle;
-	//CONSOLE_CURSOR_INFO cursor_info;
-	//WCHAR title[WCHAR_BUFFER_SIZE];
 } orginal_setup = { false };
 
 void terminal_exit(void)
 {
 	if (!orginal_setup.init_complete)
 		return;
-	
-	//exit_alternate_buffer();
-	//show_cursor();
 
-	//Error error = NO_ERROR;
 	bool error = false;
-	//HANDLE out_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	HANDLE in_handle = GetStdHandle(STD_INPUT_HANDLE);
-	if (/*out_handle == INVALID_HANDLE_VALUE ||*/
-		in_handle == INVALID_HANDLE_VALUE)
+	if (in_handle == INVALID_HANDLE_VALUE)
 		error = true;
 
 	if (!error)
 	{
-		//if (!SetConsoleMode(out_handle, orginal_setup.out_mode))
-			//error_get = ERROR;
-
 		if (!SetConsoleMode(in_handle, orginal_setup.in_mode))
 			error = true;
 
-		//SetConsoleTitle(orginal_setup.title);
 		if (!SetConsoleActiveScreenBuffer(orginal_setup.orginal_output_handle))
 			error = true;
 		else if (!CloseHandle(orginal_setup.new_output_handle))
@@ -65,18 +53,15 @@ void terminal_exit(void)
 		printf("Cannot restore cmd setup!\n");
 }
 
-struct Terminal* terminal_init(const char* window_name)
+struct Terminal* terminal_init(const wchar* window_name)
 {
 	struct Terminal* term = malloc_s(sizeof(struct Terminal));
-
 	bool error = false;
 	orginal_setup.orginal_output_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	term->in_handle = GetStdHandle(STD_INPUT_HANDLE);
-	if (orginal_setup.orginal_output_handle == INVALID_HANDLE_VALUE ||
-		term->in_handle == INVALID_HANDLE_VALUE)
+	if (orginal_setup.orginal_output_handle == INVALID_HANDLE_VALUE || term->in_handle == INVALID_HANDLE_VALUE)
 		error = true;
 
-	// Output init
 	if (!error)
 	{
 		DWORD access = GENERIC_READ | GENERIC_WRITE;
@@ -92,7 +77,6 @@ struct Terminal* terminal_init(const char* window_name)
 			else
 				orginal_setup.new_output_handle = term->out_handle;
 		}
-		
 	}
 
 	if (!error)
@@ -101,11 +85,7 @@ struct Terminal* terminal_init(const char* window_name)
 			error = true;
 		else
 		{
-			DWORD console_mode =
-				ENABLE_EXTENDED_FLAGS;
-				//orginal_setup.in_mode |
-				//ENABLE_WINDOW_INPUT |
-				//ENABLE_MOUSE_INPUT;
+			DWORD console_mode = ENABLE_EXTENDED_FLAGS;
 			if (!SetConsoleMode(term->in_handle, console_mode))
 				error = true;
 			else
@@ -114,12 +94,6 @@ struct Terminal* terminal_init(const char* window_name)
 				if (!SetConsoleMode(term->in_handle, console_mode))
 					error = true;
 			}
-			//DWORD new_console_mode;
-			//GetConsoleMode(term->in_handle, &new_console_mode);
-			//if (new_console_mode)
-			//{
-			//}
-			//DWORD a = new_console_mode;
 		}
 	}
 
@@ -137,14 +111,14 @@ struct Terminal* terminal_init(const char* window_name)
 	}
 
 	if (!error)
-	{
+		if (!SetConsoleTitle(window_name))
+			error = true;
+
+	if (!error)
 		if (atexit(&terminal_exit))
 			error = true;
 		else
-		{
 			orginal_setup.init_complete = true;
-		}	
-	}
 
 	if (error)
 		CRASH_LOG(TERMINAL_FAILURE);
@@ -166,41 +140,33 @@ void terminal_display(struct Terminal* term, struct Window* window)
 	bool error = false;
 	CONSOLE_SCREEN_BUFFER_INFO csb_info;
 	COORD start = { 0, 0 };
-
 	if (!GetConsoleScreenBufferInfo(term->out_handle, &csb_info))
 		error = true;
 
-	if (!error && (term->window_size.X != csb_info.dwSize.X || term->window_size.Y != csb_info.dwSize.Y))
+	if (!error && (window->size.x > csb_info.dwSize.X || window->size.y > csb_info.dwSize.Y))
+	{
+		csb_info.dwSize = (COORD){ max(window->size.x, csb_info.dwSize.X), max(window->size.y, csb_info.dwSize.Y) };
+		if (!SetConsoleScreenBufferSize(term->out_handle, csb_info.dwSize))
+			error = true;
+		else
+		{
+			SMALL_RECT new_window = { 0, 0, window->size.x - 1, window->size.y - 1};
+			if (!SetConsoleWindowInfo(term->out_handle, true, &new_window))
+				error = true;
+		}
+	}
+
+	if (!error && (term->window_size.X != csb_info.dwSize.X) || (term->window_size.Y != csb_info.dwSize.Y))
 	{
 		DWORD term_buff_len = csb_info.dwSize.X * csb_info.dwSize.Y;
 		DWORD unused;
 		if (!FillConsoleOutputAttribute(term->out_handle, 0, term_buff_len, start, &unused))
 			error = true;
 		else
-		{
-			DWORD term_buff_len = csb_info.dwSize.X * csb_info.dwSize.Y;
-			DWORD unused;
 			if (!FillConsoleOutputCharacter(term->out_handle, (TCHAR)(' '), term_buff_len, start, &unused))
 				error = true;
 			else
-			{
-				term->window_size.X = csb_info.dwSize.X;
-				term->window_size.Y = csb_info.dwSize.Y;
-			}
-		}
-
-		//if (!error)
-		//{
-		//	CONSOLE_CURSOR_INFO cursor_info;
-		//	if (!GetConsoleCursorInfo(term->out_handle, &cursor_info))
-		//		error = true;
-		//	else
-		//	{
-		//		cursor_info.bVisible = false;
-		//		if (!SetConsoleCursorInfo(term->out_handle, &cursor_info))
-		//			error = true;
-		//	}
-		//}
+				term->window_size = csb_info.dwSize;
 	}
 
 	if (!error)
@@ -222,15 +188,12 @@ void terminal_display(struct Terminal* term, struct Window* window)
 
 	if (error)
 		CRASH_LOG(TERMINAL_FAILURE);
-	//Sleep(200);
 }
 
 void terminal_del(struct Terminal* terminal)
 {
 	if (terminal)
-	{
 		free(terminal);
-	}
 }
 
 /*************************************************************************************************/
@@ -304,7 +267,6 @@ struct Vector* event_get(struct Terminal* term)
 		}
 		
 	} while (!error && peek_number);
-	
 
 	if (error)
 		CRASH_LOG(TERMINAL_FAILURE);

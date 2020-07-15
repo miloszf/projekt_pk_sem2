@@ -1,5 +1,5 @@
-// Test 10
-// Program wypisuj¹cy odwrócony trójk¹t z gwiazdek o d³ugoœci boku podanej przez u¿ytkownika
+// Test 10 - zdane
+// Program wypisuj¹cy odwrócony trójk¹t o d³ugoœci boku podanej przez u¿ytkownika
 		WPR 1
 		ODE CHAR_0
 		£AD SIZE

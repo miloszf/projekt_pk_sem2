@@ -37,7 +37,7 @@ struct CPUSetup
 			struct CPUPreference basic;
 		} all;
 		struct CPUPreference list[CPU_SETUP_SIZE];
-	};// preference;
+	};
 };
 
 typedef enum { TAG_Z, TAG_ZAK, TAG_V, TAG_INT } CPUTagType;
@@ -176,10 +176,10 @@ struct CPURuntime
 	bool stop;
 };
 
-
 struct CPUPeripherals
 {
-	struct CPU_IO_Handler cpu_io_handler;
+	bool input_flag;
+	bool output_flag;
 	struct Drawable* buttons_array[CPU_INTERRUPTS_NUMBER];
 	var buttons_set;
 };
@@ -192,14 +192,12 @@ struct CPU
 	struct CPUMemory* memory;
 	struct
 	{
-		// do usuniêcia?
 		struct Vector* units;
 		struct Vector* signals;
 		struct Vector* instructions;
 	} vector;
 	struct CPURuntime runtime;
 	struct CPUPeripherals peripherals;
-	//struct Drawable* frame;
 };
 
 struct CPUTag cpu_tag_init(const char* name, CPUTagType type);

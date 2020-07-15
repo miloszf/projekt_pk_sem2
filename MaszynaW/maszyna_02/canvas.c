@@ -15,7 +15,6 @@ struct Canvas* canvas_init(Point position, Point size)
 struct Drawable* canvas_new_drawable(struct Canvas* canvas, Point position)
 {
 	CHECK_IF_NULL(canvas);
-	//Point zero = { 0, 0 };
 	struct Drawable* new_drawable = drawable_init(position);
 	struct Drawable** new_drawable_ptr = vector_push(canvas->drawable_vect, &new_drawable);
 	return *new_drawable_ptr;

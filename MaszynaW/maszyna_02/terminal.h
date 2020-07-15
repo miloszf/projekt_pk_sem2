@@ -13,7 +13,7 @@ struct Terminal;
 // "awaryjnπ" do atexit(), ustawia globalny wskaünik na terminal(...)
 // Zwraca wskaünik na nowπ strukturÍ terminal.
 // argumenty: wskaünik na okno do zainicjalizowania, [nazwa okna terminala]
-struct Terminal* terminal_init(const char* window_name);
+struct Terminal* terminal_init(const wchar* window_name);
 
 // Funkcja przepisujπca bufor okna do konsoli
 void terminal_display(struct Terminal* term, struct Window* window);

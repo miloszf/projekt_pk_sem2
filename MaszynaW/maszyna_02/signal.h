@@ -3,7 +3,6 @@
 
 #include <stdbool.h>
 #include "settings.h"
-//#include "unit.h"
 
 #define OUTPUT_ALREADY_SET 1
 
@@ -13,13 +12,11 @@
 struct Signal;
 
 typedef enum { SIGNAL_FROM_TO, SIGNAL_ALU, SIGNAL_OTHER } SignalType;
-//#define MAX_STRING_LENGTH 16
 
 struct SignalInit
 {
 	SignalType type;
 	const char* name;
-	//var(*fun)(void*);
 	struct DrawableSignalInit* drawable_init;
 	union
 	{

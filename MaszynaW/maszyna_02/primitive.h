@@ -1,5 +1,6 @@
 #ifndef PRIMITIVE_H
 #define PRIMITIVE_H
+
 // Struktura przedstawiaj¹ca podstawowe graficzne obiekty.
 
 #include "settings.h"
@@ -38,17 +39,13 @@ struct Primitive
 
 struct LineChar
 {
-	//wchar line_char;
-	//union {
-		struct LineComponents
-		{
-			unsigned int left : 2;
-			unsigned int top : 2;
-			unsigned int right : 2;
-			unsigned int bottom : 2;
-		} line_components;
-		//unsigned int line_component_index;
-	//};
+	struct LineComponents
+	{
+		unsigned int left : 2;
+		unsigned int top : 2;
+		unsigned int right : 2;
+		unsigned int bottom : 2;
+	} line_components;
 };
 
 struct Pixel {

@@ -2,7 +2,8 @@
 #define MAP_H
 
 #include <stdbool.h>
-// Struktura przechowuj¹ca parê wektorów - klucz i wartoœæ.
+
+// Struktura przechowuj¹ca parê wektorów - wektor kluczy i wektor odpowiadaj¹cych im wartoœci.
 struct Map;
 
 struct Map* map_init(size_t element_size);

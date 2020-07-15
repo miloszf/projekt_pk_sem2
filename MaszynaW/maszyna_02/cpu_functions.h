@@ -32,19 +32,18 @@ struct SignalInstruction
 
 struct SignalBusConnection
 {
-	struct Unit* from;
+	struct Unit* bus_a;
+	struct Unit* bus_b;
 	struct Unit* through;
-	struct Unit* to;
 	const var* mask;
 };
 
 struct SignalIOHandling
 {
-	struct Unit* char_reg;
-	struct Unit* flag_reg;
+	bool* input_flag;
+	bool* output_flag;
 	struct Unit* address_reg;
 	const var* addr_mask;
-	struct CPU_IO_Handler* handler;
 };
 
 var sig_read_from_memory(void*);

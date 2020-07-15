@@ -25,11 +25,6 @@ struct Canvas* window_new_canvas(struct Window* window, Point offset, Point size
 // argumenty: wskaünik na okno
 void window_draw(struct Window* window);
 
-// Funkcja zwracajπca wewnÍtrzny bufor okna i jego wymiar
-// argumenty: wskaünik na okno, adres wskaünika do przypisania do bufora, 
-// adres struktury do zapisania rozmiaru okna
-//void window_get_buffer(struct Window* window, void** buffer, Point* buffer_size);
-
 // Funkcja zamieniajπca liniÍ w podanym pikselu na znak unicode
 void window_line_to_wchar(struct Pixel* pixel);
 

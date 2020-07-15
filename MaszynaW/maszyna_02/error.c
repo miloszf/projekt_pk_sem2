@@ -17,6 +17,14 @@ struct ErrorStruct {
 	const char* msg;
 };
 
+unsigned log2(unsigned num)
+{
+	unsigned log = 0;
+	while (num = num >> 1)
+		log++;
+	return log;
+}
+
 struct ErrorStruct* get_error()
 {
 	static struct ErrorStruct* s_error = NULL;
@@ -26,9 +34,7 @@ struct ErrorStruct* get_error()
 	{
 		s_error = malloc(sizeof(struct ErrorStruct));
 		if (s_error)
-		{
 			*s_error = (struct ErrorStruct){ 0, NULL };
-		}
 		return s_error;
 	}
 }
@@ -36,8 +42,7 @@ struct ErrorStruct* get_error()
 void log_at_exit(void)
 {
 	printf("%s", crash_log_msg);
-	//debug
-	//free(get_error());
+	free(get_error());
 }
 
 void init_crash_log()
@@ -59,34 +64,13 @@ void _crash_log(const char* file, const char* func, int line, ProgramErrorType t
 		" - memory allocation error\n",
 		" - invalid value, possibly in switch statement\n",
 		" - graphics failure\n",
-		" - Windows terminal handling failure\n",
-		"\n"
+		" - Windows terminal handling failure\n"
 	};
 	const char* msg;
-	switch (type)
-	{
-	case NULL_DEREFERENCE:
-		msg = msg_array[0];
-		break;
-	case LIBRARY_FUNC_FAILURE:
-		msg = msg_array[1];
-		break;
-	case MEM_ALOC_FAILURE:
-		msg = msg_array[2];
-		break;
-	case LOG_UNKNOWN_VALUE:
-		msg = msg_array[3];
-		break;
-	case GRAPHICS_FAILURE:
-		msg = msg_array[4];
-		break;
-	case TERMINAL_FAILURE:
-		msg = msg_array[5];
-		break;
-	default:
-		msg = msg_array[6];
-		break;
-	}
+	if (type < (sizeof(msg_array) / sizeof(char*)))
+		msg = msg_array[type];
+	else
+		CRASH_LOG(LOG_UNKNOWN_VALUE);
 	int unused = snprintf(crash_log_msg, CRASH_MSG_LENGTH, "Critical error!%sfile: %s\nfunction: %s - line(%d)\n", msg, file, func, line);
 }
 
@@ -104,22 +88,14 @@ const char* error_msg()
 	return error->msg;
 }
 
-unsigned log2(unsigned num)
-{
-	unsigned log = 0;
-	while (num = num >> 1)
-		log++;
-	return log;
-}
-
 void error_set(UserErrorType err_type, Error error, const char* arg)
 {
 	struct ErrorStruct* error_s = get_error();
 	CHECK_IF_NULL(error_s);
 
-	const char* instr_err_str = "Instruction file compilation error:";
-	const char* prog_err_str = "Program file compilation error:";
-	const char* runtime_err_str = "Runtime error:";
+	const char* instr_err_str = ">Instruction file compilation error:";
+	const char* prog_err_str = ">Program file compilation error:";
+	const char* runtime_err_str = ">Runtime error:";
 	const char* comp_format_array[] = {
 		"%s cannot access \"%s\" file\n",
 		"%s cannot find \"%s\"\n",
@@ -131,7 +107,7 @@ void error_set(UserErrorType err_type, Error error, const char* arg)
 		"%s not enough memory for a program, increase number of address bits\n"
 	};
 	const char* runtime_format_array[] = {
-		"already stopped\n",
+		">Program finished\n",
 		"%s unknown instruction\n",
 		"%s execution failed - output already set\n",
 		"%s execution failed - input in not set\n",
@@ -147,8 +123,6 @@ void error_set(UserErrorType err_type, Error error, const char* arg)
 	switch (err_type)
 	{
 	case INSTR_COMP_ERROR:
-		header = instr_err_str;
-		break;
 	case PROG_COMP_ERROR:
 		header = instr_err_str;
 		break;
@@ -160,28 +134,6 @@ void error_set(UserErrorType err_type, Error error, const char* arg)
 			format = runtime_format_array[index];
 		else
 			CRASH_LOG(LOG_UNKNOWN_VALUE);
-
-		//switch (error)
-		//{
-		//case CPU_STOPPED:
-		//	format = runtime_format_array[0];
-		//	break;
-		//case UNKNOWN_INSTRUCTION:
-		//	format = runtime_format_array[1];
-		//	break;
-		//case ALREADY_SET:
-		//	format = runtime_format_array[2];
-		//	break;
-		//case EMPTY_UNIT:
-		//	format = runtime_format_array[3];
-		//	break;
-		//case INVALID_IO_ADDRESS:
-		//	format = runtime_format_array[4];
-		//	break;
-		//default:
-		//	CRASH_LOG(LOG_UNKNOWN_VALUE);
-		//	break;
-		//}
 	}
 	break;
 	default:
@@ -197,33 +149,6 @@ void error_set(UserErrorType err_type, Error error, const char* arg)
 		else
 			CRASH_LOG(LOG_UNKNOWN_VALUE);
 	}
-		/*switch (error)
-		{
-		case NO_FILE:
-			format = comp_format_array[0];
-			break;
-		case MISSING_INPUT:
-			format = comp_format_array[1];
-			break;
-		case INVALID_INPUT:
-			format = comp_format_array[2];
-			break;
-		case MISSING_LINE:
-			format = comp_format_array[3];
-			break;
-		case UNKNOWN_LABEL:
-			format = comp_format_array[4];
-			break;
-		case REPEATED_LABEL:
-			format = comp_format_array[5];
-			break;
-		case LOST_TICK:
-			format = comp_format_array[6];
-			break;
-		default:
-			CRASH_LOG(LOG_UNKNOWN_VALUE);
-			break;
-		}*/
 
 	size_t new_msg_len = strlen(format) + strlen(header) + strlen(arg) + 1;
 	char* new_msg = malloc_s(new_msg_len);
@@ -255,16 +180,6 @@ void error_reset()
 	CHECK_IF_NULL(error);
 	free((char*)error->msg);
 	*error = (struct ErrorStruct){ 0, NULL };
-}
-
-void _debug_error_delete()
-{
-	struct ErrorStruct* error = get_error();
-	if (error)
-	{
-		free(error->msg);
-		free(error);
-	}
 }
 
 void* malloc_s(size_t size)

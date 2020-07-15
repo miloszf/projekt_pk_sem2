@@ -18,11 +18,6 @@ struct CrashLog
 void init_crash_log();
 void _crash_log(const char* file, const char* func, int line, ProgramErrorType type);
 
-
-//#define
-//typedef enum { INSTR_COMP_ERROR = 1, PROG_COMP_ERROR, RUNTIME_ERROR } UserErrorType;
-//typedef enum { NO_FILE = 1, MISSING_INPUT, INVALID_INPUT, MISSING_LINE, UNKNOWN_LABEL, REPEATED_LABEL, LOST_TICK } CompilationError;
-//typedef enum { CPU_STOPPED = 1, UNKNOWN_INSTRUCTION, ALREADY_SET, EMPTY_UNIT } RuntimeError;
 typedef int Error;
 
 typedef Error UserErrorType;
@@ -58,7 +53,5 @@ void error_reset();
 void* malloc_s(size_t size);
 void* calloc_s(size_t count, size_t size);
 void* realloc_s(void* ptr, size_t new_size);
-
-void _debug_error_delete();
 
 #endif

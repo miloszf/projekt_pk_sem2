@@ -69,7 +69,6 @@ void console_update(struct Console* console)
 				for (unsigned i = 0; i < console->line_number - 1; i++)
 					buffer_ptr_array[i] = buffer_ptr_array[i + 1];
 
-
 			buffer_ptr_array[line_array_index] = index;
 			line_index = 0;
 		}
@@ -95,10 +94,7 @@ void console_update(struct Console* console)
 		while (buffer_index != next_line_buff_ptr)
 		{
 			if (*buffer_index != '\n')
-			{
-				*line_ptr = *buffer_index;
-				line_ptr++;
-			}
+				*line_ptr++ = *buffer_index;
 			buffer_index++;
 		}
 		*line_ptr = '\0';
@@ -124,11 +120,8 @@ void console_print(struct Console* console, const char* text)
 				console->first_char = temp_buffer;
 				console->buffer_size *= 2;
 			}
-			*console->last_char = *text;
-			console->last_char++;
-			text++;
+			*console->last_char++ = *text++;
 		}
-
 		console_update(console);
 	}
 }
@@ -141,8 +134,7 @@ int console_get_char(struct Console* console)
 		chr = EOL;
 	else
 	{
-		chr = (char)*console->first_char;
-		console->first_char++;
+		chr = (char)*console->first_char++;
 		console_update(console);
 	}
 	return chr;
@@ -155,12 +147,7 @@ void console_clear(struct Console* console)
 	console->buffer_size = console->line_width * console->line_number;
 	console->buffer = malloc_s((console->buffer_size + 1) * sizeof(wchar));
 	for (unsigned i = 0; i < console->line_number; i++)
-	{
 		console->line_array[i][0] = '\0';
-		//(console->line_array + i)->line_buffer[0] = '\0';
-		//(console->line_array + i)->line_length = 0;
-		//(console->line_array + i)->buffer_ptr = console->buffer;
-	}
 	console->first_char = console->buffer;
 	console->last_char = console->first_char;
 }
@@ -172,7 +159,6 @@ void console_delete(struct Console* console)
 		free(console->buffer);
 		for (unsigned i = 0; i < console->line_number; i++)
 			free(console->line_array[i]);
-			//free((console->line_array + i)->line_buffer);
 		free(console->line_array);
 		free(console);
 	}

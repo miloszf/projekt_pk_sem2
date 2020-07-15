@@ -2,8 +2,6 @@
 #define DRAWABLE_H
 
 #include <stdbool.h>
-
-//#include "primitive.h"
 #include "settings.h"
 #include "vector.h"
 

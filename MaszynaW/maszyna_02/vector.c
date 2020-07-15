@@ -48,10 +48,7 @@ void* vector_push(struct Vector* vect, void* value_ptr)
 
 void* vector_pop(struct Vector* vect)
 {
-	//debug
-	if (!vect)
-		return NULL;
-		//CHECK_IF_NULL(vect);
+	CHECK_IF_NULL(vect);
 	void* return_ptr;
 	if (vect->el_number)
 	{

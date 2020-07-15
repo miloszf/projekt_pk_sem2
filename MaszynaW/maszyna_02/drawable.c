@@ -38,8 +38,7 @@ void drawable_set_visibility(struct Drawable* drawable, bool is_visible)
 
 void drawable_set_value(struct Drawable* drawable, void* value_ptr)
 {
-	if (!drawable)
-		CHECK_IF_NULL(drawable);
+	CHECK_IF_NULL(drawable);
 	if (drawable->set_value)
 		drawable->set_value(drawable, value_ptr);
 }

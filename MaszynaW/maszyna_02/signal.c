@@ -34,22 +34,25 @@ struct Signal* signal_new(struct SignalInit* signal_init)
 		break;
 	default:
 		CRASH_LOG(LOG_UNKNOWN_VALUE);
-		//critical_error_set("invalid signal type");
 		init_struct_size = 0;
 	}
 	void* new_init_struct = malloc_s(init_struct_size);
 	if (memcpy_s(new_init_struct, init_struct_size, &signal_init->value, init_struct_size))
 		CRASH_LOG(LIBRARY_FUNC_FAILURE);
-		//critical_error_set("...");
 	char* new_name = _strdup(signal_init->name);
 	if (!new_name)
 		CRASH_LOG(LIBRARY_FUNC_FAILURE);
-		//critical_error_set("strdup failed\n");
 	struct Drawable* new_drawable = drawable_new_signal(signal_init->drawable_init, new_name);
 
 	struct Signal* new_signal = malloc_s(sizeof(struct Signal));
 	*new_signal = (struct Signal){ signal_init->type, new_name, new_init_struct, new_drawable, false };
 	return new_signal;
+}
+
+void inline to_signed(var* num, var mask)
+{
+	if (*num & ~(mask >> 1))
+		*num = -(mask - *num + 1);
 }
 
 var signal_set(struct Signal* signal)
@@ -68,9 +71,6 @@ var signal_set(struct Signal* signal)
 		else
 		{
 			value = init_struct->function(value, *init_struct->mask_ptr);
-			/*if (unit_set(init_struct->to, value))
-				signal->is_set = true;
-			else*/
 			if (!unit_set(init_struct->to, value))
 				return_value = OUTPUT_ALREADY_SET;
 		}
@@ -86,10 +86,9 @@ var signal_set(struct Signal* signal)
 			return_value = EMPTY;
 		else
 		{
+			to_signed(&value_a, *init_struct->mask_ptr);
+			to_signed(&value_b, *init_struct->mask_ptr);
 			value_a = init_struct->function(value_a, value_b, *init_struct->mask_ptr);
-			//if (unit_set(init_struct->to, value_a))
-				//signal->is_set = true;
-			//else
 			if (!unit_set(init_struct->to, value_a))
 				return_value = OUTPUT_ALREADY_SET;
 		}
@@ -103,7 +102,7 @@ var signal_set(struct Signal* signal)
 	break;
 	default:
 		CRASH_LOG(LIBRARY_FUNC_FAILURE);
-		//critical_error_set("");
+		break;
 	}
 
 	if (!return_value && !signal->is_set)
@@ -132,20 +131,6 @@ void signal_draw(struct Signal* signal)
 		drawable_set_value(signal->drawable, &signal->is_set);
 }
 
-//void signal_show(struct signal* signal)
-//{
-//	CHECK_IF_NULL(signal);
-//	if (signal->drawable)
-//		drawable_set_visibility(signal->drawable, true);
-//}
-//
-//void signal_hide(struct signal* signal)
-//{
-//	CHECK_IF_NULL(signal);
-//	if (signal->drawable)
-//		drawable_set_visibility(signal->drawable, false);
-//}
-
 void signal_set_visibility(struct Signal* signal, bool visibility)
 {
 	CHECK_IF_NULL(signal);
@@ -158,7 +143,6 @@ const char* signal_get_name(struct Signal* signal)
 	CHECK_IF_NULL(signal);
 	return signal->name;
 }
-
 
 void signal_delete(struct Signal* signal)
 {

@@ -5,13 +5,8 @@
 #include "vector.h"
 #include "error.h"
 
-#define CHUNK_SIZE 4 
-
 struct Map
 {
-	//size_t el_size;
-	//size_t el_number;
-	//size_t array_size;
 	struct Vector* keys_vect;
 	struct Vector* values_vect;
 };
@@ -26,10 +21,7 @@ struct Map* map_init(size_t element_size)
 
 bool map_push(struct Map* map, const char* key, void* value_ptr)
 {
-	//CHECK_IF_NULL(map);
-	//CHECK_IF_NULL(key);
 	CHECK_IF_NULL(value_ptr);
-
 	if (!map_read_from_key(map, key))
 	{
 		char* new_key = _strdup(key);

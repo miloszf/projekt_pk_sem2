@@ -1,9 +1,7 @@
 #ifndef CPU_COMPONENTS_H
 #define CPU_COMPONENTS_H
 
-//#include <stdbool.h>
 #include "settings.h"
-//#include "cpu_structs.h"
 
 void cpu_init_alu_units(struct CPU* cpu, const Point offset, struct Canvas* canvas);
 void cpu_init_alu_signals(struct CPU* cpu, const Point offset, struct Canvas* canvas);
@@ -19,7 +17,5 @@ void cpu_init_io_units(struct CPU* cpu, const Point offset, struct Canvas* canva
 void cpu_init_io_signals(struct CPU* cpu, const Point offset, struct Canvas* canvas);
 void cpu_init_intr_units(struct CPU* cpu, const Point offset, struct Canvas* canvas);
 void cpu_init_intr_signals(struct CPU* cpu, const Point offset, struct Canvas* canvas);
-
-
 
 #endif

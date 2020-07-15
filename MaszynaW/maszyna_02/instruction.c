@@ -30,10 +30,8 @@ struct Instruction* instruction_init(const char* name)
 	CHECK_IF_NULL(name);
 	char* new_name = _strdup(name);
 	if (!new_name)
-		//critical_error_set("strdup failed\n");
 		CRASH_LOG(LIBRARY_FUNC_FAILURE);
 	struct Instruction* new_intr = malloc_s(sizeof(struct Instruction));
-	//*new_intr = (struct Instruction){ new_name, 1, vector_init(sizeof(struct Tick*)) };
 	*new_intr = (struct Instruction){ new_name, 1, NULL };
 	return new_intr;
 }
@@ -42,9 +40,6 @@ void instruction_delete(struct Instruction* instr)
 {
 	if (instr)
 	{
-		//struct Tick** tick_ptr;
-		//while (tick_ptr = vector_pop(instr->tick_vect))
-			//tick_delete(*tick_ptr);
 		tick_delete(instr->first_tick);
 		free((char*)instr->name);
 		free(instr);

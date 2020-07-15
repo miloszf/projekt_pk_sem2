@@ -5,7 +5,6 @@
 #include "error.h"
 #include "vector.h"
 #include "unit.h"
-//#include "signal.h"
 #include "graphics.h"
 #include "instruction.h"
 
@@ -42,11 +41,9 @@ bool cpu_tag_update(struct CPUTag* tag, struct CPU* cpu)
 	}
 	break;
 	default:
-		//critical_error_set("");
 		CRASH_LOG(LOG_UNKNOWN_VALUE);
 		return_value = false;
 	}
-
 	return return_value;
 }
 
@@ -56,16 +53,13 @@ struct CPUTag cpu_tag_init(const char* name, CPUTagType type)
 	char* new_name = _strdup(name);
 	if (!new_name)
 		CRASH_LOG(LIBRARY_FUNC_FAILURE);
-		//critical_error_set("strdup failed\n");
 	return (struct CPUTag) { new_name, false, type };
 }
 
 void cpu_tag_delete(struct CPUTag* tag)
 {
 	if (tag)
-	{
 		free((char*)tag->name);
-	}
 }
 
 struct CPUMemory* cpu_memory_init(struct Canvas* canvas, const Point position, const var* addr_length)

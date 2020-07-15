@@ -32,19 +32,6 @@ struct Canvas* window_new_canvas(struct Window* window, Point position, Point si
 	return *new_canvas_ptr;
 }
 
-/*struct Canvas* window_new_canvas(struct Window* window, Point offset, Point new_buff_length)
-{
-	CHECK_IF_NULL(window);
-	Point new_size = { offset.x + new_buff_length.x, offset.y + new_buff_length.y };
-	if (new_size.x > window->new_buff_length.x || new_size.y > window->new_buff_length.y)
-	{
-		int new_buff_length = sizeof(struct Pixel) * new_size.x * new_size.y;
-		window->buffer = realloc_s(window->buffer, new_buff_length);
-	}
-	struct Canvas new_canvas = { offset, new_buff_length, vector_init(sizeof(struct Drawable)) };
-	return vector_push(window->canvas_vect, &new_canvas);
-}*/
-
 void window_draw(struct Window* window)
 {
 	CHECK_IF_NULL(window);
@@ -77,14 +64,10 @@ void window_line_to_wchar(struct Pixel* pixel)
 				{ .line_components = (struct LineComponents){0, 0, 0, 0}, .u_char = ' '}, 
 				// Pojedyncze - 1 linia
 				{ .line_components = (struct LineComponents){1, 0, 0, 0}, .u_char = 0x2500 },
-				//{ .line_components = (struct LineComponents){1, 0, 0, 0}, .u_char = 'd' },
-				//{ .line_components = (struct LineComponents){0, 0, 1, 0}, .u_char = 'b' },
 				{ .line_components = (struct LineComponents){0, 0, 1, 0}, .u_char = 0x2500 },
 				{ .line_components = (struct LineComponents){1, 0, 1, 0}, .u_char = 0x2500 },
 				{ .line_components = (struct LineComponents){0, 1, 0, 0}, .u_char = 0x2502 },
-				//{ .line_components = (struct LineComponents){0, 1, 0, 0}, .u_char = 'i' },
 				{ .line_components = (struct LineComponents){0, 0, 0, 1}, .u_char = 0x2502 },
-				//{ .line_components = (struct LineComponents){0, 0, 0, 1}, .u_char = 'j' },
 				{ .line_components = (struct LineComponents){0, 1, 0, 1}, .u_char = 0x2502 },
 				// Pojedyñcze - 2 linie
 				{ .line_components = (struct LineComponents){1, 1, 0, 0}, .u_char = 0x2518 },

@@ -3,8 +3,8 @@
 
 #include <stdbool.h>
 #include "settings.h"
-// "Biblioteka" obs³ugi plików
 
+// "Biblioteka" obs³ugi plików
 struct FileHandler;
 
 struct FileHandler* file_handler_init();

@@ -13,6 +13,7 @@
 #define REG_WIDTH 15
 #define REG_HEIGTH 3
 #define REG_SIZE (Point){REG_WIDTH, REG_HEIGTH}
+#define BUS_LENGTH 71
 
 void cpu_init_alu_units(struct CPU* cpu, const Point offset, struct Canvas* canvas)
 {
@@ -60,11 +61,11 @@ void cpu_init_alu_signals(struct CPU* cpu, const Point offset, struct Canvas* ca
 	// SIG_WEJA
 	drawable_signal_init = (struct DrawableSignalInit){
 		.canvas = canvas,
-		.arrow.head = p_add(offset, POINT(13, 10)),
-		.arrow.tail = p_add(offset, POINT(13, 12)),
+		.arrow.head = p_add(offset, POINT(12, 10)),
+		.arrow.tail = p_add(offset, POINT(12, 12)),
 		.tag.type = TO_COMB_TYPE,
-		.tag.head = p_add(offset, POINT(12, 11)),
-		.tag.tail = p_add(offset, POINT(8, 11)),
+		.tag.head = p_add(offset, POINT(11, 11)),
+		.tag.tail = p_add(offset, POINT(7, 11)),
 	};
 	signal_init = (struct SignalInit){
 		.type = SIGNAL_FROM_TO,
@@ -332,11 +333,11 @@ void cpu_init_alu_signals(struct CPU* cpu, const Point offset, struct Canvas* ca
 	sig_offset = p_add(sig_offset, POINT(0, 2));
 	drawable_signal_init = (struct DrawableSignalInit){
 		.canvas = canvas,
-		.arrow.head = p_zero,
-		.arrow.tail = p_zero,
+		.arrow.head = p_add(offset, POINT(14, 12)),
+		.arrow.tail = p_add(offset, POINT(14, 10)),
 		.tag.type = TO_BUS_TYPE,
-		.tag.head = p_add(sig_offset, sig_length),
-		.tag.tail = sig_offset
+		.tag.head = p_add(offset, POINT(15, 11)),
+		.tag.tail = p_add(offset, POINT(19, 11)),
 	};
 	signal_init = (struct SignalInit){
 		.type = SIGNAL_FROM_TO,
@@ -523,15 +524,15 @@ void cpu_init_addr_units(struct CPU* cpu, const Point offset, struct Canvas* can
 
 	// BUS_A
 	new_unit = (struct UnitInit){
-		.position = offset,
-		.size = POINT(71, 0),
+		.position = p_add(offset, POINT(1, 0)),
+		.size = POINT(BUS_LENGTH, 0),
 		.canvas = canvas,
 	};
 	cpu->components.addr.bus_a = unit_new_bus(&new_unit);
 	// BUS_S
 	new_unit = (struct UnitInit){
-		.position = p_add(offset, POINT(0, 17)),
-		.size = POINT(71, 0),
+		.position = p_add(offset, POINT(1, 17)),
+		.size = POINT(BUS_LENGTH, 0),
 		.canvas = canvas,
 	};
 	cpu->components.addr.bus_s = unit_new_bus(&new_unit);
@@ -660,8 +661,8 @@ void cpu_init_addr_signals(struct CPU* cpu, const Point offset, struct Canvas* c
 		.arrow.head = p_add(offset, POINT(16, 0)),
 		.arrow.tail = p_add(offset, POINT(16, 13)),
 		.tag.type = TO_BUS_TYPE,
-		.tag.head = p_add(offset, POINT(15, 10)),
-		.tag.tail = p_add(offset, POINT(11, 10)),
+		.tag.head = p_add(offset, POINT(15, 12)),
+		.tag.tail = p_add(offset, POINT(11, 12)),
 	};
 	signal_init = (struct SignalInit){
 		.type = SIGNAL_FROM_TO,
@@ -711,36 +712,12 @@ void cpu_init_addr_signals(struct CPU* cpu, const Point offset, struct Canvas* c
 		.value.from_to.function = &sig_increment
 	};
 	cpu->components.addr.sig_il = signal_new(&signal_init);
-	// SIG_AS
-	struct SignalBusConnection* bus_as_init = malloc_s(sizeof(struct SignalBusConnection));
-	*bus_as_init = (struct SignalBusConnection){
-		.from = cpu->components.addr.bus_a,
-		.through = cpu->components.addr.bus_as,
-		.to = cpu->components.addr.bus_s,
-		.mask = &cpu->word.word_mask
-	};
-	drawable_signal_init = (struct DrawableSignalInit){
-		.canvas = canvas,
-		.arrow.head = p_zero,
-		.arrow.tail = p_zero,
-		.tag.type = TO_BUS_TYPE,
-		.tag.head = p_add(offset, POINT(19, 1)),
-		.tag.tail = p_add(offset, POINT(22, 1)),
-	};
-	signal_init = (struct SignalInit){
-		.type = SIGNAL_OTHER,
-		.name = "as",
-		.drawable_init = &drawable_signal_init,
-		.value.other.value_ptr = bus_as_init,
-		.value.other.function = &sig_connect_buses
-	};
-	cpu->components.addr.sig_as = signal_new(&signal_init);
 	// SIG_SA
 	struct SignalBusConnection* bus_sa_init = malloc_s(sizeof(struct SignalBusConnection));
 	*bus_sa_init = (struct SignalBusConnection){
-		.from = cpu->components.addr.bus_s,
+		.bus_a = cpu->components.addr.bus_s,
 		.through = cpu->components.addr.bus_as,
-		.to = cpu->components.addr.bus_a,
+		.bus_b = cpu->components.addr.bus_a,
 		.mask = &cpu->word.word_mask
 	};
 	drawable_signal_init = (struct DrawableSignalInit){
@@ -748,8 +725,8 @@ void cpu_init_addr_signals(struct CPU* cpu, const Point offset, struct Canvas* c
 		.arrow.head = p_zero,
 		.arrow.tail = p_zero,
 		.tag.type = TO_BUS_TYPE,
-		.tag.head = p_add(offset, POINT(19, 2)),
-		.tag.tail = p_add(offset, POINT(22, 2)),
+		.tag.head = p_add(offset, POINT(19, 5)),
+		.tag.tail = p_add(offset, POINT(22, 5)),
 	};
 	signal_init = (struct SignalInit){
 		.type = SIGNAL_OTHER,
@@ -759,6 +736,30 @@ void cpu_init_addr_signals(struct CPU* cpu, const Point offset, struct Canvas* c
 		.value.other.function = &sig_connect_buses
 	};
 	cpu->components.addr.sig_sa = signal_new(&signal_init);
+	// SIG_AS
+	struct SignalBusConnection* bus_as_init = malloc_s(sizeof(struct SignalBusConnection));
+	*bus_as_init = (struct SignalBusConnection){
+		.bus_a = cpu->components.addr.bus_a,
+		.through = cpu->components.addr.bus_as,
+		.bus_b = cpu->components.addr.bus_s,
+		.mask = &cpu->word.word_mask
+	};
+	drawable_signal_init = (struct DrawableSignalInit){
+		.canvas = canvas,
+		.arrow.head = p_zero,
+		.arrow.tail = p_zero,
+		.tag.type = TO_BUS_TYPE,
+		.tag.head = p_add(offset, POINT(19, 5)),
+		.tag.tail = p_add(offset, POINT(22, 5)),
+	};
+	signal_init = (struct SignalInit){
+		.type = SIGNAL_OTHER,
+		.name = "as",
+		.drawable_init = &drawable_signal_init,
+		.value.other.value_ptr = bus_as_init,
+		.value.other.function = &sig_connect_buses
+	};
+	cpu->components.addr.sig_as = signal_new(&signal_init);
 
 	// |---- BASIC ----|
 	vector_push(cpu->setup.all.basic.signal_vect, &cpu->components.addr.sig_wyl);
@@ -905,7 +906,7 @@ void cpu_init_stack_units(struct CPU* cpu, const Point offset, struct Canvas* ca
 
 	// REG_WS
 	new_unit = (struct UnitInit){
-		.position = p_add(offset, POINT(4, 2)),
+		.position = p_add(offset, POINT(5, 2)),
 		.size = REG_SIZE,
 		.canvas = canvas,
 	};
@@ -926,11 +927,11 @@ void cpu_init_stack_signals(struct CPU* cpu, const Point offset, struct Canvas* 
 	// SIG_WYWS
 	drawable_signal_init = (struct DrawableSignalInit){
 		.canvas = canvas,
-		.arrow.head = p_add(offset, POINT(10, 0)),
-		.arrow.tail = p_add(offset, POINT(10, 2)),
+		.arrow.head = p_add(offset, POINT(11, 0)),
+		.arrow.tail = p_add(offset, POINT(11, 2)),
 		.tag.type = TO_BUS_TYPE,
-		.tag.head = p_add(offset, POINT(9, 1)),
-		.tag.tail = p_add(offset, POINT(5, 1)),
+		.tag.head = p_add(offset, POINT(10, 1)),
+		.tag.tail = p_add(offset, POINT(6, 1)),
 	};
 	signal_init = (struct SignalInit){
 		.type = SIGNAL_FROM_TO,
@@ -945,11 +946,11 @@ void cpu_init_stack_signals(struct CPU* cpu, const Point offset, struct Canvas* 
 	// SIG_WEWS
 	drawable_signal_init = (struct DrawableSignalInit){
 		.canvas = canvas,
-		.arrow.head = p_add(offset, POINT(12, 2)),
-		.arrow.tail = p_add(offset, POINT(12, 0)),
+		.arrow.head = p_add(offset, POINT(13, 2)),
+		.arrow.tail = p_add(offset, POINT(13, 0)),
 		.tag.type = TO_REG_TYPE,
-		.tag.head = p_add(offset, POINT(13, 1)),
-		.tag.tail = p_add(offset, POINT(17, 1)),
+		.tag.head = p_add(offset, POINT(14, 1)),
+		.tag.tail = p_add(offset, POINT(18, 1)),
 	};
 	signal_init = (struct SignalInit){
 		.type = SIGNAL_FROM_TO,
@@ -967,7 +968,7 @@ void cpu_init_stack_signals(struct CPU* cpu, const Point offset, struct Canvas* 
 		.arrow.head = p_zero,
 		.arrow.tail = p_zero,
 		.tag.type = TO_REG_TYPE,
-		.tag.head = p_add(offset, POINT(3, 3)),
+		.tag.head = p_add(offset, POINT(4, 3)),
 		.tag.tail = p_add(offset, POINT(0, 3)),
 	};
 	signal_init = (struct SignalInit){
@@ -986,8 +987,8 @@ void cpu_init_stack_signals(struct CPU* cpu, const Point offset, struct Canvas* 
 		.arrow.head = p_zero,
 		.arrow.tail = p_zero,
 		.tag.type = TO_REG_TYPE,
-		.tag.head = p_add(offset, POINT(19, 3)),
-		.tag.tail = p_add(offset, POINT(22, 3)),
+		.tag.head = p_add(offset, POINT(20, 3)),
+		.tag.tail = p_add(offset, POINT(24, 3)),
 	};
 	signal_init = (struct SignalInit){
 		.type = SIGNAL_FROM_TO,
@@ -1097,7 +1098,6 @@ void cpu_init_io_signals(struct CPU* cpu, Point offset, struct Canvas* canvas)
 		.type = SIGNAL_FROM_TO,
 		.name = "wyg",
 		.drawable_init = &drawable_signal_init,
-		// TODO
 		.value.from_to.from = cpu->components.io.reg_g,
 		.value.from_to.to = cpu->components.addr.bus_s,
 		.value.from_to.mask_ptr = &cpu->word.word_mask,
@@ -1107,11 +1107,10 @@ void cpu_init_io_signals(struct CPU* cpu, Point offset, struct Canvas* canvas)
 	// SIG_START
 	struct SignalIOHandling* io_handling = malloc_s(sizeof(struct SignalIOHandling));
 	*io_handling = (struct SignalIOHandling){
-		.char_reg = cpu->components.io.reg_rb,
-		.flag_reg = cpu->components.io.reg_g,
+		.input_flag = &cpu->peripherals.input_flag,
+		.output_flag = &cpu->peripherals.output_flag,
 		.address_reg = cpu->components.addr.reg_i,
 		.addr_mask = &cpu->word.addr_mask,
-		.handler = &cpu->peripherals.cpu_io_handler
 	};
 	drawable_signal_init = (struct DrawableSignalInit){
 		.canvas = canvas,
@@ -1214,8 +1213,8 @@ void cpu_init_intr_signals(struct CPU* cpu, const Point offset, struct Canvas* c
 	// SIG_WERM
 	drawable_signal_init = (struct DrawableSignalInit){
 		.canvas = canvas,
-		.arrow.head = p_add(offset, POINT(9, 8)),
-		.arrow.tail = p_add(offset, POINT(9, 6)),
+		.arrow.head = p_add(offset, POINT(9, 6)),
+		.arrow.tail = p_add(offset, POINT(9, 8)),
 		.tag.type = TO_REG_TYPE,
 		.tag.head = p_add(offset, POINT(10, 7)),
 		.tag.tail = p_add(offset, POINT(14, 7)),

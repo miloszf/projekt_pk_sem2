@@ -15,7 +15,6 @@ var sig_read_from_memory(void* value_ptr)
 	var address = unit_read(memory_struct->reg_a);
 	if (address == EMPTY)
 		CRASH_LOG(LOG_UNKNOWN_VALUE);
-		//critical_error_set("");
 	var value = (*memory_struct->memory)[address];
 	return unit_immediate_set(memory_struct->reg_s, value) ? 0 : OUTPUT_ALREADY_SET;
 }
@@ -67,14 +66,40 @@ var sig_connect_buses(void* value_ptr)
 	CHECK_IF_NULL(value_ptr);
 	var return_value = 0;
 	struct SignalBusConnection* bus_struct = value_ptr;
-	var value = unit_read(bus_struct->from);
-	if (value == EMPTY)
-		return_value = EMPTY;
+	var value_a = unit_read(bus_struct->bus_a);
+	var value_b = unit_read(bus_struct->bus_b);
+	if (value_a == ALREADY_SET || value_b == ALREADY_SET)
+		return_value = ALREADY_SET;
 	else
 	{
-		value &= *bus_struct->mask;
-		if (!unit_set(bus_struct->through, value) || !unit_set(bus_struct->to, value))
+		enum BusState { NONE_SET, BUS_A, BUS_B, BOTH_SET } bus_state = (value_a != EMPTY) + ((value_b != EMPTY) << 1);
+
+		switch (bus_state)
+		{
+		case NONE_SET:
+			return_value = EMPTY;
+			break;
+		case BUS_A:
+		{
+			value_a &= *bus_struct->mask;
+			if (!unit_set(bus_struct->through, value_a) || !unit_set(bus_struct->bus_b, value_a))
+				return_value = OUTPUT_ALREADY_SET;
+		}
+		break;
+		case BUS_B:
+		{
+			value_b &= *bus_struct->mask;
+			if (!unit_set(bus_struct->through, value_b) || !unit_set(bus_struct->bus_a, value_b))
+				return_value = OUTPUT_ALREADY_SET;
+		}
+		break;
+		case BOTH_SET:
 			return_value = OUTPUT_ALREADY_SET;
+			break;
+		default:
+			CRASH_LOG(LOG_UNKNOWN_VALUE);
+			break;
+		}
 	}
 
 	return return_value;
@@ -82,12 +107,10 @@ var sig_connect_buses(void* value_ptr)
 
 #define INPUT 1
 #define OUTPUT 2
-# define CHAR_MASK 0x7F
 
 var sig_io_handling(void* value_ptr)
 {
 	CHECK_IF_NULL(value_ptr);
-	var return_value = 0;
 	struct SignalIOHandling* io_struct = value_ptr;
 	var address = unit_read(io_struct->address_reg);
 	
@@ -95,40 +118,29 @@ var sig_io_handling(void* value_ptr)
 		CRASH_LOG(LOG_UNKNOWN_VALUE);
 	else
 	{
-		bool io_flag = false;
 		address &= *io_struct->addr_mask;
 		switch (address)
 		{
 		case INPUT:
 		{
-			char chr = io_struct->handler->get_char(io_struct->handler->input_token);
-			if (chr)
-			{
-				if (!unit_set(io_struct->char_reg, chr))
-					return_value = ALREADY_SET;
-				io_flag = true;
-			}
+			*io_struct->input_flag = true;
+			if (*io_struct->output_flag)
+				*io_struct->output_flag = false;
 		}
 		break;
 		case OUTPUT:
 		{
-			var chr = unit_read(io_struct->char_reg);
-			if (chr == EMPTY)
-				CRASH_LOG(LOG_UNKNOWN_VALUE);
-			chr &= CHAR_MASK;
-			io_struct->handler->put_char(io_struct->handler->output_token, (char)chr);
-			io_flag = true;
+			*io_struct->output_flag = true;
+			if (*io_struct->input_flag)
+				*io_struct->input_flag = false;
 		}
 		break;
 		default:
 			runtime_error_set(INVALID_IO_ADDRESS, NULL);
 		}
-
-		if (!unit_set(io_struct->flag_reg, io_flag))
-			CRASH_LOG(LOG_UNKNOWN_VALUE);
 	}
 
-	return return_value;
+	return 0;
 }
 
 var sig_enable_interrupts(void* value_ptr)

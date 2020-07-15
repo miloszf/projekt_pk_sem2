@@ -32,8 +32,6 @@ struct DrawableMemoryInit
 {
 	struct Canvas* canvas;
 	Point position;
-	// depends on MEMORY_LINE_BUFFER_SIZE & MEMORY_LINES_NUMBER, graphics.c
-	// Point size;
 	const var** memory_ptr;
 	const var* addr_len;
 	struct Vector** instr_names_vect_ptr;

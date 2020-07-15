@@ -8,20 +8,12 @@
 // Wykonuje takty lub rozkazy. Poœredniczy miêdzy sygna³ami zewnêtrznymi (przerwania, we/wy klawiatury)
 struct CPU;
 
-struct CPU_IO_Handler
-{
-	char (*get_char)(void* input_token);
-	void* input_token;
-	void (*put_char)(void* output_token, char c);
-	void* output_token;
-};
-
 // Funkcja tworz¹ca now¹ jednostkê centraln¹
 // Nowa jednostka jest ju¿ wstêpnie zainicjalizowana, tj. utworzone s¹ bloki, sygna³y,
 // odpowiednie struktury i po³¹czenia
 // argumenty: [?], bufor znaków z klawiatury do odczytania, bufor znaków do zapisania
 // zwraca: wskaŸnik na nowê jednostkê
-struct CPU* cpu_init(struct Canvas* canvas, struct CPU_IO_Handler cpu_io_handler);
+struct CPU* cpu_init(struct Canvas* canvas);
 
 // Funkcja wczytuj¹ca i kompiluj¹ca listê rozkazów i ustawieñ
 // argumenty: nazwa pliku z rozkazami
@@ -36,7 +28,13 @@ bool cpu_import_program(struct CPU* cpu, const char* file_name);
 // argumenty: [?]
 void* cpu_tick(struct CPU* cpu);
 
-void cpu_user_input_set(struct CPU* cpu, var mouse_scroll, var interrupts);
+void cpu_get_io_flags(struct CPU* cpu, bool* input_flag, bool* output_flag);
+
+void cpu_user_input(struct CPU* cpu, var mouse_scroll, var interrupts, char input_char, char* output_char);
+
+//void cpu_get_char(struct CPU* cpu);
+
+//void cpu_set_char(struct CPU* cpu);
 
 // Funkcja resetuj¹ca maszynê (bez pamiêci)
 // argumenty: -

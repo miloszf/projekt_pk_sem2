@@ -84,64 +84,48 @@ struct UserInput simulator_get_events(struct Vector* events_vect)
 	return new_input;
 }
 
-struct CPU_IO_Token
-{
-	struct Console* console;
-};
-
-char simulator_console_to_cpu(struct CPU_IO_Token* token)
-{
-	int chr = console_get_char(token->console);
-	return (chr == EOL) ? 0 : (char)chr;
-}
-
-void simulator_cpu_to_console(struct CPU_IO_Token* token, char chr)
-{
-	if (chr == 10 || chr == 13)
-		chr = '\n';
-	char str[] = { chr, '\0' };
-	console_print(token->console, str);
-}
-
-void simulator_run(int argc, char** argv)
+void simulator_run(const char* instr_file_name, const char* prog_file_name)
 {
 	init_crash_log();
 	struct Simulator sim = { NULL, NULL, NULL, NULL };
 
-	sim.terminal = terminal_init("MaszynaW");
+	sim.terminal = terminal_init(L"MaszynaW");
 	sim.window = window_init();
-	struct Canvas* cpu_canvas = window_new_canvas(sim.window, (Point) { 0, 0 }, (Point) { 73, 31 });
-	struct Canvas* err_console_canvas = window_new_canvas(sim.window, (Point) { 72, 0 }, (Point) { 40, 16 });
-	struct Canvas* io_console_canvas = window_new_canvas(sim.window, (Point) { 72, 15 }, (Point) { 40, 16 });
-	sim.err_console = console_init(err_console_canvas, POINT(0, 0), POINT(40, 16)); // 40, 16
-	//sim.err_console = console_init(err_console_canvas, POINT(0, 0), POINT(12, 5)); // 40, 16
+	struct Canvas* cpu_canvas = window_new_canvas(sim.window, (Point) { 0, 0 }, (Point) { 75, 31 });
+	sim.cpu = cpu_init(cpu_canvas);
+	struct Canvas* err_console_canvas = window_new_canvas(sim.window, (Point) { 74, 0 }, (Point) { 40, 16 });
+	struct Canvas* io_console_canvas = window_new_canvas(sim.window, (Point) { 74, 15 }, (Point) { 40, 16 });
+	sim.err_console = console_init(err_console_canvas, POINT(0, 0), POINT(40, 16));
 	drawable_new_frame(io_console_canvas, POINT(0, 0), POINT(40, 16));
-	sim.in_console = console_init(io_console_canvas, POINT(1, 1), POINT(38, 4)); // POINT(38, 3)
-	sim.out_console = console_init(io_console_canvas, POINT(1, 4), POINT(38, 11)); // POINT(38, 12)
-	struct CPU_IO_Token* in_token = malloc_s(sizeof(struct CPU_IO_Token));
-	*in_token = (struct CPU_IO_Token){ sim.in_console };
-	struct CPU_IO_Token* out_token = malloc_s(sizeof(struct CPU_IO_Token));
-	*out_token = (struct CPU_IO_Token){ sim.out_console };
-	struct CPU_IO_Handler cpu_io_handler = { &simulator_console_to_cpu, in_token, &simulator_cpu_to_console, out_token };
-	sim.cpu = cpu_init(cpu_canvas, cpu_io_handler);
+	sim.in_console = console_init(io_console_canvas, POINT(1, 1), POINT(38, 4));
+	sim.out_console = console_init(io_console_canvas, POINT(1, 4), POINT(38, 11));
 
 	SimState state = INIT;
 
-	// DEBUG
-	const char instr_file_name[] = "tests/MaszynaW.lst";
-	const char prog_file_name[] = "tests/test_10.prg";
-
 	while (state != EXIT)
 	{
-		bool redraw = false;
 		bool log_error = false;
 		struct UserInput user_input = simulator_get_events(event_get(sim.terminal));
 		if (user_input.new_state == EXIT)
 			state = EXIT;
 		else
 		{
-			//console_print
-			cpu_user_input_set(sim.cpu, user_input.mouse_scroll, user_input.interrupts);
+			bool cpu_input_flag, cpu_output_flag;
+			cpu_get_io_flags(sim.cpu, &cpu_input_flag, &cpu_output_flag);
+			char input_char = 0, output_char;
+			if (cpu_input_flag)
+			{
+				int chr = console_get_char(sim.in_console);
+				input_char = (chr == EOL) ? 0 : (char)chr;
+			}
+			cpu_user_input(sim.cpu, user_input.mouse_scroll, user_input.interrupts, input_char, &output_char);
+			if (cpu_output_flag)
+			{
+				if (output_char == 10 || output_char == 13)
+					output_char = '\n';
+				char str[] = { output_char, '\0' };
+				console_print(sim.out_console, str);
+			}
 		}
 		
 		switch (state)
@@ -149,12 +133,8 @@ void simulator_run(int argc, char** argv)
 		case INIT:
 		{
 			if (!cpu_import_instructions(sim.cpu, instr_file_name) || !cpu_import_program(sim.cpu, prog_file_name))
-			{
 				log_error = true;
-			}
-			redraw = true;
 			state = READY;
-			//state = EXIT;
 		}
 		break;
 		case READY:
@@ -186,12 +166,8 @@ void simulator_run(int argc, char** argv)
 					}
 				}
 				else
-				{
 					log_error = true;
-					redraw = true;
-				}
 			}
-			//state = EXIT;
 		}
 		break;
 		case EXIT:
@@ -206,7 +182,6 @@ void simulator_run(int argc, char** argv)
 			}
 			else
 				state = CLEAR;
-			redraw = true;
 		}
 		break;
 		case RELOAD_PROGRAM:
@@ -219,7 +194,6 @@ void simulator_run(int argc, char** argv)
 			}
 			else
 				state = CLEAR;
-			redraw = true;
 		}
 		break;
 		case CLEAR:
@@ -229,17 +203,13 @@ void simulator_run(int argc, char** argv)
 			console_clear(sim.err_console);
 			console_clear(sim.in_console);
 			console_clear(sim.out_console);
-			redraw = true;
 			state = READY;
 		}
 		break;
 		case TICK:
 		{
 			if (!cpu_tick(sim.cpu) && error())
-			{
 				log_error = true;
-			}
-			redraw = true;
 			state = READY;
 		}
 		break;
@@ -247,17 +217,11 @@ void simulator_run(int argc, char** argv)
 		{
 			if (user_input.new_state != READY)
 				state = user_input.new_state;
-			else
+			else if (!cpu_tick(sim.cpu))
 			{
-				if (!cpu_tick(sim.cpu))
-				{
-					if (error())
-					{
-						log_error = true;
-					}
-					state = READY;
-				}
-				redraw = true;
+				if (error())
+					log_error = true;
+				state = READY;
 			}
 		}
 		break;
@@ -265,17 +229,10 @@ void simulator_run(int argc, char** argv)
 		{
 			if (user_input.new_state != READY)
 				state = user_input.new_state;
-			else
+			else if (!cpu_tick(sim.cpu) && error())
 			{
-				if (!cpu_tick(sim.cpu))
-				{
-					if (error())
-					{
-						log_error = true;
-						state = READY;
-					}
-				}
-				redraw = true;
+				log_error = true;
+				state = READY;
 			}
 		}
 		break;
@@ -286,20 +243,7 @@ void simulator_run(int argc, char** argv)
 		if (user_input.chr)
 		{
 			char str[] = { user_input.chr, '\0' };
-			if (user_input.chr == '`')
-			{
-				int chr = console_get_char(sim.in_console);
-				if (chr != EOL)
-				{
-					*str = chr;
-					console_print(sim.out_console, str);
-				}	
-			}
-			else
-			{
-				console_print(sim.in_console, str);
-				//console_print(sim.err_console, str);
-			}
+			console_print(sim.in_console, str);
 		}
 
 		if (log_error)
@@ -308,13 +252,8 @@ void simulator_run(int argc, char** argv)
 			log_error = false;
 		}
 
-		redraw = true;
-		if (redraw)
-		{
-			window_draw(sim.window);
-			terminal_display(sim.terminal, sim.window);
-			/* redraw = false; */
-		}
+		window_draw(sim.window);
+		terminal_display(sim.terminal, sim.window);
 	}
 
 	console_delete(sim.err_console);
@@ -323,6 +262,5 @@ void simulator_run(int argc, char** argv)
 	cpu_delete(sim.cpu);
 	window_delete(sim.window);
 	terminal_del(sim.terminal);
-	_debug_error_delete();
 }
 

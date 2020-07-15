@@ -14,7 +14,7 @@
 #define MAX_STRING_LENGTH 16
 #define MAX_REG_NAME_LENGTH 2
 
-#define SIGNAL_PRIMITIVE_ARRAY_SIZE 2
+#define SIGNAL_PRIMITIVE_ARRAY_SIZE 3
 
 #define WINDOWS_WCHAR_SPECIFIER L"S"
 #define DEFAULT_WCHAR_SPECIFIER L"s"
@@ -30,7 +30,7 @@ void add_rectangle(struct Drawable* drawable, Point position, Point size)
 		.type = LINE_PRIMITIVE,
 		.position = (Point) {0, 0},
 		.orientation = HORIZONTAL,
-		.color = COLOR_FGND_DEFAULT,
+		.color = COLOR_DEFAULT,
 		.line = (struct Line){.line_type = SINGLE_LINE, .length = size.x}
 	};
 	vector_push(drawable->primitive_vect, &new_line);
@@ -63,7 +63,6 @@ void value_set_reg(struct Drawable* drawable, void* value_ptr)
 	int chars_written = swprintf_s(value_struct->text, wbuffer_size, L"%" WINDOWS_WCHAR_SPECIFIER L":%u", value_struct->name, value);
 	if (chars_written < 0)
 		CRASH_LOG(LIBRARY_FUNC_FAILURE);
-		//error_set(ERROR);
 }
 
 struct Drawable* drawable_new_reg(struct Canvas* canvas, Point position, Point size, const char* name)
@@ -80,14 +79,13 @@ struct Drawable* drawable_new_reg(struct Canvas* canvas, Point position, Point s
 		struct ValueReg* new_value = malloc_s(sizeof(struct ValueReg));
 		if (strncpy_s(new_value->name, MAX_STRING_LENGTH + 1, name, MAX_STRING_LENGTH))
 			CRASH_LOG(LIBRARY_FUNC_FAILURE);
-			//error_set(ERROR);
 		new_drawable->value_ptr = new_value;
 
 		struct Primitive new_text = {
 		.type = TEXT_PRIMITIVE,
 		.position = (Point) {1, 1},
 		.orientation = HORIZONTAL,
-		.color = COLOR_FGND_DEFAULT,
+		.color = COLOR_DEFAULT,
 		.text = (struct Text){ new_value->text }
 		};
 		vector_push(new_drawable->primitive_vect, &new_text);
@@ -134,10 +132,7 @@ void value_set_bus(struct Drawable* drawable, void* value_ptr)
 	CHECK_IF_NULL(drawable);
 	CHECK_IF_NULL(value_ptr);
 	var value = *(var*)value_ptr;
-	if (value == EMPTY)
-		change_color(drawable, COLOR_FGND_DEFAULT);
-	else
-		change_color(drawable, COLOR_FGND_ACTIVE);
+	change_color(drawable, (value == EMPTY) ? COLOR_DEFAULT : COLOR_ACTIVE);
 }
 
 struct Drawable* drawable_new_bus(struct Canvas* canvas, Point position, Point size)
@@ -151,7 +146,7 @@ struct Drawable* drawable_new_bus(struct Canvas* canvas, Point position, Point s
 		.type = LINE_PRIMITIVE,
 		.position = (Point) {0, 0},
 		.orientation = size.x ? HORIZONTAL : VERTICAL,
-		.color = COLOR_FGND_DEFAULT,
+		.color = COLOR_DEFAULT,
 		.line = (struct Line){.line_type = DOUBLE_LINE, .length = size.x ? size.x : size.y}
 		};
 		vector_push(new_drawable->primitive_vect, &new_line);
@@ -176,7 +171,7 @@ void value_set_signal(struct Drawable* drawable, void* value_ptr)
 	CHECK_IF_NULL(value_ptr);
 	bool value = *(bool*)value_ptr;
 	struct ValueSignal* value_signal = drawable->value_ptr;
-	Color color = value ? COLOR_FGND_ACTIVE : COLOR_FGND_DEFAULT;
+	Color color = value ? COLOR_ACTIVE : COLOR_DEFAULT;
 	for (int i = 0; i < SIGNAL_PRIMITIVE_ARRAY_SIZE; i++)
 		if (value_signal->primitive_ptr_array[i])
 			value_signal->primitive_ptr_array[i]->color = color;
@@ -188,8 +183,7 @@ struct Drawable* drawable_new_signal(struct DrawableSignalInit* init, const char
 	CHECK_IF_NULL(init->canvas);
 
 	struct Drawable* new_drawable;
-	if ((init->arrow.head.x == init->arrow.tail.x) && 
-		(init->tag.head.y == init->tag.tail.y))
+	if ((init->arrow.head.x == init->arrow.tail.x) && (init->tag.head.y == init->tag.tail.y))
 	{
 		new_drawable = canvas_new_drawable(init->canvas, (Point) { 0, 0 });
 		struct ValueSignal* new_value = malloc_s(sizeof(struct ValueSignal));
@@ -202,12 +196,29 @@ struct Drawable* drawable_new_signal(struct DrawableSignalInit* init, const char
 		{
 			struct Primitive new_line = {
 				.type = LINE_PRIMITIVE,
-				.position = (init->arrow.head.y < init->arrow.tail.y) ? init->arrow.head : init->arrow.tail,
 				.orientation = VERTICAL,
-				.color = COLOR_FGND_DEFAULT,
-				.line = (struct Line){.line_type = SINGLE_LINE, .length = abs(init->arrow.head.y - init->arrow.tail.y) + 1}
+				.color = COLOR_DEFAULT,
+				.line = (struct Line){.line_type = SINGLE_LINE, .length = 2}
 			};
-			vector_push(new_drawable->primitive_vect, &new_line);
+			if (init->arrow.head.y != init->tag.head.y)
+			{
+				new_line.position = (init->arrow.head.y < init->arrow.tail.y) ? init->arrow.head : p_add(init->arrow.head, POINT(0,- 1));
+				vector_push(new_drawable->primitive_vect, &new_line);
+			}
+			if (init->arrow.tail.y != init->tag.head.y)
+			{
+				new_line.position = (init->arrow.tail.y < init->arrow.head.y) ? init->arrow.tail : p_add(init->arrow.tail, POINT(0, -1));
+				vector_push(new_drawable->primitive_vect, &new_line);
+			}
+
+			int line_len = abs(init->arrow.head.y - init->arrow.tail.y) - 1;
+			if (line_len > 0)
+			{
+				Point line_pos = (init->arrow.head.y < init->arrow.tail.y) ? init->arrow.head : init->arrow.tail;
+				new_line.position =  p_add(line_pos, POINT(0, 1));
+				new_line.line.length = line_len;
+				new_value->primitive_ptr_array[primitive_array_index++] = vector_push(new_drawable->primitive_vect, &new_line);
+			}
 
 			// Unicode for upwards arrow and downwards arrow
 			wchar arrow_char = (init->arrow.head.y >= init->arrow.tail.y) ? 0x2193 : 0x2191;
@@ -217,12 +228,9 @@ struct Drawable* drawable_new_signal(struct DrawableSignalInit* init, const char
 				.type = TEXT_PRIMITIVE,
 				.position = (Point) {init->arrow.head.x, init->tag.tail.y},
 				.orientation = HORIZONTAL,
-				.color = COLOR_FGND_DEFAULT,
+				.color = COLOR_DEFAULT,
 				.text = (struct Text){ new_value->arrow }
 			};
-			//vector_push(new_drawable->primitive_vect, &new_arrow);
-			// NIEBEZPIECZNE!!!!!!!!
-			// POPRAWI�!
 			new_value->primitive_ptr_array[primitive_array_index++] = vector_push(new_drawable->primitive_vect, &new_arrow);
 		}
 
@@ -246,7 +254,6 @@ struct Drawable* drawable_new_signal(struct DrawableSignalInit* init, const char
 				tag_pointer_char = 0x253F;
 				break;
 			default:
-				//critical_error_set("");
 				CRASH_LOG(LOG_UNKNOWN_VALUE);
 				tag_pointer_char = '\0';
 			}
@@ -263,9 +270,7 @@ struct Drawable* drawable_new_signal(struct DrawableSignalInit* init, const char
 				offset = tag_field_len - name_len;
 				new_value->tag[0] = tag_pointer_char;
 			}
-			//int chars_written = swprintf_s(new_value->tag + offset, wbuffer_size - offset, L"%" WINDOWS_WCHAR_SPECIFIER, name);
-			//if (chars_written < 0)
-				//error_set(ERROR);
+
 			for (size_t i = 0; i < name_len; i++)
 				new_value->tag[offset + i] = (wchar)(name[i]);
 
@@ -276,12 +281,10 @@ struct Drawable* drawable_new_signal(struct DrawableSignalInit* init, const char
 				.type = TEXT_PRIMITIVE,
 				.position = position,
 				.orientation = HORIZONTAL,
-				.color = COLOR_FGND_DEFAULT,
+				.color = COLOR_DEFAULT,
 				.text = (struct Text){ new_value->tag }
 			};
-			//vector_push(new_drawable->primitive_vect, &new_tag);
-			// NIEBEZPIECZNE!!!!!!!!
-			// POPRAWI�!
+
 			new_value->primitive_ptr_array[primitive_array_index++] = vector_push(new_drawable->primitive_vect, &new_tag);
 		}
 
@@ -291,7 +294,6 @@ struct Drawable* drawable_new_signal(struct DrawableSignalInit* init, const char
 		new_drawable = NULL;
 
 	return new_drawable;
-	return NULL;
 }
 
 struct ValueMemory
@@ -318,7 +320,6 @@ void value_set_memory(struct Drawable* drawable, void* value_ptr)
 		var memory_max_offset = (1 << (*value_memory->addr_len)) - MEMORY_LINES_NUMBER;
 		value_memory->offset = (offset > memory_max_offset) ? memory_max_offset : offset;
 	}
-
 	
 	CHECK_IF_NULL(value_memory->memory_ptr);
 	for (unsigned i = 0; i < MEMORY_LINES_NUMBER; i++)
@@ -337,11 +338,7 @@ void value_set_memory(struct Drawable* drawable, void* value_ptr)
 		int chars_written = swprintf_s(value_memory->buffer[i], MEMORY_LINE_BUFFER_SIZE, L"%5u %8u %3" WINDOWS_WCHAR_SPECIFIER, index, value, name);
 		if (chars_written < 0)
 			CRASH_LOG(LIBRARY_FUNC_FAILURE);
-			//error = ERROR;
 	}
-
-	//if (error)
-		//error_set(error);
 }
 
 struct Drawable* drawable_new_memory(struct DrawableMemoryInit* init)
@@ -365,7 +362,7 @@ struct Drawable* drawable_new_memory(struct DrawableMemoryInit* init)
 		.type = TEXT_PRIMITIVE,
 		.position = (Point) {1, 1 + i},
 		.orientation = HORIZONTAL,
-		.color = COLOR_FGND_DEFAULT,
+		.color = COLOR_DEFAULT,
 		.text = (struct Text){ new_value->buffer[i] }
 		};
 		vector_push(new_drawable->primitive_vect, &new_line);
@@ -386,31 +383,6 @@ struct Drawable* drawable_new_frame(struct Canvas* canvas, Point position, Point
 		drawable_set_visibility(new_frame, true);
 	return new_frame;
 }
-/*
-struct ValueTextField
-{
-	wchar** line_ptr_array;
-	unsigned lines_num;
-};
-
-var value_set_text_field(struct Drawable* drawable, void* value_ptr)
-{
-	CHECK_IF_NULL(drawable);
-	CHECK_IF_NULL(value_ptr);
-
-	struct ValueTextField* value_text = drawable->value_ptr;
-	unsigned offset = *(unsigned*)value_ptr % value_text->lines_num;
-
-	while (offset)
-	{
-		wchar* first_line = *value_text->line_ptr_array;
-		unsigned line_index = 0;
-		for (; line_index < (value_text->lines_num - 1); line_index++)
-			value_text->line_ptr_array[line_index] = value_text->line_ptr_array[line_index + 1];
-		value_text->line_ptr_array[line_index] = first_line;
-		offset--;
-	}
-}*/
 
 struct Drawable* drawable_new_text_field(struct Canvas* canvas, Point position, Point size, wchar** line_array)
 {
@@ -421,24 +393,19 @@ struct Drawable* drawable_new_text_field(struct Canvas* canvas, Point position, 
 	if (size.x && size.y)
 	{
 		new_drawable = canvas_new_drawable(canvas, position);
-		//struct ValueTextField* new_value = malloc_s(sizeof(struct ValueTextField));
-		//*new_value = (struct ValueTextField){ line_ptr_array, size.y };
-		//new_drawable->value_ptr = new_value;
 		for (int i = 0; i < size.y; i++)
 		{
 			struct Primitive new_line = {
 			.type = TEXT_PRIMITIVE,
 			.position = POINT(0, i),
 			.orientation = HORIZONTAL,
-			.color = COLOR_FGND_DEFAULT,
+			.color = COLOR_DEFAULT,
 			.text = (struct Text){ line_array[i] }
 			};
-			// NIEBEZPIECZNE!!!!!!!!
-			// POPRAWI�!
+
 			struct Primitive* prim_ptr = vector_push(new_drawable->primitive_vect, &new_line);
 		}
 		new_drawable->is_visible = true;
-		//new_drawable->set_value = &value_set_text_field;
 	}
 	else
 		new_drawable = NULL;
@@ -487,8 +454,7 @@ struct Drawable* drawable_new_button(struct Canvas* canvas, Point position, Poin
 		.color = new_value->color_default,
 		.text = (struct Text){ new_value->text }
 		};
-		// NIEBEZPIECZNE!!!!!!!!
-			// POPRAWI�!
+
 		struct Primitive* new_text_ptr = vector_push(new_drawable->primitive_vect, &new_text);
 		CHECK_IF_NULL(new_text_ptr);
 		new_value->text_color = &new_text_ptr->color;

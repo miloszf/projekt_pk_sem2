@@ -1,18 +1,18 @@
 [Opcje]
 Po³¹czenie=1
-Inkrementacja=0
-Logiczne=0
+Inkrementacja=1
+Logiczne=1
 Arytmetyczne=1
 Stos=1
-RejestrX=0
-RejestrY=0
+RejestrX=1
+RejestrY=1
 Przerwania=0
 Wejœcie=1
 Znaczniki=0
-Adres=6
-Kod=4
+Adres=7
+Kod=5
 [Rozkazy]
-Liczba=16
+Liczba=22
 Nazwa1=stp
 Nazwa2=dod
 Nazwa3=ode
@@ -29,6 +29,12 @@ Nazwa13=dzi
 Nazwa14=mno
 Nazwa15=wpr
 Nazwa16=wyp
+Nazwa17=iak
+Nazwa18=dak
+Nazwa19=shr
+Nazwa20=neg
+Nazwa21=lub
+Nazwa22=i
 [stp]
 Linie=5
 Linia1=// zakonczenie programu
@@ -148,3 +154,62 @@ Linia3=czyt wys wei il;
 Linia4=wyak weja ode weak wes werb start;
 Linia5=@czekaj wyg weja ode weak JE¯ELI z to @gotowe gdy nie @czekaj;
 Linia6=@gotowe wys weja przep weak wyl wea;
+[iak]
+Linie=5
+Linia1=// inkremantacja akumulatora
+Linia2=ROZKAZ IAK;
+Linia3=argumenty 0;
+Linia4=czyt wys wei il;
+Linia5=iak wyl wea;
+[dak]
+Linie=5
+Linia1=// dekremantacja akumulatora
+Linia2=ROZKAZ DAK;
+Linia3=argumenty 0;
+Linia4=czyt wys wei il;
+Linia5=dak wyl wea;
+[shr]
+Linie=9
+Linia1=// pobranie liczby z podanego adresu i zapisanie wyniku pod nowy
+Linia2=ROZKAZ SHR;
+Linia3=argumenty 2;
+Linia4=czyt wys wei il;
+Linia5=wyad wea;
+Linia6=czyt wys weja shr weak wyl wea il;
+Linia7=czyt wys sa wea;
+Linia8=wyak wes;
+Linia9=pisz wyl wea;
+[lub]
+Linie=11
+Linia1=// pobranie 2 liczb z podanych adresów i zapisanie wyniku pod nowy
+Linia2=ROZKAZ LUB;
+Linia3=argumenty 3;
+Linia4=czyt wys wei il;
+Linia5=wyad wea;
+Linia6=czyt wys weja przep weak wyl wea il;
+Linia7=czyt wys sa wea;
+Linia8=czyt wys weja lub weak wyl wea il;
+Linia9=czyt wys sa wea;
+Linia10=wyak wes;
+Linia11=pisz wyl wea;
+[i]
+Linie=11
+Linia1=// pobranie 2 liczb z podanych adresów i zapisanie wyniku pod nowy
+Linia2=ROZKAZ I;
+Linia3=argumenty 3;
+Linia4=czyt wys wei il;
+Linia5=wyad wea;
+Linia6=czyt wys weja przep weak wyl wea il;
+Linia7=czyt wys sa wea;
+Linia8=czyt wys weja i weak wyl wea il;
+Linia9=czyt wys sa wea;
+Linia10=wyak wes;
+Linia11=pisz wyl wea;
+[neg]
+Linie=5
+Linia1=//
+Linia2=ROZKAZ NEG;
+Linia3=argumenty 0;
+Linia4=czyt wys wei il;
+Linia5=wyak weja neg weak wyl wea;
+

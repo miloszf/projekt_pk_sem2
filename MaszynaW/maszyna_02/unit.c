@@ -69,16 +69,12 @@ var unit_set(struct Unit* unit, var value)
 
 var unit_immediate_set(struct Unit* unit, var value)
 {
-	if (unit->input_value == EMPTY)
-	{
-		unit->value = value;
-		unit->input_value = value;
-		if (unit->drawable)
-			drawable_set_value(unit->drawable, &unit->input_value);
-		return EMPTY;
-	}
-	else
-		return 0;
+	var return_value = (unit->input_value == EMPTY) ? EMPTY : 0;
+	unit->value = value;
+	unit->input_value = value;
+	if (unit->drawable)
+		drawable_set_value(unit->drawable, &unit->input_value);
+	return return_value;
 }
 
 var unit_read(struct Unit* unit)
@@ -108,7 +104,6 @@ void unit_reset(struct Unit* unit)
 		if (unit->drawable)
 			drawable_set_value(unit->drawable, &unit->value);
 	}
-		
 	unit->input_value = EMPTY;
 }
 
@@ -145,7 +140,5 @@ void unit_set_visibility(struct Unit* unit, bool visibility)
 void unit_delete(struct Unit* unit)
 {
 	if (unit)
-	{
 		free(unit);
-	}
 }
