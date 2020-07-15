@@ -18,14 +18,16 @@
 #define COLOR_DEFAULT (COLOR_FGND_DEFAULT | COLOR_BGND_DEFAULT)
 #define COLOR_ACTIVE (COLOR_FGND_ACTIVE | COLOR_BGND_DEFAULT)
 
+/** Typ s³u¿¹cy do przechowywania koloru. */
 typedef unsigned int Color;
 
+/** Struktura przechowuj¹ca zestaw kolorów. */
 struct ColorSet
 {
-	Color f_default;
-	Color b_default;
-	Color f_active;
-	Color b_active;
+	Color f_default;	///< domyœlny kolor pierwszoplanowy
+	Color b_default;	///< domyœlny kolor t³a
+	Color f_active;		///< kolor pierwszoplanowy elementów aktywnych
+	Color b_active;		///< kolor t³a elementów aktywnych
 };
 
 #endif

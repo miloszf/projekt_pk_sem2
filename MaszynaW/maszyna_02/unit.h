@@ -3,59 +3,62 @@
 
 #include "settings.h"
 
-// Struktura reprezentuj¹ca jedn¹ ze sk³adowych maszynyW:
-// rejestr, uk³ad kombinacyjny lub magistralê. Posiada typ, wartoœæ, 
-// wskaŸnik na d³ugoœæ s³owa maszyny oraz sk³adow¹ zale¿n¹ od typu
+/** Struktura reprezentuj¹ca jeden ze sk³adowych uk³adów maszyny:
+	rejestr, uk³ad kombinacyjny lub magistralê. */
 struct Unit;
 
-/*
-		TODO
-		wzi¹æ poprawkê na d³ugoœæ s³owa !!!!!
-
-*/
-
+/** Pomocnicza struktura s³u¿¹ca do inicjalizacji uk³adów. */
 struct UnitInit
 {
-	Point position;
-	Point size;
-	const unsigned char* word_length;
-	struct Canvas* canvas;
+	Point position;						///< pozycja uk³adu wzglêdem lewego górnego rogu sceny
+	Point size;							///< rozmiar uk³adu
+	const unsigned char* word_length;	///< wskaŸnik na zmienn¹ przechowuj¹c¹ d³ugoœæ s³owa maszyny
+	struct Canvas* canvas;				///< scena
 };
 
-// Funkcja tworz¹ca rejestr, zwraca wskaŸnik. 
-// argumenty: informacja o po³o¿eniu, rozmiarze i tekœcie dla funkcji graficznych
+/** Funkcja tworz¹ca nowy rejestr. 
+@param init wskaŸnik na obiekt przechowuj¹cy ustawienia pocz¹tkowe
+@param name nazwa rejsetru
+@return nowy obiekt */
 struct Unit* unit_new_reg(struct UnitInit* init, const char* name);
-// Funkcja tworz¹ca uk³ad kombinacyjny, zwraca wskaŸnik. 
-// argumenty: wskaŸnik do funkcji zapisuj¹cej wartoœæ
+/** Funkcja tworz¹ca nowy uk³ad kombinacyjny.
+@param init wskaŸnik na obiekt przechowuj¹cy ustawienia pocz¹tkowe
+@return nowy obiekt */
 struct Unit* unit_new_comb(struct UnitInit* init);
-// Funkcja tworz¹ca magistralê, zwraca wskaŸnik. 
-// argumenty: informacja o po³o¿eniu, rozmiarze i tekœcie dla funkcji graficznych
+/** Funkcja tworz¹ca now¹ magistralê.
+@param init wskaŸnik na obiekt przechowuj¹cy ustawienia pocz¹tkowe
+@return nowy obiekt */
 struct Unit* unit_new_bus(struct UnitInit* init);
 
-// Funkcja zapisuj¹ca wartoœæ, zwraca 0 w przypadku niepowodzenia zapisu.
-// argumenty: wartoœæ do zapisania
+/** Funkcja zapisuj¹ca podan¹ wartoœæ do uk³adu. 
+@param unit uk³ad
+@param value wartoœæ do zapisania
+@return '0' przy niepowodzeniu zapisu, inna wartoœæ w przeciwnym przypadku */
 var unit_set(struct Unit* unit, var value);
-// Funkcja bezpoœrednio zapisuj¹ca wartoœæ
-// argumenty: wartoœæ do zapisania
+/** Funkcja zapisuj¹ca bezpoœrednio podan¹ wartoœæ do uk³adu.
+@param unit uk³ad
+@param value wartoœæ do zapisania
+@return 'EMPTY' je¿eli nadpisywany uk³ad by³ pusty, inna wartoœæ w przeciwnym przypadku */
 var unit_immediate_set(struct Unit* unit, var value);
-// Funkcja zapisuj¹ca wartoœæ dla rejestrów, dla pozosta³ych nic nie robi
-// argumenty: -
+/** Funkcja zatrzaskuj¹ca wartoœæ rejestrów, dla pozosta³ych uk³aduów nie robi nic.
+@param unit uk³ad */
 void unit_latch(struct Unit* unit);
-// Funkcja resetuj¹ca
-// argumenty: -
+/** Funkcja zeruj¹ca podany uk³ad.
+@param unit uk³ad */
 void unit_reset(struct Unit* unit);
-// Funkcja przywracaj¹ca wartoœci pocz¹tkowe
-// argumenty: -
+/** Funkcja przywracaj¹ca ustawienia pocz¹tkowe danego uk³adu.
+@param unit uk³ad */
 void unit_restart(struct Unit* unit);
-// Funkcja zwracaj¹ca zapisan¹ wartoœæ
-// argumenty: -
+/** Funkcja zwracaj¹ca wartoœæ zapisan¹ w uk³adzie.
+@param unit uk³ad
+@return wartoœæ zapisana w uk³adzie */
 var unit_read(struct Unit* unit);
-
-//void unit_draw(struct Unit* unit);
-void unit_show(struct Unit* unit);
-void unit_hide(struct Unit* unit);
+/** Funkcja ustawiaj¹ca widocznoœæ uk³adu
+@param unit uk³ad
+@param visibility widocznoœæ*/
 void unit_set_visibility(struct Unit* unit, bool visibility);
-
+/** Funkcja usuwaj¹ca podany obiekt
+@param signal obiekt do usuniêcia */
 void unit_delete(struct Unit* unit);
 
 #endif

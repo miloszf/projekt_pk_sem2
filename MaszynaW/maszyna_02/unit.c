@@ -116,20 +116,6 @@ void unit_restart(struct Unit* unit)
 		drawable_set_value(unit->drawable, &unit->value);
 }
 
-void unit_show(struct Unit* unit)
-{
-	CHECK_IF_NULL(unit);
-	if (unit->drawable)
-		drawable_set_visibility(unit->drawable, true);
-}
-
-void unit_hide(struct Unit* unit)
-{
-	CHECK_IF_NULL(unit);
-	if (unit->drawable)
-		drawable_set_visibility(unit->drawable, false);
-}
-
 void unit_set_visibility(struct Unit* unit, bool visibility)
 {
 	CHECK_IF_NULL(unit);

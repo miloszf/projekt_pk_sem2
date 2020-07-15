@@ -1,59 +1,57 @@
 #ifndef EVENT_H
 #define EVENT_H
 
-// Struktura reprezentuj¹ca pojedyñcze zdarzenie odczytane z konsoli.
-// Zdarzeniem mo¿e byæ zmiana rozmiaru okna, wciœniêcie klawisza, u¿ycie myszy
-
 #include <stdbool.h>
 
 #include "settings.h"
 #include "terminal.h"
 #include "vector.h"
 
-#define EVENT_KEY		0x01
-#define EVENT_MOUSE		0x02
-#define EVENT_WINDOW	0x04
+//#define EVENT_KEY		0x01
+//#define EVENT_MOUSE		0x02
+//#define EVENT_WINDOW	0x04
 
-// Struktura przechowuj¹ca informacjê o zmianie stanu pojedyñczego klawisza.
-// key_event: 0 - 127 kod ASCII danego klawisza
-//    128 - 255 klawisze specjalne 
+/** Typ wyliczeniowy reprezentuj¹cy rodzaje zdarzeñ zg³aszanych przez terminal. */
+typedef enum { EVENT_KEY = 0x01, EVENT_MOUSE = 0x02, EVENT_WINDOW = 0x04 } EventType;
+
+/** Struktura przechowuj¹ca informacjê o zmianie stanu pojedyñczego klawisza. */
 struct KeyEvent
 {
-	bool key_down;
-	unsigned int repeat_count;
-	char key;
+	bool key_down;				///< 'true' - klawisz wciœniêty, 'false' - klawisz puszczony
+	unsigned int repeat_count;	///< liczba powtórzeñ wciœniêcia danego klawisza
+	char key;					///< kod klawisza: [0 - 127] kod ASCII, [128 - 255] klawisze specjalne
 };
 
-// Struktura przechowuj¹ca informacjê o zmianie stanu myszy
-// scroll: 1 dla przewijania do góry
-//		  -1 dla przewijania w dó³
+/** Struktura przechowuj¹ca informacjê o zmianie stanu myszy. */
 struct MouseEvent
 {
-	char scroll;
+	char scroll;	///< '1' dla przewijania do góry, '-1' dla przewijania w dó³
 };
 
-// Struktura przechowuj¹ca informacjê o zmianie stanu okna
+/** Struktura przechowuj¹ca informacjê o zmianie stanu okna (nieu¿ywana) */
 struct WindowEvent
 {
-	Point size;
+	Point size;	///< nowy rozmiar okna
 };
 
+/** Struktura reprezentuj¹ca pojedyñcze zdarzenie odczytane z terminala.
+	Zdarzeniem mo¿e byæ zmiana rozmiaru okna, wciœniêcie klawisza, u¿ycie myszy. */
 struct InputEvent
 {
-	char type;
+	EventType	type;	///< typ zdarzenia
 	union
 	{
-		struct KeyEvent key_event;
-		struct MouseEvent mouse_event;
-		struct WindowEvent window_event;
+		struct KeyEvent key_event;			///< zdarzenie zwi¹zane z klawiatur¹
+		struct MouseEvent mouse_event;		///< zdarzenie zwi¹zane z mysz¹
+		struct WindowEvent window_event;	///< zdarzenie zwi¹zane z oknem terminala
 	};
 };
 
-// Funkcja odczytuj¹ca zdarzenia z konsoli, zwraca wektor zdarzeñ
-// argumenty: wskaŸnik na terminal
+/** Funkcja odczytuj¹ca zdarzenia z konsoli, zwraca wektor zdarzeñ.
+@param term wskaŸnik na terminal
+@return wektor zdarzeñ */
 struct Vector* event_get(struct Terminal* term);
 
-#define ACSII_KEY
 #define CONTROL_KEY 0x80
 #define F1_KEY	(char)(0x01 | CONTROL_KEY)
 #define F2_KEY	(char)(0x02 | CONTROL_KEY)

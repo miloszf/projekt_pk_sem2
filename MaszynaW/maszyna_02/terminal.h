@@ -3,22 +3,20 @@
 
 #include "window.h"
 
-// "Bilbioteka" zajmuj¹ca siê obs³ug¹ terminala
-
-// Struktura przechowuj¹ca uchwyty do wejœcia i wyjœcia konsoli
+/** Struktura przechowuj¹ca informacje zwi¹zane z obs³ug¹ terminala */
 struct Terminal;
 
-// Funkcja inicjalizuj¹ca terminal. Zapisuje pocz¹tkowe ustawienia konsoli,
-// w³¹cza odpowiednie opcje, zmienia bufor na alternatywny, dodaje funkcjê
-// "awaryjn¹" do atexit(), ustawia globalny wskaŸnik na terminal(...)
-// Zwraca wskaŸnik na now¹ strukturê terminal.
-// argumenty: wskaŸnik na okno do zainicjalizowania, [nazwa okna terminala]
+/** Funkcja inicjalizuj¹ca obiekt struktury Terminal.
+@param window_name nazwa okna terminala
+@return nowy obiekt */
 struct Terminal* terminal_init(const wchar* window_name);
-
-// Funkcja przepisuj¹ca bufor okna do konsoli
+/** Funkcja odpowiedzialna za obs³ugê grafiki terminala.
+	Przepisuje bufor podanego okna do bufora terminala.
+@param term terminal
+@param window Ÿród³owe okno */
 void terminal_display(struct Terminal* term, struct Window* window);
-
-// Funkcja usuwaj¹ca terminal.
+/** Funkcja usuwaj¹ca podany obiekt
+@param terminal obiekt do usuniêcia */
 void terminal_del(struct Terminal* terminal);
 
 #endif

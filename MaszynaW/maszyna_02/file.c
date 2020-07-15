@@ -223,23 +223,23 @@ unsigned int find_header(struct Vector* lines_vect, const char* name)
 	return (line_index < vect_size) ? line_index : EOF;
 }
 
-bool file_import_setup(const char* file_name, struct FileHandler* files_handler, struct Map* pref_map)
+bool file_import_setup(const char* file_name, struct FileHandler* handler, struct Map* pref_map)
 {
 	CHECK_IF_NULL(file_name);
-	CHECK_IF_NULL(files_handler);
+	CHECK_IF_NULL(handler);
 	CHECK_IF_NULL(pref_map);
 
-	if (files_handler->instruction_lines_vect)
+	if (handler->instruction_lines_vect)
 	{
-		vector_delete(files_handler->instruction_lines_vect);
-		files_handler->instruction_lines_vect = NULL;
+		vector_delete(handler->instruction_lines_vect);
+		handler->instruction_lines_vect = NULL;
 	}
 
 	struct Vector* lines_vect = get_instruction_lines(file_name);
 	if (!lines_vect)
 		return false;
 	else
-		files_handler->instruction_lines_vect = lines_vect;
+		handler->instruction_lines_vect = lines_vect;
 
 	const char settings_str[] = "opcje";
 	int line_index = find_header(lines_vect, settings_str);
