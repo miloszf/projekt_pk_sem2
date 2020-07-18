@@ -17,7 +17,7 @@ typedef enum { EVENT_KEY = 0x01, EVENT_MOUSE = 0x02, EVENT_WINDOW = 0x04 } Event
 /** Struktura przechowuj¹ca informacjê o zmianie stanu pojedyñczego klawisza. */
 struct KeyEvent
 {
-	bool key_down;				///< 'true' - klawisz wciœniêty, 'false' - klawisz puszczony
+	bool key_down;				///< 'true' - klawisz wciœniêty, 'false' - klawisz zwolniony
 	unsigned int repeat_count;	///< liczba powtórzeñ wciœniêcia danego klawisza
 	char key;					///< kod klawisza: [0 - 127] kod ASCII, [128 - 255] klawisze specjalne
 };
@@ -38,7 +38,7 @@ struct WindowEvent
 	Zdarzeniem mo¿e byæ zmiana rozmiaru okna, wciœniêcie klawisza, u¿ycie myszy. */
 struct InputEvent
 {
-	EventType	type;	///< typ zdarzenia
+	EventType type;							///< typ zdarzenia
 	union
 	{
 		struct KeyEvent key_event;			///< zdarzenie zwi¹zane z klawiatur¹

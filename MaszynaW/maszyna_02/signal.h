@@ -50,29 +50,33 @@ struct SignalInit
 			var(*function)(void*);	///< wskaŸnik na funkcjê
 			void* value_ptr;		///< wskaŸnik na obiekt z informacjami
 		} other;
+
+		//debug
+		unsigned char* dummy;
 	} value;
 };
 
 /** Funkcja tworz¹ca nowy sygna³ z wykorzystaniem inicjalizuj¹cego obiektu. 
-@param signal_init wskaŸnik na obiekt przechowuj¹cy ustawienia\
-@param nowy obiekt */
+@param signal_init wskaŸnik na obiekt przechowuj¹cy ustawienia
+@return nowy obiekt */
 struct Signal* signal_new(struct SignalInit* signal_init);
 /** Funkcja zmieniaj¹ca stan sygna³u na aktywny, wykonuje funkcjê przypisan¹ do sygna³u.
 @param signal sygna³ do ustawienia
 @return '0' przy powodzeniu, 'EMPTY' dla pustego uk³adu, 'OUTPUT_ALREADY_SET' gdy dany uk³ad posiada ju¿ wartoœæ */
 var signal_set(struct Signal* signal);
-/** Funkcja zmieniaj¹ca stan sygna³u na nieaktywny. */
+/** Funkcja zmieniaj¹ca stan sygna³u na nieaktywny. 
+@param signal resetowany sygna³ */
 void signal_reset(struct Signal* signal);
 /** Funkcja zwracaj¹ca nazwê sygna³u.
 @param signal sygna³
-@raturn nazwa sygna³u */
+@return nazwa sygna³u */
 const char* signal_get_name(struct Signal* signal);
 /** Funkcja zmieniaj¹ca widocznoœæ sygna³u.
 @param signal sygna³
 @param visibility widocznoœæ sygna³u */
 void signal_set_visibility(struct Signal* signal, bool visibility);
-/** Funkcja ustawiaj¹ca graficzn¹ reprezentacjê sygna³u.
-@param signa sygna³ */
+/** Funkcja ustawiaj¹ca wartoœæ graficznej reprezentacji sygna³u.
+@param signal sygna³ */
 void signal_draw(struct Signal* signal);
 /** Funkcja usuwaj¹ca podany obiekt
 @param signal obiekt do usuniêcia */

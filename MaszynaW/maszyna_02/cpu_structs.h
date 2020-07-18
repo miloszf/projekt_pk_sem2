@@ -52,7 +52,7 @@ struct CPUTag
 	bool value;			///< wartoœæ logiczna tagu
 	CPUTagType type;	///< typ tagu
 };	
-/** Struktura zawieraj¹ca wszystkie uk³adu, sygna³u i tagi maszyny. */
+/** Struktura zawieraj¹ca wszystkie uk³ady, sygna³y i tagi maszyny. */
 struct CPUComponents
 {
 	/** Jednostka arytmetyczno-logiczna. */
@@ -86,7 +86,7 @@ struct CPUComponents
 		struct Signal* sig_wys;
 		struct Signal* sig_wes;
 	} mem;
-	/** Magistrale oraz sygna³u i uk³ady zwi¹zane z przetwarzaniem adresu. */
+	/** Magistrale, sygna³y i uk³ady zwi¹zane z przetwarzaniem adresu. */
 	struct {
 		struct Unit* reg_i;
 		struct Unit* reg_l;
@@ -159,7 +159,7 @@ struct CPUComponents
 /** Struktura reprezentuj¹ca pamiêæ maszyny. */
 struct CPUMemory
 {
-	var* memory_array;					///<  pamiêæ maszyny, tablica wartoœci
+	var* memory_array;					///< pamiêæ maszyny, tablica wartoœci
 	const var* addr_len;				///< wskaŸnik na iloœæ bitów adresowych
 	struct Drawable* drawable;			///< reprezentacja graficzna pamiêci
 	struct Vector* instr_names_vect;	///< wektor instrukcji
@@ -169,7 +169,7 @@ struct CPUWord
 {
 	var word_len;	///< iloœæ bitów s³owa maszyny
 	var addr_len;	///< iloœæ bitów adresowych
-	var word_mask;	///< iloœæ bitów kodu
+	var word_mask;	///< maska s³owa
 	var addr_mask;	///< maska adresu
 	var char_mask;	///< mask znaku uk³ady io
 	var intr_mask;	///< maska przerwañ
@@ -188,7 +188,7 @@ struct CPUPeripherals
 	bool input_flag;										///< flaga gotowoœci do pobrania znaku
 	bool output_flag;										///< flaga gotowoœci do wys³ania znaku
 	struct Drawable* buttons_array[CPU_INTERRUPTS_NUMBER];	///< tablica reprezentacji graficznych przycisków przerwañ
-	var buttons_set;										///< stan przysicków przerwañ
+	var buttons_set;										///< stan przycisków przerwañ
 };
 /** Struktura reprezentuj¹ca jednostkê centraln¹ maszyny. */
 struct CPU
@@ -197,7 +197,7 @@ struct CPU
 	struct CPUComponents components;	///< obiekt zawieraj¹cy wszystkie uk³ady, sygna³y i tagi maszyny
 	struct CPUWord word;				///< obiekt przechowuj¹cy informacje zwi¹zane z iloœci¹ bitów oraz maskami maszyny
 	struct CPUMemory* memory;			///< obiekt przechowuj¹cy informacje dotycz¹ce pamiêci maszyny
-	/** Struktura przechowuj¹ca uk³ady, sygna³y i instrukcje. */
+	/** Struktura przechowuj¹ca wektory uk³adów, sygna³ów i instrukcji zgodnych z bie¿¹cymi ustawieniami. */
 	struct
 	{
 		struct Vector* units;			///< wektor uk³adów
@@ -216,7 +216,7 @@ struct CPUTag cpu_tag_init(const char* name, CPUTagType type);
 /** Funkcja odœwie¿aj¹ca dany tag.
 @param tag tag
 @param cpu jednostka centralna
-@return wartoœæ zale¿na od rodzaju i wartoœci tagu */
+@return wartoœæ logiczna tagu */
 bool cpu_tag_update(struct CPUTag* tag, struct CPU* cpu);
 /** Funkcja usuwaj¹ca tag.
 @param tag tag do usuniêcia */
@@ -229,13 +229,12 @@ void cpu_tag_delete(struct CPUTag* tag);
 @return nowy obiekt */
 struct CPUMemory* cpu_memory_init(struct Canvas* canvas, const Point position, const var* addr_length);
 /** Funkcja prze³adowuj¹ca program do pamiêci maszysny.
-@param memory  pamiêæ
-@param position pozycja wzglêdem lewego górnego rogu sceny
+@param memory pamiêæ
 @param instr_vect wektor instrukcji */
 void cpu_memory_update(struct CPUMemory* memory, struct Vector* instr_vect);
 /** Funkcja przewijaj¹ca graficzn¹ reprezentacjê pamiêci.
-@param memory  pamiêæ
-@param offset prszesuniêcie */
+@param memory pamiêæ
+@param offset przesuniêcie */
 void cpu_memory_scroll(struct CPUMemory* memory, var offset);
 /** Funkcja usuwaj¹ca podany obiekt
 @param window obiekt do usuniêcia */
@@ -244,15 +243,15 @@ void cpu_memory_delete(struct CPUMemory*);
 /** Funkcja zwracaj¹ca zainicjalizowany obiekt struktury CPUWord.
 @return nowy obiekt */
 struct CPUWord cpu_word_init();
-/** Funkcja odœwie¿aj¹ca informacje dotycz¹ce iloœci bitów i mask maszyny.
+/** Funkcja odœwie¿aj¹ca informacje dotycz¹ce iloœci bitów i masek maszyny.
 @param word wskaŸnik na obiekt do odœwie¿enia
 @param code_length iloœæ bitów kodu
 @param address_length iloœæ bitów adresowych
-@param wektor instrukcji m */
+@param instr_vect wektor instrukcji */
 void  cpu_word_update(struct CPUWord* word, var code_length, var address_length, struct Vector* instr_vect);
 /** Funkcja odœwie¿aj¹ca stan przycisków przerwañ maszyny.
-@param interrupts stan  przerwañ
-@param tablica reprezentacji graficznych przycisków */
+@param interrupts zg³oszone przerwania
+@param buttons_array tablica reprezentacji graficznych przycisków */
 void cpu_peripherals_update_buttons(var interrupts, struct Drawable** buttons_array);
 
 #endif

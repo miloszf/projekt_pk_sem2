@@ -31,7 +31,7 @@ void drawable_set_visibility(struct Drawable* drawable, bool is_visible);
 @param drawable reprezentacja graficzna pewnego obiektu
 @param value_ptr wskaŸnik na wartoœæ zwi¹zan¹ z danym obiektem */
 void drawable_set_value(struct Drawable* drawable, void* value_ptr);
-/** Funkcja usuwaj¹ca podany obiekt
+/** Funkcja usuwaj¹ca podany obiekt.
 @param drawable obiekt do usuniêcia */
 void drawable_delete(struct Drawable* drawable);
 

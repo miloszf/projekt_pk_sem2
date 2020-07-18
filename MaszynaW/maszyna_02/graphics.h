@@ -43,12 +43,12 @@ struct DrawableMemoryInit
 	struct Vector** instr_names_vect_ptr;	/// wskaźnik na wektor instrukcji
 };
 
-// Opisane w window.h
+
 struct Window* window_init();
 struct Canvas* window_new_canvas(struct Window* window, Point offset, Point size);
 void window_draw(struct Window* window);
 void window_delete(struct Window* window);
-// Opisane w drawable.h
+
 void drawable_set_visibility(struct Drawable* drawable, bool is_visible);
 void drawable_set_value(struct Drawable* drawable, void* value_ptr);
 
@@ -68,7 +68,7 @@ struct Drawable* drawable_new_comb(struct Canvas* canvas, Point position, Point 
 struct Drawable* drawable_new_bus(struct Canvas* canvas, Point position, Point size);
 /** Funkcja zwracająca graficzną reprezentację sygnału.
 @param init wskaźnik na obiekt zawierający informacje potrzebne do inicjalizacji nowego obiektu
-@param name nazwa rejestru
+@param name nazwa sygnału
 @return nowy obiekt */
 struct Drawable* drawable_new_signal(struct DrawableSignalInit* init, const char* name);
 /** Funkcja zwracająca graficzną reprezentację pamięci.
@@ -77,20 +77,21 @@ struct Drawable* drawable_new_signal(struct DrawableSignalInit* init, const char
 struct Drawable* drawable_new_memory(struct DrawableMemoryInit* init);
 /** Funkcja zwracająca graficzną reprezentację ramki.
 @param canvas scena w której zawiera się dany obiekt
+@param position pozycja względem lewego górnego rogu sceny
 @param size rozmiar ramki
 @return nowy obiekt */
 struct Drawable* drawable_new_frame(struct Canvas* canvas, Point position, Point size);
 /** Funkcja zwracająca graficzną reprezentację pola tekstowego.
 @param canvas scena w której zawiera się dany obiekt
 @param position pozycja względem lewego górnego rogu sceny
-@param size rozmiar ramki
-@param line_array wskaźnik na tablicę linii z tekstem
+@param size rozmiar pola tekstowago
+@param line_array wskaźnik na tablicę linii tekstu
 @return nowy obiekt */
 struct Drawable* drawable_new_text_field(struct Canvas* canvas, Point position, Point size, wchar** line_array);
 /** Funkcja zwracająca graficzną reprezentację przycisku.
 @param canvas scena w której zawiera się dany obiekt
 @param position pozycja względem lewego górnego rogu sceny
-@param size rozmiar ramki
+@param size rozmiar przycisku
 @param text tekst wyświetlany na przycisku
 @param color_set zestaw kolorów dla różnych stanów przycisku
 @return nowy obiekt */

@@ -126,22 +126,26 @@ void window_line_to_wchar(struct Pixel* pixel)
 			for (int i = 0; i < line_map_size; i++)
 			{
 				struct LineComponents line_components = line_map[i].line_components;
-				int  line_map_index =
+				unsigned line_map_index =
 					(line_components.left << 6) +
 					(line_components.top << 4) +
 					(line_components.right << 2) +
 					line_components.bottom;
+				if (line_map_index >= LINE_MAP_SIZE)
+					CRASH_LOG(GRAPHICS_FAILURE);
 				wchar_map[line_map_index] = line_map[i].u_char;
 			}
 			is_map_set = true;
 		}
 
 		pixel->type = TEXT_PRIMITIVE;
-		int  wchar_map_index =
+		unsigned wchar_map_index =
 			(pixel->line.line_components.left << 6) +
 			(pixel->line.line_components.top << 4) +
 			(pixel->line.line_components.right << 2) +
 			pixel->line.line_components.bottom;
+		if (wchar_map_index >= LINE_MAP_SIZE)
+			CRASH_LOG(GRAPHICS_FAILURE);
 		pixel->u_char = wchar_map[wchar_map_index];
 	}
 }

@@ -14,15 +14,15 @@ struct SignalMemory
 /** Struktura przechowuj¹ca informacje potrzebne funkcji obs³uguj¹cej przerwania. */
 struct SignalInterrupts
 {
-	struct Unit* reg_rz;			///< rejestr zg³oszeñ
-	struct Unit* reg_rm;			///< rejestr maski
-	struct Unit* reg_rp;			///< rejestr przerwañ
-	struct Unit* reg_ap;			///< rejestr adresów przerwañ
-	bool* int_tag;					///< wskaŸnik na wartoœæ tagu przerwañ
-	const var* intr_mask;			///< wskaŸnik na maskê przerwañ
-	struct Drawable** buttons_array;///< wskaŸnik na tablicê prazycisków przerwañ
+	struct Unit* reg_rz;				///< rejestr zg³oszeñ
+	struct Unit* reg_rm;				///< rejestr maski
+	struct Unit* reg_rp;				///< rejestr przerwañ
+	struct Unit* reg_ap;				///< rejestr adresu przerwania
+	bool* int_tag;						///< wskaŸnik na wartoœæ tagu przerwañ
+	const var* intr_mask;				///< wskaŸnik na maskê przerwañ
+	struct Drawable** buttons_array;	///< tablica graficznych reprezentacji przycisków przerwañ
 };
-/** Struktura przechowuj¹ca informacje potrzebne funkcjom zwi¹zanych z obs³ug¹ instrukcji. */
+/** Struktura przechowuj¹ca informacje potrzebne funkcjom zwi¹zanym z obs³ug¹ instrukcji. */
 struct SignalInstruction
 {
 	struct Unit* from;		///< uk³ad 'z'
@@ -42,8 +42,8 @@ struct SignalBusConnection
 struct SignalIOHandling
 {
 	bool* input_flag;			///< wskaŸnik na flagê gotowoœci do pobrania znaku 
-	bool* output_flag;			///< wskaŸnik na flagê gotowoœci do zapisu znaku 
-	struct Unit* address_reg;	///< rejestr instrukcji
+	bool* output_flag;			///< wskaŸnik na flagê gotowoœci do zapisania znaku 
+	struct Unit* address_reg;	///< rejestr adresu urz¹dzenia we/wy
 	const var* addr_mask;		///< wskaŸnik na maskê adresow¹
 };
 
@@ -59,19 +59,19 @@ var sig_write_to_memory(void* value_ptr);
 @param value_ptr wskaŸnik na obiekt zawieraj¹cy potrzebne informacje.
 @return '0' przy powodzeniu, 'EMPTY' dla pustego uk³adu, 'OUTPUT_ALREADY_SET' gdy dany uk³ad posiada ju¿ wartoœæ */
 var sig_enable_interrupts(void* value_ptr);
-/** Funkcja resetuj¹ca rejsetry zwi¹zane z obs³u¿onym przerwaniem.
+/** Funkcja resetuj¹ca rejestry zwi¹zane z obs³u¿onym przerwaniem.
 @param value_ptr wskaŸnik na obiekt zawieraj¹cy potrzebne informacje.
 @return '0' przy powodzeniu, 'EMPTY' dla pustego uk³adu, 'OUTPUT_ALREADY_SET' gdy dany uk³ad posiada ju¿ wartoœæ */
 var sig_reset_interrupts(void* value_ptr);
-/** Funkcja zatrzumuj¹ca pracê maszyny.
+/** Funkcja zatrzymuj¹ca pracê maszyny.
 @param value_ptr wskaŸnik na obiekt zawieraj¹cy potrzebne informacje.
 @return '0' przy powodzeniu, 'EMPTY' dla pustego uk³adu, 'OUTPUT_ALREADY_SET' gdy dany uk³ad posiada ju¿ wartoœæ */
 var sig_stop(void* value_ptr);
-/** Funkcja ³aduj¹ca adres instrukcji do rejestru.
+/** Funkcja ³aduj¹ca kod instrukcji do rejestru.
 @param value_ptr wskaŸnik na obiekt zawieraj¹cy potrzebne informacje.
 @return '0' przy powodzeniu, 'EMPTY' dla pustego uk³adu, 'OUTPUT_ALREADY_SET' gdy dany uk³ad posiada ju¿ wartoœæ */
 var sig_load_instruction(void* value_ptr);
-/** Funkcja przepisuj¹ca wartoœæ z jednej magistrali przez drug¹ do trzeciej.
+/** Funkcja przepisuj¹ca wartoœæ z jednej magistrali do drug¹ przez magistralê poœredni¹.
 @param value_ptr wskaŸnik na obiekt zawieraj¹cy potrzebne informacje.
 @return '0' przy powodzeniu, 'EMPTY' dla pustego uk³adu, 'OUTPUT_ALREADY_SET' gdy dany uk³ad posiada ju¿ wartoœæ */
 var sig_connect_buses(void* value_ptr);
@@ -80,65 +80,65 @@ var sig_connect_buses(void* value_ptr);
 @return '0' przy powodzeniu, 'EMPTY' dla pustego uk³adu, 'OUTPUT_ALREADY_SET' gdy dany uk³ad posiada ju¿ wartoœæ */
 var sig_io_handling(void* value_ptr);
 
-/** Funkcja zwracaj¹ca iloczyn logiczny danej wartoœci i maski .
+/** Funkcja zwracaj¹ca iloczyn logiczny danej wartoœci i maski.
 @param value wartoœæ
 @param mask maska
 @return wynik operacji */
 var sig_pass(var value, var mask);
-/** Funkcja zwracaj¹ca iloczyn logiczny danej wartoœci plus jeden i maski .
+/** Funkcja zwracaj¹ca iloczyn logiczny danej wartoœci plus jeden i maski.
 @param value wartoœæ
 @param mask maska
 @return wynik operacji */
 var sig_increment(var value, var mask);
-/** Funkcja zwracaj¹ca iloczyn logiczny danej wartoœci minus jeden i maski .
+/** Funkcja zwracaj¹ca iloczyn logiczny danej wartoœci minus jeden i maski.
 @param value wartoœæ
 @param mask maska
 @return wynik operacji */
 var sig_decrement(var value, var mask);
-/** Funkcja zwracaj¹ca iloczyn logiczny danej wartoœci przesuniêtej bitowo w prawo o jeden i maski .
+/** Funkcja zwracaj¹ca iloczyn logiczny danej wartoœci przesuniêtej bitowo w prawo o jeden i maski.
 @param value wartoœæ
 @param mask maska
 @return wynik operacji */
 var sig_shift_right(var value, var mask);
-/** Funkcja zwracaj¹ca iloczyn logiczny dope³nienia bitowego danej wartoœci i maski .
+/** Funkcja zwracaj¹ca iloczyn logiczny dope³nienia bitowego danej wartoœci i maski.
 @param value wartoœæ
 @param mask maska
 @return wynik operacji */
 var sig_bitwise_complement(var value, var mask);
 
-/** Funkcja zwracaj¹ca iloczyn logiczny sumy dwóch wartoœci i maski .
-@param value_a  pierwsza wartoœæ
-@param value_b  druga wartoœæ
+/** Funkcja zwracaj¹ca iloczyn logiczny sumy dwóch wartoœci i maski.
+@param value_a pierwsza wartoœæ
+@param value_b druga wartoœæ
 @param mask maska
 @return wynik operacji */
 var sig_add(var value_a, var value_b, var mask);
-/** Funkcja zwracaj¹ca iloczyn logiczny ró¿nicy dwóch wartoœci i maski .
+/** Funkcja zwracaj¹ca iloczyn logiczny ró¿nicy dwóch wartoœci i maski.
 @param value_a  pierwsza wartoœæ
 @param value_b  druga wartoœæ
 @param mask maska
 @return wynik operacji */
 var sig_substract(var value_a, var value_b, var mask);
-/** Funkcja zwracaj¹ca iloczyn logiczny iloczynu dwóch wartoœci i maski .
-@param value_a  pierwsza wartoœæ
-@param value_b  druga wartoœæ
+/** Funkcja zwracaj¹ca iloczyn logiczny iloczynu dwóch wartoœci i maski.
+@param value_a pierwsza wartoœæ
+@param value_b druga wartoœæ
 @param mask maska
 @return wynik operacji */
 var sig_multiply(var value_a, var value_b, var mask);
 /** Funkcja zwracaj¹ca iloczyn logiczny ilorazu dwóch wartoœci i maski .
-@param value_a  pierwsza wartoœæ
-@param value_b  druga wartoœæ
+@param value_a pierwsza wartoœæ
+@param value_b druga wartoœæ
 @param mask maska
 @return wynik operacji */
 var sig_divide(var value_a, var value_b, var mask);
-/** Funkcja zwracaj¹ca iloczyn logiczny sumy logicznej dwóch wartoœci i maski .
-@param value_a  pierwsza wartoœæ
-@param value_b  druga wartoœæ
+/** Funkcja zwracaj¹ca iloczyn logiczny sumy logicznej dwóch wartoœci i maski.
+@param value_a pierwsza wartoœæ
+@param value_b druga wartoœæ
 @param mask maska
 @return wynik operacji */
 var sig_bitwise_or(var value_a, var value_b, var mask);
-/** Funkcja zwracaj¹ca iloczyn logiczny iloczynu logicznego dwóch wartoœci i maski .
-@param value_a  pierwsza wartoœæ
-@param value_b  druga wartoœæ
+/** Funkcja zwracaj¹ca iloczyn logiczny iloczynu logicznego dwóch wartoœci i maski.
+@param value_a pierwsza wartoœæ
+@param value_b druga wartoœæ
 @param mask maska
 @return wynik operacji */
 var sig_bitwise_and(var value_a, var value_b, var mask);

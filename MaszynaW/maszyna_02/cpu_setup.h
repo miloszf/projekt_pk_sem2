@@ -6,14 +6,14 @@
 @return nowy obiekt */
 struct CPUPreference cpu_preference_init(const char* name);
 /** Funkcja usuwaj¹ca podany obiekt
-@param window obiekt do usuniêcia */
-void cpu_preference_delete(struct CPUPreference* setup);
+@param pref obiekt do usuniêcia */
+void cpu_preference_delete(struct CPUPreference* pref);
 
 /** Funkcja inicjalizuj¹ca obiekt struktury CPUSetup.
 @return nowy obiekt */
 struct CPUSetup cpu_setup_init();
 /** Funkcja usuwaj¹ca podany obiekt
-@param window obiekt do usuniêcia */
+@param setup obiekt do usuniêcia */
 void cpu_setup_delete(struct CPUSetup* setup);
 
 #endif

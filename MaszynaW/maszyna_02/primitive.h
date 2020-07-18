@@ -8,7 +8,7 @@
 typedef enum { TEXT_PRIMITIVE, LINE_PRIMITIVE } PrimitiveType;
 /** Typ wyliczeniowy reprezentuj¹cy orientacjê prymitywu. */
 typedef enum { VERTICAL, HORIZONTAL } Orientation;
-/** Typ wyliczeniowy reprezentuj¹cy rodzaj linii. */
+/** Typ wyliczeniowy reprezentuj¹cy rodzaje linii. */
 typedef enum {
 	NO_LINE = 0,
 	SINGLE_LINE = 1,
@@ -41,13 +41,14 @@ struct Primitive
 /** Struktura reprezentuj¹ca znak przedstawiaj¹cy liniê. */
 struct LineChar
 {
-	/**Struktura reprezentuj¹ca podzia³ znaku na 4 czêœci patrz¹c od œrodka. */
+	/** Struktura reprezentuj¹ca podzia³ znaku na 4 czêœci patrz¹c od œrodka. */
 	struct LineComponents
 	{
-		LineType left : 2;		///< typ lewej czêœci znaku
-		LineType top : 2;		///< typ górnej czêœci znaku
-		LineType right : 2;		///< typ prawj czêœci znaku
-		LineType bottom : 2;	///< typ dolnej czêœci znaku
+		// unsigned char instead of LineType to ensure that the line type is an unsigned number
+		unsigned char left : 2;		///< typ lewej czêœci znaku
+		unsigned char top : 2;		///< typ górnej czêœci znaku
+		unsigned char right : 2;	///< typ prawj czêœci znaku
+		unsigned char bottom : 2;	///< typ dolnej czêœci znaku
 	} line_components;
 };
 /** Struktura reprezentuj¹ca pojedyñczy piksel. */

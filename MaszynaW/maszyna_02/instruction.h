@@ -26,14 +26,14 @@ struct Instruction
 {
 	const char* name;			///< nazwa rozkazu
 	unsigned char arguments;	///< liczba argumentów
-	struct Tick* first_tick;	///< wskaŸnik na pierwszy takt
+	struct Tick* first_tick;	///< pierwszy takt
 };
 
 /** Funkcja inicjalizuj¹ca obiekt struktury Instruction.
 @param name nazwa rozkazu
 @return nowy obiekt */
 struct Instruction* instruction_init(const char* name);
-/** Funkcja usuwaj¹ca podany obiekt
+/** Funkcja usuwaj¹ca podany obiekt.
 @param instruction obiekt do usuniêcia */
 void instruction_delete(struct Instruction* instruction);
 

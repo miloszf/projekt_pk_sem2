@@ -1,8 +1,12 @@
 #include <stdio.h>
 #include "simulator.h"
 
+//#define DEBUG
+
+#ifdef DEBUG
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
+#endif // DEBUG
 
 int main(int argc, char** argv)
 {
@@ -15,7 +19,10 @@ int main(int argc, char** argv)
 	}
 	else
 		printf("usage: [program_name] [instructions_file] [program_file]\n");
-	
+
+#ifdef DEBUG
 	_CrtDumpMemoryLeaks();
+#endif // DEBUG
+
 	return 0;
 }

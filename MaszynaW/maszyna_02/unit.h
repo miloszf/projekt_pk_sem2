@@ -33,14 +33,14 @@ struct Unit* unit_new_bus(struct UnitInit* init);
 /** Funkcja zapisuj¹ca podan¹ wartoœæ do uk³adu. 
 @param unit uk³ad
 @param value wartoœæ do zapisania
-@return '0' przy niepowodzeniu zapisu, inna wartoœæ w przeciwnym przypadku */
+@return '0' przy niepowodzeniu zapisu, 'EMPTY' w przeciwnym przypadku */
 var unit_set(struct Unit* unit, var value);
-/** Funkcja zapisuj¹ca bezpoœrednio podan¹ wartoœæ do uk³adu.
+/** Funkcja wymuszaj¹ca natychmiastowy zapis wartoœci do uk³adu.
 @param unit uk³ad
 @param value wartoœæ do zapisania
-@return 'EMPTY' je¿eli nadpisywany uk³ad by³ pusty, inna wartoœæ w przeciwnym przypadku */
+@return 'EMPTY' je¿eli nadpisywany uk³ad by³ pusty, '0' w przeciwnym przypadku */
 var unit_immediate_set(struct Unit* unit, var value);
-/** Funkcja zatrzaskuj¹ca wartoœæ rejestrów, dla pozosta³ych uk³aduów nie robi nic.
+/** Funkcja zatrzaskuj¹ca wartoœci rejestrów, dla pozosta³ych uk³adów nie robi nic.
 @param unit uk³ad */
 void unit_latch(struct Unit* unit);
 /** Funkcja zeruj¹ca podany uk³ad.
@@ -51,14 +51,14 @@ void unit_reset(struct Unit* unit);
 void unit_restart(struct Unit* unit);
 /** Funkcja zwracaj¹ca wartoœæ zapisan¹ w uk³adzie.
 @param unit uk³ad
-@return wartoœæ zapisana w uk³adzie */
+@return wartoœæ zapisana w uk³adzie lub 'EMPTY' jeœli uk³ad jest pusty */
 var unit_read(struct Unit* unit);
 /** Funkcja ustawiaj¹ca widocznoœæ uk³adu
 @param unit uk³ad
-@param visibility widocznoœæ*/
+@param visibility widocznoœæ */
 void unit_set_visibility(struct Unit* unit, bool visibility);
 /** Funkcja usuwaj¹ca podany obiekt
-@param signal obiekt do usuniêcia */
+@param unit obiekt do usuniêcia */
 void unit_delete(struct Unit* unit);
 
 #endif
